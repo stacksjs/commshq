@@ -2,14 +2,16 @@
 
 This folder contains the following GitHub Actions:
 
-- [CI][CI] — all CI jobs for the project
+- [CI][CI] - all CI jobs for the project
   - lints the code
   - `typecheck`s the code
   - runs the test suite
   - runs on `ubuntu-latest`
-- [Release][Release] — on a `v*` tag, generates the changelog and creates the GitHub release
-- [Labeler][Labeler] — labels pull requests from `.github/labeler.yml`
+- [Release][Release] - on a `v*` tag, generates the changelog and creates the GitHub release
+- [Deploy][Deploy] - validates encrypted production configuration and runs a reviewed dry run or live Buddy deployment
+- [Labeler][Labeler] - labels pull requests from `.github/labeler.yml`
 
 [CI]: ./ci.yml
 [Release]: ./release.yml
+[Deploy]: ./deploy.yml
 [Labeler]: ./labeler.yml
