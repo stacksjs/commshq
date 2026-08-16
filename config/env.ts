@@ -11,11 +11,11 @@ import { schema } from '@stacksjs/validation'
 export default {
   APP_NAME: {
     validation: schema.string(),
-    default: 'Stacks',
+    default: 'CommsHQ',
   },
 
   APP_ENV: {
-    validation: schema.enum(['local', 'dev', 'stage', 'prod']),
+    validation: schema.enum(['local', 'development', 'dev', 'staging', 'stage', 'production', 'prod', 'test', 'testing']),
     default: 'local',
   },
 
