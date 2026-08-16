@@ -8,9 +8,9 @@ import type { LibraryConfig } from '@stacksjs/types'
  * have any questions, feel free to reach out via Discord or GitHub Discussions.
  */
 export default {
-  name: 'hello-world',
+  name: 'commshq',
   owner: '@stacksjs', // you may or may not add the @ prefix here (it is added automatically)
-  repository: 'stacksjs/stacks',
+  repository: 'stacksjs/commshq',
   license: 'MIT',
   author: 'Chris Breuer',
   contributors: ['Chris Breuer <chris@stacksjs.com>'],
@@ -18,28 +18,17 @@ export default {
   releaseable: true,
 
   webComponents: {
-    name: 'hello-world-elements',
-    description: 'Your framework agnostic web component library description.',
-    keywords: ['custom-elements', 'web-components', 'library', 'framework-agnostic', 'typescript', 'javascript'],
-    tags: [
-      {
-        name: ['HelloWorld', 'AppHelloWorld'],
-        description: 'The Hello World custom element, built via this framework.',
-        attributes: [
-          {
-            name: 'greeting',
-            description: 'The greeting.',
-          },
-        ],
-      },
-    ],
+    name: 'commshq-elements',
+    description: 'Reusable CommsHQ workspace components.',
+    keywords: ['communications', 'publishing', 'marketing', 'stx'],
+    tags: [],
   },
 
   functions: {
-    name: 'hello-world-fx',
-    description: 'Your function library description.',
-    keywords: ['functions', 'composables', 'library', 'typescript', 'javascript'],
+    name: 'commshq-fx',
+    description: 'CommsHQ browser functions.',
+    keywords: ['communications', 'publishing', 'marketing', 'typescript'],
     shouldGenerateSourcemap: false,
-    files: ['counter', 'dark'],
+    files: ['index'],
   },
 } satisfies LibraryConfig
