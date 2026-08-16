@@ -93,6 +93,16 @@ export default {
     default: '',
   },
 
+  COMMSHQ_OWNER_EMAIL: {
+    validation: schema.string().email(),
+    default: 'chris@stacksjs.com',
+  },
+
+  COMMSHQ_OWNER_PASSWORD: {
+    validation: schema.string(),
+    default: '',
+  },
+
   DEBUG: {
     validation: schema.boolean(),
     default: false,
