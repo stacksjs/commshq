@@ -1,7 +1,6 @@
 @extends('layouts/marketing')
 @section('title', 'Commerce marketing | CommsHQ')
 @section('description', 'Connect store events to audience segments, automations, attribution, and lifecycle revenue reporting.')
-<script server>const journeys = ['Cart recovery', 'Post-purchase education', 'Replenishment reminders', 'VIP recognition', 'Win-back series', 'Product recommendations']</script>
 @section('content')
-  <section class="mx-auto max-w-7xl px-5 py-20 lg:px-8 lg:py-28"><p class="coral text-xs font-bold uppercase tracking-[0.22em]">Commerce marketing</p><h1 class="ink text-balance mt-5 max-w-5xl text-5xl leading-[1.02] tracking-[-0.04em] sm:text-7xl">Turn each purchase into a better next conversation.</h1><p class="muted mt-7 max-w-2xl text-lg leading-8">Bring Stacks Commerce, Shopify, WooCommerce, Stripe, CSV, or API events into one immutable stream before they trigger a journey.</p><div class="mt-14 grid gap-5 md:grid-cols-3">@foreach(journeys as journey)<article class="panel min-h-48 rounded-xl border border-tone p-7"><span class="i-hugeicons-shopping-bag-02 coral h-6 w-6" aria-hidden="true"></span><h2 class="ink mt-12 text-2xl">{{ journey }}</h2><p class="muted text-sm leading-6">Segment, automate, attribute, and inspect every event from one tenant-safe record.</p></article>@endforeach</div></section>
+  <FeatureStory feature="commerce" />
 @endsection
