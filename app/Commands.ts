@@ -27,5 +27,4 @@ export type CommandRegistry = Record<string, string | CommandConfig>
  * },
  */
 export default {
-  'inspire': 'Inspire',
 } satisfies CommandRegistry

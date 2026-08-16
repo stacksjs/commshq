@@ -8,6 +8,7 @@ import { response } from '@stacksjs/router'
 import Contact from '../../Models/Contact'
 import FormDefinition from '../../Models/FormDefinition'
 import FormSubmission from '../../Models/FormSubmission'
+import { buildConfirmationMessage } from '../../Mail/ConfirmSubscription'
 import { createPublicToken } from './signed-token'
 
 function clientIp(request: RequestInstance): string {
@@ -44,7 +45,7 @@ export default new Action({
     if (form.doubleOptIn) {
       const token = createPublicToken({ teamId, contactId: contact.id, channel: 'email', purpose: 'confirm', expiresAt: Date.now() + 48 * 60 * 60 * 1000 }, String(config.app.key))
       const confirmationUrl = `${String(config.app.url).replace(/\/$/, '')}/confirm/${token}`
-      await job('SendEmail', { message: { to: [email], from: config.email.from, subject: 'Confirm your CommsHQ subscription', html: `<p>Confirm your subscription:</p><p><a href="${confirmationUrl}">Confirm subscription</a></p>`, text: `Confirm your subscription: ${confirmationUrl}` }, driver: config.email.default }).onQueue('emails').dispatch()
+      await job('SendEmail', { message: buildConfirmationMessage(email, confirmationUrl), driver: config.email.default }).onQueue('emails').dispatch()
     }
 
     return response.json({ accepted: true, confirmationRequired: !!form.doubleOptIn }, 202)
