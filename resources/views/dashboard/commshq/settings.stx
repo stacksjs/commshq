@@ -1,0 +1,6 @@
+@extends('layouts/default')
+
+@section('content')
+@title('CommsHQ - Settings')
+<WorkspaceSurface area="settings" />
+@endsection

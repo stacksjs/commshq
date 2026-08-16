@@ -1,0 +1,8 @@
+@extends('layouts/marketing')
+@section('title', 'Marketing automation | CommsHQ')
+@section('description', 'Build versioned, auditable email, SMS, publishing, and commerce automations with human approval.')
+<script server>const nodes = [{ icon: 'i-hugeicons-shopping-basket-add-01', title: 'Cart abandoned', note: 'Trigger' }, { icon: 'i-hugeicons-time-quarter', title: 'Wait 45 minutes', note: 'Delay' }, { icon: 'i-hugeicons-git-branch', title: 'Order completed?', note: 'Branch' }, { icon: 'i-hugeicons-mail-send-02', title: 'Send recovery email', note: 'Action' }]</script>
+@section('content')
+  <section class="mx-auto max-w-7xl px-5 py-20 text-center lg:px-8 lg:py-28"><p class="coral text-xs font-bold uppercase tracking-[0.22em]">Automation with a memory</p><h1 class="ink text-balance mx-auto mt-5 max-w-5xl text-5xl leading-[1.02] tracking-[-0.04em] sm:text-7xl">Build journeys that stay understandable.</h1><p class="muted mx-auto mt-7 max-w-2xl text-lg leading-8">Every graph is versioned. Every run is idempotent. Every AI-assisted action waits for a person before it reaches your audience.</p></section>
+  <section class="panel border-y border-tone py-16"><div class="mx-auto max-w-4xl px-5">@foreach(nodes as node)<div class="paper relative mx-auto mb-8 max-w-lg rounded-lg border border-tone p-5 shadow-sm"><div class="flex items-center gap-4"><span class="coral {{ node.icon }} h-6 w-6" aria-hidden="true"></span><div class="text-left"><p class="coral m-0 text-xs font-bold uppercase tracking-[0.16em]">{{ node.note }}</p><h2 class="ink m-0 mt-1 text-xl">{{ node.title }}</h2></div></div></div>@endforeach</div></section>
+@endsection

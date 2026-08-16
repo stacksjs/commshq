@@ -1,0 +1,18 @@
+@extends('layouts/marketing')
+@section('title', 'Features | CommsHQ')
+@section('description', 'Explore the connected audience, messaging, publishing, automation, commerce, and analytics features in CommsHQ.')
+<script server>
+const areas = [
+  { icon: 'i-hugeicons-user-group', title: 'Audience intelligence', text: 'Contacts, identities, custom fields, tags, dynamic segments, consent history, imports, exports, and safe merge records.' },
+  { icon: 'i-hugeicons-mail-02', title: 'Email and SMS', text: 'Reusable message blocks, responsive previews, test sends, personalization, quiet hours, experiments, and delivery diagnostics.' },
+  { icon: 'i-hugeicons-flowchart-01', title: 'Automation', text: 'Versioned graphs with triggers, conditions, branches, delays, approvals, retries, and dead-letter recovery.' },
+  { icon: 'i-hugeicons-news-01', title: 'Publishing', text: 'Custom-domain publications, archives, landing pages, forms, gated posts, podcasts, RSS, sitemap, and referrals.' },
+  { icon: 'i-hugeicons-shopping-cart-02', title: 'Commerce marketing', text: 'Normalized store events, attribution, cart recovery, win-back, replenishment, recommendations, offers, and revenue reporting.' },
+  { icon: 'i-hugeicons-analytics-01', title: 'First-party analytics', text: 'Growth, deliverability, funnels, revenue, cohorts, retention, and lifetime value measured without selling audience data.' },
+]
+</script>
+@section('content')
+  <section class="mx-auto max-w-7xl px-5 py-20 lg:px-8 lg:py-28"><p class="coral text-xs font-bold uppercase tracking-[0.22em]">One connected platform</p><h1 class="ink text-balance mt-5 max-w-5xl text-5xl leading-[1.02] tracking-[-0.04em] sm:text-7xl">Everything you need to earn attention and keep it.</h1><p class="muted mt-7 max-w-2xl text-lg leading-8">CommsHQ replaces disconnected sending, site, audience, and store tools with one consent-aware system of record.</p></section>
+  <section class="panel border-y border-tone"><div class="mx-auto max-w-7xl grid gap-px bg-[var(--line)] md:grid-cols-2 lg:grid-cols-3">@foreach(areas as area)<article class="paper min-h-72 p-8 lg:p-10"><span class="coral {{ area.icon }} h-7 w-7" aria-hidden="true"></span><h2 class="ink mt-12 text-3xl">{{ area.title }}</h2><p class="muted mt-4 leading-7">{{ area.text }}</p></article>@endforeach</div></section>
+  <section class="mx-auto max-w-7xl px-5 py-20 lg:px-8"><div class="bg-coral rounded-xl p-8 text-white sm:p-12"><h2 class="m-0 text-4xl">Build your communications home.</h2><p class="mt-4 max-w-2xl text-white/80">Start with a publication, a campaign, or a commerce connection. The audience history stays unified.</p><a href="/dashboard/register" class="mt-7 inline-flex rounded-md bg-white px-5 py-3 font-bold text-[#c73e2c]">Start free</a></div></section>
+@endsection

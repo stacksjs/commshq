@@ -1,0 +1,6 @@
+@extends('layouts/default')
+
+@section('content')
+@title('CommsHQ - Campaign composer')
+<CampaignComposer />
+@endsection

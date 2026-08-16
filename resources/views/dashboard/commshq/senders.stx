@@ -1,0 +1,6 @@
+@extends('layouts/default')
+
+@section('content')
+@title('CommsHQ - Senders')
+<WorkspaceSurface area="senders" />
+@endsection

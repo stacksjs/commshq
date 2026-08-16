@@ -1,0 +1,6 @@
+@extends('layouts/default')
+
+@section('content')
+@title('CommsHQ - Teams')
+<WorkspaceSurface area="teams" />
+@endsection

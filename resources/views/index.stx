@@ -1,0 +1,197 @@
+<script server>
+const channelStats = [
+  { value: '42.8%', label: 'average engaged open rate' },
+  { value: '18 min', label: 'from idea to scheduled send' },
+  { value: '3.4x', label: 'revenue from coordinated journeys' },
+]
+
+const workflow = [
+  { icon: 'i-hugeicons-user-multiple-02', title: 'Know every reader', text: 'One consent-aware audience across email, SMS, publishing, and purchases.' },
+  { icon: 'i-hugeicons-flowchart-01', title: 'Build the journey', text: 'Shape branches, delays, experiments, and approvals in one visual workflow.' },
+  { icon: 'i-hugeicons-chart-evaluation', title: 'Learn what converts', text: 'Attribute the full path from first visit to renewal without third-party pixels.' },
+]
+
+const features = [
+  { eyebrow: 'Email', title: 'Editorial sends that feel made by people', text: 'Compose with reusable blocks, conditional content, plain-text output, responsive previews, and deterministic experiments.', icon: 'i-hugeicons-mail-02' },
+  { eyebrow: 'SMS', title: 'Timely messages with consent built in', text: 'See segment counts, quiet-hour warnings, STOP language, consent status, and live delivery reporting before you send.', icon: 'i-hugeicons-message-02' },
+  { eyebrow: 'Publishing', title: 'Your publication is part of the system', text: 'Launch archives, blogs, landing pages, gated posts, forms, podcasts, feeds, and custom domains from the same workspace.', icon: 'i-hugeicons-news-01' },
+  { eyebrow: 'Commerce', title: 'Turn store signals into useful follow-up', text: 'Normalize purchase and cart events, then run recovery, replenishment, win-back, and product journeys with clear attribution.', icon: 'i-hugeicons-shopping-bag-02' },
+]
+
+const plans = [
+  { name: 'Free', price: '$0', note: 'For a new idea finding its first thousand people.', features: ['1,000 contacts', '10,000 emails monthly', '1 publication', 'Forms and campaigns'] },
+  { name: 'Creator', price: '$29', note: 'For independent publishers building a real business.', features: ['5,000 contacts', '50,000 emails monthly', 'Automations and paid content', '2 custom domains'] },
+  { name: 'Business', price: '$99', note: 'For teams connecting audience and commerce.', features: ['25,000 contacts', '250,000 emails monthly', 'SMS and experiments', 'Commerce automation'] },
+]
+</script>
+
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="CommsHQ brings email, SMS, publishing, automation, and commerce marketing into one creator-first workspace.">
+    <meta name="theme-color" content="#f7f1ea">
+    <link rel="canonical" href="https://commshq.org/">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Fraunces:opsz,wght@9..144,600;9..144,700&display=swap" rel="stylesheet">
+    <title>CommsHQ - Grow an audience worth knowing</title>
+    @appearanceBootstrap({
+      storageKey: 'commshq-appearance',
+      appearance: { key: 'theme', attribute: 'appearance', allowed: ['editorial'], default: 'editorial' },
+      colorMode: { key: 'colorMode', attribute: 'color-mode', default: 'system' },
+    })
+    <style>
+      :root { --paper: #f7f1ea; --ink: #201d1a; --muted: #6f665e; --coral: #e95843; --line: #d9cec3; --panel: #fffaf5; color-scheme: light; }
+      :root.dark { --paper: #191715; --ink: #f8f0e8; --muted: #b9aca1; --coral: #ff745f; --line: #403a35; --panel: #24211e; color-scheme: dark; }
+      html { scroll-behavior: smooth; background: var(--paper); }
+      body { margin: 0; background: var(--paper); color: var(--ink); font-family: 'DM Sans', sans-serif; }
+      h1, h2, h3 { font-family: 'Fraunces', serif; }
+      .paper { background: var(--paper); }
+      .panel { background: var(--panel); }
+      .ink { color: var(--ink); }
+      .muted { color: var(--muted); }
+      .coral { color: var(--coral); }
+      .bg-coral { background: var(--coral); }
+      .border-tone { border-color: var(--line); }
+      .text-balance { text-wrap: balance; }
+      .editorial-grid { background-image: linear-gradient(to right, color-mix(in srgb, var(--line) 45%, transparent) 1px, transparent 1px); background-size: min(8vw, 6rem) 100%; }
+      .reveal { animation: reveal 700ms both; animation-timeline: view(); animation-range: entry 8% cover 28%; }
+      @keyframes reveal { from { opacity: 0; transform: translateY(18px); } to { opacity: 1; transform: translateY(0); } }
+      @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } .reveal { animation: none; } }
+    </style>
+  </head>
+  <body>
+    <a href="#main" class="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-50 focus:rounded-md focus:bg-black focus:px-4 focus:py-3 focus:text-white">Skip to content</a>
+
+    <header class="paper sticky top-0 z-40 border-b border-tone">
+      <nav class="mx-auto max-w-7xl flex items-center justify-between px-5 py-4 lg:px-8" aria-label="Primary navigation">
+        <a href="/" class="ink inline-flex items-center gap-2 text-lg font-bold tracking-tight" aria-label="CommsHQ home">
+          <span class="bg-coral h-3 w-3 rounded-sm" aria-hidden="true"></span>
+          CommsHQ
+        </a>
+        <div class="hidden items-center gap-7 md:flex">
+          <a href="#platform" class="muted hover:ink text-sm font-medium">Platform</a>
+          <a href="/publishing" class="muted hover:ink text-sm font-medium">Publishing</a>
+          <a href="/commerce" class="muted hover:ink text-sm font-medium">Commerce</a>
+          <a href="#pricing" class="muted hover:ink text-sm font-medium">Pricing</a>
+        </div>
+        <div class="flex items-center gap-3">
+          <a href="/dashboard/login" class="ink hidden text-sm font-semibold sm:block">Sign in</a>
+          <a href="/dashboard/register" class="bg-coral rounded-md px-4 py-2.5 text-sm font-semibold text-white transition-transform hover:-translate-y-0.5 focus:outline-none focus:ring-2 focus:ring-offset-2">Start free</a>
+        </div>
+      </nav>
+    </header>
+
+    <main id="main">
+      <section class="editorial-grid border-b border-tone">
+        <div class="mx-auto max-w-7xl grid min-h-[760px] items-center gap-12 px-5 py-20 lg:grid-cols-[0.8fr_1.2fr] lg:px-8 lg:py-28">
+          <div class="relative z-10">
+            <p class="coral mb-6 text-xs font-bold uppercase tracking-[0.22em]">Audience, publishing, and commerce</p>
+            <h1 class="ink text-balance m-0 max-w-3xl text-5xl font-semibold leading-[0.96] tracking-[-0.045em] sm:text-6xl lg:text-7xl">Grow an audience worth knowing.</h1>
+            <p class="muted mt-7 max-w-xl text-lg leading-8">CommsHQ brings email, SMS, publishing, automation, and commerce signals into one thoughtful workspace. Create less noise. Build more momentum.</p>
+            <div class="mt-9 flex flex-col gap-3 sm:flex-row">
+              <a href="/dashboard/register" class="bg-coral inline-flex min-h-12 items-center justify-center rounded-md px-6 text-base font-semibold text-white transition-transform hover:-translate-y-0.5 focus:outline-none focus:ring-2 focus:ring-offset-2">Build your first audience</a>
+              <a href="#platform" class="ink panel inline-flex min-h-12 items-center justify-center gap-2 rounded-md border border-tone px-6 text-base font-semibold focus:outline-none focus:ring-2 focus:ring-offset-2">
+                See the platform
+                <span class="i-hugeicons-arrow-down-02 h-5 w-5" aria-hidden="true"></span>
+              </a>
+            </div>
+            <p class="muted mt-4 text-sm">No card required. Email stays free for your first 1,000 contacts.</p>
+          </div>
+          <figure class="relative m-0 lg:-mr-16">
+            <div class="overflow-hidden rounded-[2rem] border border-tone shadow-2xl">
+              <img src="/images/commshq-editorial-hero.png" alt="A coral mailer, notebook, phone, and editorial cards arranged on a warm studio table" class="h-full min-h-[420px] w-full object-cover" width="1536" height="1024">
+            </div>
+            <figcaption class="panel absolute -bottom-6 left-5 rounded-md border border-tone px-4 py-3 text-sm font-semibold shadow-lg">One idea, every channel, one clear story.</figcaption>
+          </figure>
+        </div>
+      </section>
+
+      <section aria-label="Customer results" class="border-b border-tone">
+        <div class="mx-auto max-w-7xl grid divide-y divide-tone px-5 md:grid-cols-3 md:divide-x md:divide-y-0 lg:px-8">
+          @foreach(channelStats as stat)
+            <div class="py-8 md:px-8 md:first:pl-0">
+              <p class="ink m-0 text-3xl font-bold">{{ stat.value }}</p>
+              <p class="muted mb-0 mt-1 text-sm">{{ stat.label }}</p>
+            </div>
+          @endforeach
+        </div>
+      </section>
+
+      <section id="platform" class="mx-auto max-w-7xl px-5 py-24 lg:px-8 lg:py-32">
+        <div class="grid gap-12 lg:grid-cols-[0.7fr_1.3fr]">
+          <div class="lg:sticky lg:top-28 lg:self-start">
+            <p class="coral text-xs font-bold uppercase tracking-[0.22em]">The connected path</p>
+            <h2 class="ink text-balance mt-4 text-4xl leading-tight tracking-[-0.035em] sm:text-5xl">From first hello to favorite customer.</h2>
+            <p class="muted mt-5 max-w-md text-lg leading-8">Every interaction adds useful context, with consent and tenant boundaries enforced at the data layer.</p>
+          </div>
+          <ol class="m-0 space-y-4 p-0">
+            @foreach(workflow as step)
+              <li class="panel reveal grid gap-5 rounded-xl border border-tone p-7 sm:grid-cols-[auto_1fr] sm:p-9">
+                <span class="coral {{ step.icon }} mt-1 h-7 w-7" aria-hidden="true"></span>
+                <div><h3 class="ink m-0 text-2xl">{{ step.title }}</h3><p class="muted mb-0 mt-3 leading-7">{{ step.text }}</p></div>
+              </li>
+            @endforeach
+          </ol>
+        </div>
+      </section>
+
+      <section class="panel border-y border-tone py-24 lg:py-32">
+        <div class="mx-auto max-w-7xl px-5 lg:px-8">
+          <div class="max-w-3xl">
+            <p class="coral text-xs font-bold uppercase tracking-[0.22em]">A complete creative system</p>
+            <h2 class="ink text-balance mt-4 text-4xl leading-tight tracking-[-0.035em] sm:text-5xl">Create the message. Publish the story. Measure the business.</h2>
+          </div>
+          <div class="mt-14 grid gap-px overflow-hidden rounded-xl border border-tone bg-[var(--line)] md:grid-cols-2">
+            @foreach(features as feature)
+              <article class="paper reveal min-h-72 p-8 sm:p-10">
+                <div class="flex items-center justify-between"><span class="coral text-xs font-bold uppercase tracking-[0.18em]">{{ feature.eyebrow }}</span><span class="coral {{ feature.icon }} h-6 w-6" aria-hidden="true"></span></div>
+                <h3 class="ink text-balance mt-12 text-3xl leading-tight">{{ feature.title }}</h3>
+                <p class="muted mb-0 mt-4 max-w-lg leading-7">{{ feature.text }}</p>
+              </article>
+            @endforeach
+          </div>
+        </div>
+      </section>
+
+      <section id="pricing" class="mx-auto max-w-7xl px-5 py-24 lg:px-8 lg:py-32">
+        <div class="flex flex-col justify-between gap-6 md:flex-row md:items-end">
+          <div><p class="coral text-xs font-bold uppercase tracking-[0.22em]">Simple pricing</p><h2 class="ink mt-4 text-4xl tracking-[-0.035em] sm:text-5xl">Start free. Grow on your terms.</h2></div>
+          <p class="muted max-w-md leading-7">No transaction fee on connected-store sales. Paid publishing and network fees are clear before you earn.</p>
+        </div>
+        <div class="mt-12 grid gap-5 lg:grid-cols-3">
+          @foreach(plans as plan)
+            <article class="panel reveal flex min-h-[430px] flex-col rounded-xl border border-tone p-8">
+              <h3 class="ink m-0 text-2xl">{{ plan.name }}</h3>
+              <p class="mt-7"><span class="ink text-5xl font-bold tracking-tight">{{ plan.price }}</span><span class="muted"> / month</span></p>
+              <p class="muted min-h-14 leading-7">{{ plan.note }}</p>
+              <ul class="mt-7 space-y-3 p-0">
+                @foreach(plan.features as item)
+                  <li class="ink flex items-center gap-3 text-sm"><span class="i-hugeicons-tick-02 coral h-4 w-4" aria-hidden="true"></span>{{ item }}</li>
+                @endforeach
+              </ul>
+              <a href="/dashboard/register" class="ink mt-auto inline-flex min-h-11 items-center justify-center rounded-md border border-tone px-5 font-semibold focus:outline-none focus:ring-2 focus:ring-offset-2">Choose {{ plan.name }}</a>
+            </article>
+          @endforeach
+        </div>
+      </section>
+
+      <section class="bg-coral py-20 text-white">
+        <div class="mx-auto max-w-7xl flex flex-col items-start justify-between gap-8 px-5 md:flex-row md:items-center lg:px-8">
+          <div><p class="mb-3 text-xs font-bold uppercase tracking-[0.22em] text-white/75">Your next send starts here</p><h2 class="text-balance m-0 max-w-3xl text-4xl leading-tight sm:text-5xl">Build a communications home your audience can feel.</h2></div>
+          <a href="/dashboard/register" class="inline-flex min-h-12 shrink-0 items-center justify-center rounded-md bg-white px-6 font-bold text-[#c73e2c] focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2">Start with CommsHQ</a>
+        </div>
+      </section>
+    </main>
+
+    <footer class="paper border-t border-tone">
+      <div class="mx-auto max-w-7xl flex flex-col gap-8 px-5 py-10 sm:flex-row sm:items-center sm:justify-between lg:px-8">
+        <p class="ink m-0 font-bold">CommsHQ</p>
+        <nav aria-label="Footer" class="flex flex-wrap gap-x-6 gap-y-3 text-sm"><a class="muted" href="/security">Security</a><a class="muted" href="/privacy">Privacy</a><a class="muted" href="/terms">Terms</a><a class="muted" href="mailto:hello@commshq.org">Contact</a></nav>
+        <p class="muted m-0 text-sm">Built with Stacks.</p>
+      </div>
+    </footer>
+  </body>
+</html>

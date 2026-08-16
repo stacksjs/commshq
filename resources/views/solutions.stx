@@ -1,0 +1,7 @@
+@extends('layouts/marketing')
+@section('title', 'Solutions | CommsHQ')
+@section('description', 'CommsHQ solutions for creators, publishers, commerce teams, and membership businesses.')
+<script server>const solutions = [{ title: 'Independent creators', text: 'Turn a point of view into a publication, community, paid product, and durable audience.' }, { title: 'Editorial publishers', text: 'Coordinate newsletters, archives, podcasts, sponsors, referrals, and paid access.' }, { title: 'Commerce teams', text: 'Connect store behavior to segmented email and SMS journeys with revenue attribution.' }, { title: 'Membership businesses', text: 'Onboard, educate, renew, recover, and recognize members across channels.' }]</script>
+@section('content')
+  <section class="mx-auto max-w-7xl px-5 py-20 lg:px-8 lg:py-28"><p class="coral text-xs font-bold uppercase tracking-[0.22em]">Built for relationships</p><h1 class="ink text-balance mt-5 max-w-5xl text-5xl leading-[1.02] tracking-[-0.04em] sm:text-7xl">One platform, shaped around how your audience grows.</h1><div class="mt-14 grid gap-5 md:grid-cols-2">@foreach(solutions as solution)<article class="panel min-h-64 rounded-xl border border-tone p-8 sm:p-10"><h2 class="ink text-3xl">{{ solution.title }}</h2><p class="muted max-w-lg leading-7">{{ solution.text }}</p><a href="/features" class="coral mt-6 inline-flex items-center gap-2 font-bold">Explore the platform <span class="i-hugeicons-arrow-right-02 h-4 w-4" aria-hidden="true"></span></a></article>@endforeach</div></section>
+@endsection

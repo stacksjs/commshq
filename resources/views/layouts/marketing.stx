@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="@yield('description')">
+    <meta name="theme-color" content="#f7f1ea">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Fraunces:opsz,wght@9..144,600;9..144,700&display=swap" rel="stylesheet">
+    <title>@yield('title')</title>
+    @appearanceBootstrap({ storageKey: 'commshq-appearance', appearance: { key: 'theme', attribute: 'appearance', allowed: ['editorial'], default: 'editorial' }, colorMode: { key: 'colorMode', attribute: 'color-mode', default: 'system' } })
+    <style>
+      :root { --paper: #f7f1ea; --ink: #201d1a; --muted: #6f665e; --coral: #e95843; --line: #d9cec3; --panel: #fffaf5; color-scheme: light; }
+      :root.dark { --paper: #191715; --ink: #f8f0e8; --muted: #b9aca1; --coral: #ff745f; --line: #403a35; --panel: #24211e; color-scheme: dark; }
+      html { background: var(--paper); scroll-behavior: smooth; } body { margin: 0; background: var(--paper); color: var(--ink); font-family: 'DM Sans', sans-serif; } h1, h2, h3 { font-family: 'Fraunces', serif; }
+      .paper { background: var(--paper); } .panel { background: var(--panel); } .ink { color: var(--ink); } .muted { color: var(--muted); } .coral { color: var(--coral); } .bg-coral { background: var(--coral); } .border-tone { border-color: var(--line); } .text-balance { text-wrap: balance; }
+      @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+    </style>
+    @stack('head')
+  </head>
+  <body>
+    <a href="#main" class="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-50 focus:rounded-md focus:bg-black focus:px-4 focus:py-3 focus:text-white">Skip to content</a>
+    <header class="paper sticky top-0 z-40 border-b border-tone">
+      <nav class="mx-auto max-w-7xl flex items-center justify-between px-5 py-4 lg:px-8" aria-label="Primary navigation">
+        <a href="/" class="ink inline-flex items-center gap-2 text-lg font-bold tracking-tight"><span class="bg-coral h-3 w-3 rounded-sm" aria-hidden="true"></span>CommsHQ</a>
+        <div class="hidden items-center gap-6 md:flex"><a href="/features" class="muted text-sm font-medium">Features</a><a href="/email" class="muted text-sm font-medium">Email</a><a href="/sms" class="muted text-sm font-medium">SMS</a><a href="/automation" class="muted text-sm font-medium">Automation</a><a href="/pricing" class="muted text-sm font-medium">Pricing</a></div>
+        <a href="/dashboard/register" class="bg-coral rounded-md px-4 py-2.5 text-sm font-semibold text-white focus:outline-none focus:ring-2 focus:ring-offset-2">Start free</a>
+      </nav>
+    </header>
+    <main id="main">@yield('content')</main>
+    <footer class="paper border-t border-tone"><div class="mx-auto max-w-7xl flex flex-col gap-6 px-5 py-10 sm:flex-row sm:items-center sm:justify-between lg:px-8"><a href="/" class="ink font-bold">CommsHQ</a><nav class="flex flex-wrap gap-5 text-sm" aria-label="Footer"><a class="muted" href="/integrations">Integrations</a><a class="muted" href="/security">Security</a><a class="muted" href="/privacy">Privacy</a><a class="muted" href="/terms">Terms</a></nav><p class="muted m-0 text-sm">Built with Stacks.</p></div></footer>
+    @stack('scripts')
+  </body>
+</html>

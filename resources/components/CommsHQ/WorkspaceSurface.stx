@@ -1,0 +1,181 @@
+<script>
+interface WorkspacePage {
+  eyebrow: string
+  title: string
+  description: string
+  primary: string
+  icon: string
+  metrics: Array<{ label: string, value: string, note: string }>
+  records: Array<{ name: string, detail: string, status: string, value: string }>
+  checklist: Array<{ label: string, detail: string, state: string }>
+}
+
+interface WorkspaceSurfaceProps {
+  area: string
+}
+
+const { area } = defineProps<WorkspaceSurfaceProps>()
+
+const pages: Record<string, WorkspacePage> = {
+  onboarding: {
+    eyebrow: 'Start here', title: 'Set up a sending home that is ready to grow.', description: 'Connect a domain, confirm consent defaults, import your first audience, and publish one useful welcome.', primary: 'Continue setup', icon: 'i-hugeicons-rocket-02',
+    metrics: [{ label: 'Setup complete', value: '63%', note: '5 of 8 steps' }, { label: 'Imported contacts', value: '1,248', note: 'All mapped' }, { label: 'Sender health', value: 'Ready', note: 'SPF and DKIM pass' }],
+    records: [{ name: 'Create Sunday Paper Co.', detail: 'Workspace and owner configured', status: 'Complete', value: '1 min' }, { name: 'Verify sending domain', detail: 'sundaypaper.co', status: 'Complete', value: '4 min' }, { name: 'Send first welcome', detail: 'Review content and audience', status: 'Next', value: '8 min' }],
+    checklist: [{ label: 'Double opt-in', detail: 'Required by default for new email contacts', state: 'On' }, { label: 'SMS consent', detail: 'Explicit written consent is required', state: 'On' }, { label: 'Quiet hours', detail: 'Recipient timezone enforcement', state: 'On' }],
+  },
+  segments: {
+    eyebrow: 'Audience intelligence', title: 'Find the people behind the pattern.', description: 'Build explainable segments from consent, engagement, properties, purchases, and publication activity.', primary: 'Create segment', icon: 'i-hugeicons-filter-horizontal',
+    metrics: [{ label: 'Active segments', value: '18', note: '7 dynamic' }, { label: 'Marketable people', value: '24,816', note: '+8.2% this month' }, { label: 'Last evaluation', value: '2 min', note: 'All rules healthy' }],
+    records: [{ name: 'High-intent readers', detail: 'Opened 3 sends and viewed pricing', status: 'Live', value: '2,406' }, { name: 'First purchase, 30 days', detail: 'Order count equals one', status: 'Live', value: '864' }, { name: 'Needs re-consent', detail: 'Policy version before 2026.2', status: 'Review', value: '218' }],
+    checklist: [{ label: 'Rule preview', detail: 'Estimated before every save', state: 'Ready' }, { label: 'Consent filter', detail: 'Suppression always takes precedence', state: 'Locked' }, { label: 'Evaluation queue', detail: 'Median run time 18 seconds', state: 'Healthy' }],
+  },
+  editor: {
+    eyebrow: 'Message studio', title: 'Shape one story for every screen.', description: 'Compose reusable blocks, conditional sections, personalization fallbacks, and plain-text output with revision history.', primary: 'New draft', icon: 'i-hugeicons-edit-02',
+    metrics: [{ label: 'Reusable blocks', value: '34', note: '8 shared' }, { label: 'Templates', value: '12', note: '4 channels' }, { label: 'Draft revisions', value: '186', note: '30-day history' }],
+    records: [{ name: 'Sunday Dispatch', detail: 'Email with product block', status: 'Editing', value: 'v18' }, { name: 'Back in stock', detail: 'SMS and email pair', status: 'Ready', value: 'v7' }, { name: 'Member welcome', detail: 'Conditional paid content', status: 'Approved', value: 'v12' }],
+    checklist: [{ label: 'Responsive preview', detail: 'Desktop and mobile canvases', state: 'Ready' }, { label: 'Plain-text output', detail: 'Generated and reviewed', state: 'Ready' }, { label: 'Human approval', detail: 'Required for AI-assisted copy', state: 'On' }],
+  },
+  sites: {
+    eyebrow: 'Sites', title: 'Every publication deserves a true address.', description: 'Manage native Stacks sites, customer domains, TLS, redirects, menus, and isolated draft rendering.', primary: 'Create site', icon: 'i-hugeicons-web-design-02',
+    metrics: [{ label: 'Live sites', value: '3', note: '2 custom domains' }, { label: 'TLS coverage', value: '100%', note: 'Auto-renewing' }, { label: 'Redirect health', value: '99.9%', note: 'No loops found' }],
+    records: [{ name: 'Sunday Paper', detail: 'sundaypaper.co', status: 'Live', value: 'Primary' }, { name: 'Field Notes', detail: 'notes.sundaypaper.co', status: 'Live', value: 'Subdomain' }, { name: 'Spring launch', detail: 'Preview is team-only', status: 'Draft', value: 'Private' }],
+    checklist: [{ label: 'Draft isolation', detail: 'Anonymous requests cannot resolve drafts', state: 'Locked' }, { label: 'Certificate renewal', detail: '42 days remaining', state: 'Healthy' }, { label: 'Canonical URLs', detail: 'All pages resolve one origin', state: 'Ready' }],
+  },
+  forms: {
+    eyebrow: 'Forms and conversion', title: 'Make every signup feel like an invitation.', description: 'Create accessible forms, landing pages, link pages, and gated resources with consent proof attached.', primary: 'Build form', icon: 'i-hugeicons-note-add',
+    metrics: [{ label: 'Form views', value: '38,412', note: '+14.7%' }, { label: 'Completion rate', value: '42.8%', note: '+3.1 points' }, { label: 'Confirmed signups', value: '4,906', note: '92.4% confirmed' }],
+    records: [{ name: 'Field Notes signup', detail: 'Homepage embedded form', status: 'Live', value: '48.2%' }, { name: 'Spring collection waitlist', detail: 'Standalone landing page', status: 'Live', value: '39.4%' }, { name: 'Studio pricing guide', detail: 'Gated PDF resource', status: 'Draft', value: 'Preview' }],
+    checklist: [{ label: 'Proof capture', detail: 'IP metadata, policy, source, and purpose', state: 'On' }, { label: 'Double opt-in', detail: 'Confirmation expires in 48 hours', state: 'On' }, { label: 'Rate limits', detail: 'Adaptive abuse protection', state: 'Healthy' }],
+  },
+  publications: {
+    eyebrow: 'Publishing', title: 'Publish the archive people return to.', description: 'Run newsletters, blogs, gated posts, podcasts, feeds, menus, revisions, and scheduled releases together.', primary: 'Create post', icon: 'i-hugeicons-news-01',
+    metrics: [{ label: 'Published posts', value: '148', note: '12 member-only' }, { label: 'Paid members', value: '2,184', note: '+9.6%' }, { label: 'Feed subscribers', value: '8,942', note: 'RSS and podcast' }],
+    records: [{ name: 'A practice worth keeping', detail: 'Sunday Paper, issue 148', status: 'Scheduled', value: 'Aug 18' }, { name: 'Reader desk tours', detail: 'Paid member edition', status: 'Draft', value: 'v6' }, { name: 'Studio Notes 24', detail: 'Podcast episode and transcript', status: 'Live', value: '42 min' }],
+    checklist: [{ label: 'Revision history', detail: 'Every publish creates an immutable revision', state: 'Ready' }, { label: 'RSS-to-send', detail: 'Approval required before campaign creation', state: 'On' }, { label: 'SEO checks', detail: 'Metadata and social preview complete', state: 'Ready' }],
+  },
+  commerce: {
+    eyebrow: 'Commerce marketing', title: 'Turn store moments into thoughtful follow-up.', description: 'Normalize carts, purchases, subscriptions, and product activity before attribution or automation runs.', primary: 'Connect store', icon: 'i-hugeicons-shopping-bag-02',
+    metrics: [{ label: 'Attributed revenue', value: '$84,620', note: '+12.7%' }, { label: 'Recovered carts', value: '318', note: '$26,418 recovered' }, { label: 'Commerce events', value: '1.8M', note: 'No duplicates' }],
+    records: [{ name: 'Primary Shopify store', detail: 'Orders, carts, products, customers', status: 'Healthy', value: 'Live' }, { name: 'Stripe subscriptions', detail: 'Plans and invoice activity', status: 'Healthy', value: 'Live' }, { name: 'Wholesale CSV', detail: 'Nightly signed import', status: 'Review', value: '2 rows' }],
+    checklist: [{ label: 'Signature checks', detail: 'Every provider webhook is verified', state: 'Locked' }, { label: 'Event ledger', detail: 'Immutable normalized events', state: 'Healthy' }, { label: 'Replay safety', detail: 'Idempotency keys retained', state: 'On' }],
+  },
+  monetization: {
+    eyebrow: 'Monetization', title: 'Earn without losing the reader’s trust.', description: 'Manage paid publications, referrals, recommendations, sponsors, inventory, commissions, and payouts clearly.', primary: 'Create offer', icon: 'i-hugeicons-money-receive-circle',
+    metrics: [{ label: 'Net earnings', value: '$31,842', note: 'This month' }, { label: 'Sponsor fill rate', value: '72%', note: '+8 points' }, { label: 'Referral earnings', value: '$4,218', note: '1,684 conversions' }],
+    records: [{ name: 'Studio Supply Co.', detail: 'Primary newsletter placement', status: 'Approved', value: '$4,800' }, { name: 'Field Guide exchange', detail: 'Recommendation partnership', status: 'Live', value: '$1.80 CPA' }, { name: 'August creator payout', detail: 'ACH account ending 1842', status: 'Scheduled', value: '$18,406' }],
+    checklist: [{ label: 'Disclosure copy', detail: 'Present on every sponsored placement', state: 'Ready' }, { label: 'Commission ledger', detail: 'Append-only accounting entries', state: 'Locked' }, { label: 'Payout review', detail: 'Owner approval is required', state: 'On' }],
+  },
+  analytics: {
+    eyebrow: 'First-party analytics', title: 'See the path from attention to revenue.', description: 'Measure acquisition, engagement, automations, referrals, cohorts, retention, attribution, and lifetime value.', primary: 'Create report', icon: 'i-hugeicons-chart-line-data-02',
+    metrics: [{ label: 'Known visitors', value: '68.4%', note: '+4.2 points' }, { label: '30-day retention', value: '71.2%', note: '+2.8 points' }, { label: 'Reader LTV', value: '$48.20', note: '+$6.14' }],
+    records: [{ name: 'Organic publication', detail: 'Search, direct, and RSS', status: 'Leading', value: '$28,412' }, { name: 'Reader referrals', detail: 'Verified recommendation links', status: 'Growing', value: '$18,920' }, { name: 'Commerce recovery', detail: 'Cart and win-back journeys', status: 'Efficient', value: '8.4x ROAS' }],
+    checklist: [{ label: 'Attribution model', detail: 'First-party position based', state: 'Active' }, { label: 'Bot filtering', detail: 'Known agents and abnormal events removed', state: 'Healthy' }, { label: 'Export controls', detail: 'Workspace permissions required', state: 'Locked' }],
+  },
+  integrations: {
+    eyebrow: 'Integrations', title: 'Connect the systems that carry the work.', description: 'Manage mail, SMS, commerce, billing, AI, and customer webhooks with encrypted credentials and diagnostics.', primary: 'Add integration', icon: 'i-hugeicons-plug-socket',
+    metrics: [{ label: 'Connected services', value: '7', note: 'All owned or native' }, { label: 'Webhook success', value: '99.98%', note: 'Last 7 days' }, { label: 'Pending replays', value: '0', note: 'Queue is clear' }],
+    records: [{ name: 'CommsHQ Mail', detail: 'SMTP, bounces, complaints, DKIM', status: 'Healthy', value: '12 ms' }, { name: 'Twilio messaging', detail: 'Outbound, inbound, delivery status', status: 'Healthy', value: '86 ms' }, { name: 'AWS Bedrock', detail: 'Draft assistance with provenance', status: 'Healthy', value: '420 ms' }],
+    checklist: [{ label: 'Credential encryption', detail: 'Application keys protect every secret', state: 'Locked' }, { label: 'Webhook signatures', detail: 'Provider-specific validation enabled', state: 'On' }, { label: 'Failure replay', detail: 'Deduplicated manual replay available', state: 'Ready' }],
+  },
+  billing: {
+    eyebrow: 'Billing and usage', title: 'Know what you use before the invoice arrives.', description: 'Review plan entitlements, contact and delivery usage, SMS costs, AI costs, platform fees, and overages.', primary: 'Manage plan', icon: 'i-hugeicons-credit-card',
+    metrics: [{ label: 'Current plan', value: 'Business', note: '$99 monthly' }, { label: 'Email usage', value: '84,219', note: '34% of 250,000' }, { label: 'Contacts', value: '24,816', note: '99% of 25,000' }],
+    records: [{ name: 'Business subscription', detail: 'Renews September 1', status: 'Active', value: '$99.00' }, { name: 'SMS carrier usage', detail: 'Twilio cost plus 15 percent', status: 'Metered', value: '$84.18' }, { name: 'Bedrock generation', detail: '612 of 5,000 generations', status: 'Metered', value: '$9.42' }],
+    checklist: [{ label: 'Usage alerts', detail: 'Notify at 75, 90, and 100 percent', state: 'On' }, { label: 'Invoice delivery', detail: 'billing@sundaypaper.co', state: 'Ready' }, { label: 'Payment method', detail: 'Visa ending 4242', state: 'Healthy' }],
+  },
+  domains: {
+    eyebrow: 'Domains', title: 'Make every address unmistakably yours.', description: 'Verify publication and sender domains, review DNS, issue TLS, and protect reputation without exposing server administration.', primary: 'Add domain', icon: 'i-hugeicons-global',
+    metrics: [{ label: 'Verified domains', value: '4', note: '2 sending, 2 web' }, { label: 'TLS status', value: 'Healthy', note: 'Auto-renewing' }, { label: 'DNS checks', value: '12/12', note: 'All records pass' }],
+    records: [{ name: 'sundaypaper.co', detail: 'Publication and email', status: 'Verified', value: 'Primary' }, { name: 'notes.sundaypaper.co', detail: 'Publication domain', status: 'Verified', value: 'TLS active' }, { name: 'mail.sundaypaper.co', detail: 'Return path and tracking', status: 'Verified', value: 'Aligned' }],
+    checklist: [{ label: 'SPF alignment', detail: 'Strict alignment is active', state: 'Pass' }, { label: 'DKIM signature', detail: '2048-bit key is current', state: 'Pass' }, { label: 'DMARC policy', detail: 'Reject with aggregate reporting', state: 'Pass' }],
+  },
+  senders: {
+    eyebrow: 'Senders', title: 'Protect the name behind every message.', description: 'Manage identities, addresses, domains, authentication, reputation, bounce rates, complaint rates, and test sends.', primary: 'Add sender', icon: 'i-hugeicons-mail-validation-01',
+    metrics: [{ label: 'Verified senders', value: '6', note: 'Across 2 domains' }, { label: 'Bounce rate', value: '0.24%', note: 'Within target' }, { label: 'Complaint rate', value: '0.018%', note: 'Within target' }],
+    records: [{ name: 'Maya from Sunday Paper', detail: 'maya@sundaypaper.co', status: 'Primary', value: 'Healthy' }, { name: 'Sunday Paper Updates', detail: 'hello@sundaypaper.co', status: 'Verified', value: 'Healthy' }, { name: 'Support', detail: 'support@sundaypaper.co', status: 'Transactional', value: 'Healthy' }],
+    checklist: [{ label: 'Authentication', detail: 'SPF, DKIM, and DMARC aligned', state: 'Pass' }, { label: 'Suppression sync', detail: 'Bounces and complaints are current', state: 'Healthy' }, { label: 'Test inboxes', detail: 'Seed-list checks completed today', state: 'Ready' }],
+  },
+  teams: {
+    eyebrow: 'Team and access', title: 'Give every collaborator the right room to work.', description: 'Manage workspace members, roles, invitations, gates, approvals, active sessions, and auditable administration.', primary: 'Invite member', icon: 'i-hugeicons-shield-user',
+    metrics: [{ label: 'Active members', value: '7', note: '3 seats available' }, { label: 'Pending invites', value: '2', note: 'Expire in 4 days' }, { label: 'Protected actions', value: '14', note: 'Owner approval' }],
+    records: [{ name: 'Maya Alvarez', detail: 'Owner, all permissions', status: 'Active', value: 'Now' }, { name: 'Elliot Chen', detail: 'Marketing and automations', status: 'Active', value: '18 min' }, { name: 'Priya Shah', detail: 'Publishing and analytics', status: 'Active', value: '2 hr' }],
+    checklist: [{ label: 'Multi-factor auth', detail: 'Required for owners and administrators', state: 'On' }, { label: 'Session review', detail: 'No unrecognized sessions', state: 'Healthy' }, { label: 'Audit trail', detail: 'Admin actions are append-only', state: 'Locked' }],
+  },
+  settings: {
+    eyebrow: 'Workspace settings', title: 'Set the defaults that keep work consistent.', description: 'Configure identity, locale, compliance, approvals, retention, AI quotas, notifications, and workspace ownership.', primary: 'Save settings', icon: 'i-hugeicons-settings-02',
+    metrics: [{ label: 'Configuration health', value: '98%', note: '1 recommendation' }, { label: 'Policy version', value: '2026.2', note: 'Current' }, { label: 'Retention rules', value: '6', note: 'All active' }],
+    records: [{ name: 'Workspace identity', detail: 'Sunday Paper Co., America/Los_Angeles', status: 'Complete', value: 'US' }, { name: 'Consent defaults', detail: 'Double opt-in and written SMS consent', status: 'Strict', value: 'Global' }, { name: 'AI publishing policy', detail: 'Human approval required', status: 'Enabled', value: 'All channels' }],
+    checklist: [{ label: 'Data minimization', detail: 'Unused metadata expires automatically', state: 'On' }, { label: 'Approval policy', detail: 'AI and high-risk sends require review', state: 'On' }, { label: 'Owner recovery', detail: 'Recovery contacts are verified', state: 'Ready' }],
+  },
+}
+
+const page = pages[area] || pages.onboarding
+</script>
+
+<script client>
+const viewState = state('populated')
+</script>
+
+<main class="min-h-screen bg-[#f6f3ee] px-4 py-5 text-[#171916] dark:bg-[#111210] dark:text-[#f5f2ec] sm:px-6 lg:px-9 lg:py-8">
+  <div class="mx-auto max-w-[1500px]">
+    <header class="flex flex-col gap-6 border-b border-[#171916]/10 pb-7 dark:border-white/10 lg:flex-row lg:items-end lg:justify-between">
+      <div class="max-w-4xl">
+        <p class="mb-2 text-[11px] font-bold uppercase tracking-[0.2em] text-[#e65743]">{{ page.eyebrow }}</p>
+        <h1 class="text-balance text-3xl font-semibold tracking-[-0.04em] sm:text-4xl">{{ page.title }}</h1>
+        <p class="mt-3 max-w-2xl text-sm leading-6 text-[#686b65] dark:text-[#aaa9a3]">{{ page.description }}</p>
+      </div>
+      <button type="button" class="inline-flex min-h-11 shrink-0 items-center justify-center gap-2 rounded-full bg-[#e65743] px-5 text-sm font-bold text-white shadow-[0_8px_24px_rgba(230,87,67,0.18)] transition-transform hover:-translate-y-0.5 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#e65743]">
+        <span aria-hidden="true" class="h-4 w-4 {{ page.icon }}"></span>{{ page.primary }}
+      </button>
+    </header>
+
+    <section class="py-7" aria-labelledby="overview-title">
+      <div class="mb-4 flex flex-wrap items-center justify-between gap-3">
+        <h2 id="overview-title" class="text-sm font-bold">Workspace overview</h2>
+        <div class="flex flex-wrap rounded-full border border-[#171916]/10 bg-white/70 p-1 text-[11px] font-bold dark:border-white/10 dark:bg-white/5" aria-label="Preview interface states">
+          @foreach([{ key: 'populated', label: 'Live' }, { key: 'loading', label: 'Loading' }, { key: 'empty', label: 'Empty' }, { key: 'error', label: 'Error' }] as stateOption)
+            <button type="button" @click="viewState.set('{{ stateOption.key }}')" class="min-h-8 rounded-full px-3" :class="viewState() === '{{ stateOption.key }}' ? 'bg-[#1c201b] text-white dark:bg-white dark:text-[#171916]' : 'text-[#6c6f68] dark:text-[#aaa9a3]'">{{ stateOption.label }}</button>
+          @endforeach
+        </div>
+      </div>
+
+      <div :if="viewState() === 'loading'" role="status" aria-live="polite" class="grid gap-3 sm:grid-cols-3">
+        @foreach([1, 2, 3] as placeholder)
+          <div class="min-h-32 animate-pulse rounded-[1.4rem] border border-[#171916]/10 bg-white/60 p-5 dark:border-white/10 dark:bg-white/5"><span class="block h-3 w-24 rounded bg-black/10 dark:bg-white/10"></span><span class="mt-7 block h-8 w-32 rounded bg-black/10 dark:bg-white/10"></span></div>
+        @endforeach
+        <span class="sr-only">Loading workspace data</span>
+      </div>
+      <div :if="viewState() === 'empty'" class="rounded-[1.6rem] border border-dashed border-[#171916]/20 bg-white/60 px-6 py-16 text-center dark:border-white/20 dark:bg-white/[0.03]">
+        <span aria-hidden="true" class="mx-auto block h-8 w-8 text-[#e65743] {{ page.icon }}"></span><h3 class="mt-4 text-lg font-bold">Nothing here yet</h3><p class="mx-auto mt-2 max-w-md text-sm text-[#6c6f68] dark:text-[#aaa9a3]">Create the first record or connect a source. CommsHQ will keep this space useful as activity arrives.</p>
+      </div>
+      <div :if="viewState() === 'error'" role="alert" class="rounded-[1.6rem] border border-[#efb1a5] bg-[#fff0eb] px-6 py-12 text-center text-[#8f3025] dark:border-[#e65743]/30 dark:bg-[#e65743]/10 dark:text-[#ffab9a]">
+        <span aria-hidden="true" class="mx-auto block h-8 w-8 i-hugeicons-alert-02"></span><h3 class="mt-4 text-lg font-bold">This view could not be refreshed</h3><p class="mx-auto mt-2 max-w-md text-sm">Your last known data is safe. Retry when the connection is available.</p><button type="button" @click="viewState.set('populated')" class="mt-5 min-h-10 rounded-full border border-current px-4 text-xs font-bold">Retry</button>
+      </div>
+      <div :if="viewState() === 'populated'" class="grid gap-3 sm:grid-cols-3">
+        @foreach(page.metrics as metric)
+          <article class="rounded-[1.4rem] border border-[#171916]/10 bg-white/75 p-5 shadow-[0_1px_0_rgba(23,25,22,0.04)] dark:border-white/10 dark:bg-white/[0.04]"><p class="text-xs text-[#6c6f68] dark:text-[#aaa9a3]">{{ metric.label }}</p><p class="mt-5 text-3xl font-semibold tracking-[-0.04em]">{{ metric.value }}</p><p class="mt-2 text-xs font-bold text-[#4f7538] dark:text-[#acd294]">{{ metric.note }}</p></article>
+        @endforeach
+      </div>
+    </section>
+
+    <div :if="viewState() === 'populated'" class="grid gap-5 xl:grid-cols-[1.4fr_0.8fr]">
+      <section class="overflow-hidden rounded-[1.6rem] border border-[#171916]/10 bg-white/80 dark:border-white/10 dark:bg-white/[0.04]" aria-labelledby="records-title">
+        <div class="flex items-center justify-between border-b border-[#171916]/10 px-5 py-4 dark:border-white/10"><h2 id="records-title" class="text-sm font-bold">Active work</h2><button type="button" aria-label="Filter records" class="rounded-full p-2 text-[#6c6f68] hover:bg-black/5 dark:text-[#aaa9a3] dark:hover:bg-white/10"><span aria-hidden="true" class="block h-4 w-4 i-hugeicons-filter-horizontal"></span></button></div>
+        <div class="divide-y divide-[#171916]/8 dark:divide-white/8">
+          @foreach(page.records as record)
+            <article class="grid gap-4 px-5 py-5 sm:grid-cols-[1fr_auto] sm:items-center"><div><div class="flex flex-wrap items-center gap-2"><h3 class="text-sm font-bold">{{ record.name }}</h3><span class="rounded-full bg-[#eef5e8] px-2 py-1 text-[10px] font-bold text-[#466833] dark:bg-[#75a65a]/15 dark:text-[#acd294]">{{ record.status }}</span></div><p class="mt-1 text-xs leading-5 text-[#6c6f68] dark:text-[#aaa9a3]">{{ record.detail }}</p></div><p class="text-sm font-bold">{{ record.value }}</p></article>
+          @endforeach
+        </div>
+      </section>
+
+      <aside class="rounded-[1.6rem] bg-[#1c201b] p-6 text-white shadow-[0_22px_70px_rgba(23,25,22,0.12)]" aria-labelledby="checks-title">
+        <div class="flex items-center justify-between"><h2 id="checks-title" class="text-sm font-bold">Readiness checks</h2><span aria-hidden="true" class="h-5 w-5 text-[#ff8c79] i-hugeicons-shield-02"></span></div>
+        <div class="mt-5 space-y-1">
+          @foreach(page.checklist as check)
+            <div class="border-b border-white/10 py-4 last:border-0"><div class="flex items-start justify-between gap-4"><p class="text-sm font-bold">{{ check.label }}</p><span class="rounded-full bg-white/10 px-2 py-1 text-[10px] font-bold text-[#bfe2ab]">{{ check.state }}</span></div><p class="mt-1 text-xs leading-5 text-white/55">{{ check.detail }}</p></div>
+          @endforeach
+        </div>
+      </aside>
+    </div>
+  </div>
+</main>

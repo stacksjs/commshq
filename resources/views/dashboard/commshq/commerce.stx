@@ -1,0 +1,6 @@
+@extends('layouts/default')
+
+@section('content')
+@title('CommsHQ - Commerce')
+<WorkspaceSurface area="commerce" />
+@endsection

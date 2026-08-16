@@ -1,0 +1,66 @@
+<script server>
+export const performance = [
+  { label: 'New contacts', value: '1,284', change: '+18.4%', icon: 'i-hugeicons-user-add-02' },
+  { label: 'Messages delivered', value: '84,219', change: '99.1%', icon: 'i-hugeicons-mail-open-02' },
+  { label: 'Attributed revenue', value: '$18,460', change: '+12.7%', icon: 'i-hugeicons-money-receive-circle' },
+  { label: 'Active journeys', value: '12', change: '3 need review', icon: 'i-hugeicons-workflow-square-06' },
+]
+
+export const activity = [
+  { icon: 'i-hugeicons-mail-send-02', title: 'Sunday Dispatch completed', detail: '38,402 delivered, 51.8% unique opens', time: '18 min ago' },
+  { icon: 'i-hugeicons-shopping-bag-02', title: 'Cart recovery converted', detail: 'Order #4821, $186 attributed revenue', time: '42 min ago' },
+  { icon: 'i-hugeicons-user-add-02', title: 'Field Notes gained 84 readers', detail: 'Referral loop supplied 31%', time: '2 hr ago' },
+  { icon: 'i-hugeicons-alert-02', title: 'Sender domain check needs attention', detail: 'DKIM rotation expires in 6 days', time: '4 hr ago' },
+]
+</script>
+
+<main class="min-h-screen bg-[#f6f3ee] px-4 py-5 text-[#171916] dark:bg-[#111210] dark:text-[#f5f2ec] sm:px-6 lg:px-9 lg:py-8">
+  <div class="mx-auto max-w-[1500px]">
+    <header class="flex flex-col gap-5 border-b border-[#171916]/10 pb-7 dark:border-white/10 lg:flex-row lg:items-end lg:justify-between">
+      <div>
+        <p class="mb-2 text-[11px] font-bold uppercase tracking-[0.2em] text-[#e65743]">Sunday Paper Co.</p>
+        <h1 class="max-w-3xl text-3xl font-semibold tracking-[-0.04em] sm:text-4xl">Your audience is growing. Three moments need your attention.</h1>
+      </div>
+      <div class="flex flex-wrap gap-2">
+        <a href="/commshq/campaigns" class="inline-flex min-h-11 items-center gap-2 rounded-full bg-[#e65743] px-5 text-sm font-bold text-white shadow-[0_8px_24px_rgba(230,87,67,0.2)] transition hover:bg-[#cb4432] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#e65743]"><span class="h-4 w-4 i-hugeicons-add-01"></span>Create campaign</a>
+        <a href="/commshq/automations" class="inline-flex min-h-11 items-center gap-2 rounded-full border border-[#171916]/15 bg-white/60 px-5 text-sm font-bold transition hover:bg-white dark:border-white/15 dark:bg-white/5 dark:hover:bg-white/10"><span class="h-4 w-4 i-hugeicons-workflow-square-06"></span>Build journey</a>
+      </div>
+    </header>
+
+    <section aria-labelledby="pulse-title" class="py-7">
+      <div class="mb-4 flex items-center justify-between"><h2 id="pulse-title" class="text-sm font-bold">Workspace pulse</h2><span class="text-xs text-[#6c6f68] dark:text-[#aaa9a3]">Last 30 days</span></div>
+      <div class="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+        @foreach(performance as item)
+          <article class="group rounded-[1.4rem] border border-[#171916]/10 bg-white/75 p-5 shadow-[0_1px_0_rgba(23,25,22,0.04)] transition hover:-translate-y-0.5 hover:shadow-[0_18px_45px_rgba(35,28,22,0.08)] dark:border-white/10 dark:bg-white/[0.04]">
+            <div class="mb-6 flex items-center justify-between"><span class="grid h-9 w-9 place-items-center rounded-full bg-[#fce5df] text-[#bd3e2e] dark:bg-[#e65743]/15 dark:text-[#ff8c79]"><span class="h-[18px] w-[18px] {{ item.icon }}"></span></span><span class="rounded-full bg-[#eef5e8] px-2.5 py-1 text-[11px] font-bold text-[#42652e] dark:bg-[#75a65a]/15 dark:text-[#a8d28e]">{{ item.change }}</span></div>
+            <p class="text-3xl font-semibold tracking-[-0.04em]">{{ item.value }}</p><p class="mt-1 text-sm text-[#6c6f68] dark:text-[#aaa9a3]">{{ item.label }}</p>
+          </article>
+        @endforeach
+      </div>
+    </section>
+
+    <div class="grid gap-5 xl:grid-cols-[1.45fr_0.75fr]">
+      <section aria-labelledby="growth-title" class="overflow-hidden rounded-[1.6rem] border border-[#171916]/10 bg-[#1c201b] p-6 text-white shadow-[0_22px_70px_rgba(23,25,22,0.14)] sm:p-8">
+        <div class="mb-8 flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between"><div><p class="text-[11px] font-bold uppercase tracking-[0.18em] text-[#ff8c79]">Growth line</p><h2 id="growth-title" class="mt-2 text-2xl font-semibold tracking-[-0.03em]">Readers are compounding</h2></div><p class="max-w-xs text-sm leading-6 text-white/60">Organic, referral, and commerce sources reconciled from first-party events.</p></div>
+        <div class="grid h-56 grid-cols-12 items-end gap-2" aria-label="Weekly net audience growth">
+          @foreach([28,34,31,42,46,53,49,61,66,71,78,86] as height)
+            <div class="group relative flex h-full items-end"><div class="w-full rounded-t-md bg-gradient-to-t from-[#e65743] to-[#ff9b85] transition group-hover:brightness-110" style="height: {{ height }}%"></div></div>
+          @endforeach
+        </div>
+        <div class="mt-3 flex justify-between text-[11px] uppercase tracking-[0.14em] text-white/45"><span>May 25</span><span>Aug 16</span></div>
+      </section>
+
+      <section aria-labelledby="activity-title" class="rounded-[1.6rem] border border-[#171916]/10 bg-white/75 p-6 dark:border-white/10 dark:bg-white/[0.04] sm:p-7">
+        <div class="mb-5 flex items-center justify-between"><h2 id="activity-title" class="text-lg font-semibold">Live activity</h2><a href="/analytics/marketing" class="text-xs font-bold text-[#bd3e2e] hover:underline dark:text-[#ff8c79]">View analytics</a></div>
+        <div class="space-y-1">
+          @foreach(activity as item)
+            <article class="grid grid-cols-[36px_1fr] gap-3 border-b border-[#171916]/8 py-4 last:border-0 dark:border-white/8">
+              <span class="grid h-9 w-9 place-items-center rounded-full bg-[#f4eee5] text-[#554f48] dark:bg-white/8 dark:text-white/70"><span class="h-4 w-4 {{ item.icon }}"></span></span>
+              <div><div class="flex items-start justify-between gap-3"><h3 class="text-sm font-bold">{{ item.title }}</h3><time class="shrink-0 text-[10px] text-[#85877f]">{{ item.time }}</time></div><p class="mt-1 text-xs leading-5 text-[#6c6f68] dark:text-[#aaa9a3]">{{ item.detail }}</p></div>
+            </article>
+          @endforeach
+        </div>
+      </section>
+    </div>
+  </div>
+</main>

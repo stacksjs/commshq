@@ -1,0 +1,6 @@
+@extends('layouts/default')
+
+@section('content')
+@title('CommsHQ - Monetization')
+<WorkspaceSurface area="monetization" />
+@endsection
