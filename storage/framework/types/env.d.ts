@@ -58,6 +58,10 @@ declare module 'bun' {
     const BROADCAST_REDIS_ENABLED: string
     const BROADCAST_REDIS_PREFIX: string
     const BROADCAST_SCHEME: string
+    const CACHE_DRIVER: string
+    const CACHE_PREFIX: string
+    const COMMSHQ_OWNER_EMAIL: string
+    const COMMSHQ_OWNER_PASSWORD: string
     const CONNECT_INSTANCE_ALIAS: string
     const DATABASE_URL: string
     const DB_CONNECTION: 'mysql' | 'sqlite' | 'postgres' | 'singlestore' | 'vitess' | 'dynamodb'
@@ -93,7 +97,9 @@ declare module 'bun' {
     const FRONTEND_APP_ENV: 'development' | 'staging' | 'production'
     const FRONTEND_APP_URL: string
     const FRONTEND_STRIPE_PUBLIC_KEY: string
+    const HCLOUD_TOKEN: string
     const LETSENCRYPT_EMAIL: string
+    const MAIL_DKIM_PUBLIC_KEY: string
     const MAIL_DOMAIN: string
     const MAIL_DRIVER: string
     const MAIL_ENCRYPTION: string
@@ -108,8 +114,11 @@ declare module 'bun' {
     const MAIL_USERNAME: string
     const MEILISEARCH_HOST: string
     const MEILISEARCH_KEY: string
+    const NODE_ENV: string
     const PHONE_FORWARD_NUMBER: string
     const PHONE_NOTIFY_EMAIL: string
+    const PORKBUN_API_KEY: string
+    const PORKBUN_SECRET_KEY: string
     const PORT: number
     const PORT_ADMIN: string
     const PORT_API: string
@@ -127,24 +136,38 @@ declare module 'bun' {
     const PUSHER_APP_SECRET: string
     const PUSHER_APP_USE_TLS: string
     const QUEUE_CONCURRENCY: number
+    const QUEUE_DLQ_ENABLED: string
+    const QUEUE_DLQ_MAX_RETRIES: string
     const QUEUE_DRIVER: string
     const QUEUE_FAILED_DRIVER: string
     const QUEUE_LOG_LEVEL: string
     const QUEUE_PREFIX: string
     const QUEUE_WORKER_CONCURRENCY: number
     const REALTIME_MODE: string
+    const REDIS_DB: string
     const REDIS_HOST: string
     const REDIS_PASSWORD: string
     const REDIS_PORT: string
+    const REDIS_TLS: string
+    const REDIS_URL: string
+    const REDIS_USERNAME: string
     const SEARCH_ENGINE_DRIVER: 'opensearch' | 'meilisearch' | 'algolia' | 'typesense'
+    const SMS_FROM_NUMBER: string
     const SSL_DOMAINS: string
     const STORAGE_DRIVER: string
     const STORAGE_PUBLIC_URL: string
     const STORAGE_ROOT: string
     const STRIPE_PUBLISHABLE_KEY: string
     const STRIPE_SECRET_KEY: string
+    const STRIPE_WEBHOOK_SECRET: string
     const SUDO_PASSWORD: string
     const TS_CLOUD_UI_PASSWORD: string
+    const TS_CLOUD_UI_USERNAME: string
+    const TWILIO_ACCOUNT_SID: string
+    const TWILIO_AUTH_TOKEN: string
+    const TWILIO_FROM_NUMBER: string
+    const TWILIO_MESSAGING_SERVICE_SID: string
+    const TWILIO_VERIFY_SERVICE_SID: string
   }
 }
 
@@ -161,17 +184,40 @@ declare module '@stacksjs/env' {
     AWS_PROFILE: string | undefined
     AWS_URL: string | undefined
     AWS_USE_PATH_STYLE_ENDPOINT: boolean | undefined
+    CACHE_DRIVER: string | undefined
+    CACHE_PREFIX: string | undefined
+    COMMSHQ_OWNER_EMAIL: string | undefined
+    COMMSHQ_OWNER_PASSWORD: string | undefined
     DOTENV_PRIVATE_KEY: string | undefined
     DOTENV_PUBLIC_KEY: string | undefined
     FILESYSTEM_DISK: string | undefined
     FRONTEND_STRIPE_PUBLIC_KEY: string | undefined
+    HCLOUD_TOKEN: string | undefined
+    MAIL_DKIM_PUBLIC_KEY: string | undefined
+    NODE_ENV: string | undefined
+    PORKBUN_API_KEY: string | undefined
+    PORKBUN_SECRET_KEY: string | undefined
     PREDICTHQ_DB_PASSWORD: string | undefined
     QUEUE_CONCURRENCY: number | undefined
+    QUEUE_DLQ_ENABLED: string | undefined
+    QUEUE_DLQ_MAX_RETRIES: string | undefined
     QUEUE_FAILED_DRIVER: string | undefined
     QUEUE_LOG_LEVEL: string | undefined
     QUEUE_PREFIX: string | undefined
     QUEUE_WORKER_CONCURRENCY: number | undefined
+    REDIS_DB: string | undefined
+    REDIS_TLS: string | undefined
+    REDIS_URL: string | undefined
+    REDIS_USERNAME: string | undefined
+    SMS_FROM_NUMBER: string | undefined
+    STRIPE_WEBHOOK_SECRET: string | undefined
     SUDO_PASSWORD: string | undefined
     TS_CLOUD_UI_PASSWORD: string | undefined
+    TS_CLOUD_UI_USERNAME: string | undefined
+    TWILIO_ACCOUNT_SID: string | undefined
+    TWILIO_AUTH_TOKEN: string | undefined
+    TWILIO_FROM_NUMBER: string | undefined
+    TWILIO_MESSAGING_SERVICE_SID: string | undefined
+    TWILIO_VERIFY_SERVICE_SID: string | undefined
   }
 }
