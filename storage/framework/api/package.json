@@ -1,0 +1,20 @@
+{
+  "name": "stacks-api",
+  "type": "module",
+  "version": "0.70.380",
+  "scripts": {
+    "build": "bun build.ts",
+    "dev": "bun --hot run dev.ts",
+    "prod": "bun --hot run dist/dev.js"
+  },
+  "dependencies": {
+    "@stacksjs/logging": "^0.71.1",
+    "@stacksjs/queue": "^0.71.1",
+    "@stacksjs/router": "^0.71.1",
+    "@stacksjs/storage": "^0.71.1",
+    "@stacksjs/utils": "^0.71.1"
+  },
+  "workspaces": [
+    "../core/*"
+  ]
+}
