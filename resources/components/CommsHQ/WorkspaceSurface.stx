@@ -1,4 +1,4 @@
-<script>
+<script client>
 interface WorkspacePage {
   eyebrow: string
   title: string
@@ -10,11 +10,7 @@ interface WorkspacePage {
   checklist: Array<{ label: string, detail: string, state: string }>
 }
 
-interface WorkspaceSurfaceProps {
-  area: string
-}
-
-const { area } = defineProps<WorkspaceSurfaceProps>()
+const area = useReactiveProp('area', 'onboarding')
 
 const pages: Record<string, WorkspacePage> = {
   onboarding: {
@@ -109,10 +105,7 @@ const pages: Record<string, WorkspacePage> = {
   },
 }
 
-const page = pages[area] || pages.onboarding
-</script>
-
-<script client>
+const page = computed(() => pages[area()] || pages.onboarding)
 const viewState = state('populated')
 </script>
 
@@ -120,12 +113,12 @@ const viewState = state('populated')
   <div class="mx-auto max-w-[1500px]">
     <header class="flex flex-col gap-6 border-b border-[#171916]/10 pb-7 dark:border-white/10 lg:flex-row lg:items-end lg:justify-between">
       <div class="max-w-4xl">
-        <p class="mb-2 text-[11px] font-bold uppercase tracking-[0.2em] text-[#e65743]">{{ page.eyebrow }}</p>
-        <h1 class="text-balance text-3xl font-semibold tracking-[-0.04em] sm:text-4xl">{{ page.title }}</h1>
-        <p class="mt-3 max-w-2xl text-sm leading-6 text-[#686b65] dark:text-[#aaa9a3]">{{ page.description }}</p>
+        <p class="mb-2 text-[11px] font-bold uppercase tracking-[0.2em] text-[#e65743]">{{ page().eyebrow }}</p>
+        <h1 class="text-balance text-3xl font-semibold tracking-[-0.04em] sm:text-4xl">{{ page().title }}</h1>
+        <p class="mt-3 max-w-2xl text-sm leading-6 text-[#686b65] dark:text-[#aaa9a3]">{{ page().description }}</p>
       </div>
       <button type="button" class="inline-flex min-h-11 shrink-0 items-center justify-center gap-2 rounded-full bg-[#e65743] px-5 text-sm font-bold text-white shadow-[0_8px_24px_rgba(230,87,67,0.18)] transition-transform hover:-translate-y-0.5 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#e65743]">
-        <span aria-hidden="true" class="h-4 w-4 {{ page.icon }}"></span>{{ page.primary }}
+        <span aria-hidden="true" class="h-4 w-4 {{ page().icon }}"></span>{{ page().primary }}
       </button>
     </header>
 
@@ -146,13 +139,13 @@ const viewState = state('populated')
         <span class="sr-only">Loading workspace data</span>
       </div>
       <div :if="viewState() === 'empty'" class="rounded-[1.6rem] border border-dashed border-[#171916]/20 bg-white/60 px-6 py-16 text-center dark:border-white/20 dark:bg-white/[0.03]">
-        <span aria-hidden="true" class="mx-auto block h-8 w-8 text-[#e65743] {{ page.icon }}"></span><h3 class="mt-4 text-lg font-bold">Nothing here yet</h3><p class="mx-auto mt-2 max-w-md text-sm text-[#6c6f68] dark:text-[#aaa9a3]">Create the first record or connect a source. CommsHQ will keep this space useful as activity arrives.</p>
+        <span aria-hidden="true" class="mx-auto block h-8 w-8 text-[#e65743] {{ page().icon }}"></span><h3 class="mt-4 text-lg font-bold">Nothing here yet</h3><p class="mx-auto mt-2 max-w-md text-sm text-[#6c6f68] dark:text-[#aaa9a3]">Create the first record or connect a source. CommsHQ will keep this space useful as activity arrives.</p>
       </div>
       <div :if="viewState() === 'error'" role="alert" class="rounded-[1.6rem] border border-[#efb1a5] bg-[#fff0eb] px-6 py-12 text-center text-[#8f3025] dark:border-[#e65743]/30 dark:bg-[#e65743]/10 dark:text-[#ffab9a]">
         <span aria-hidden="true" class="mx-auto block h-8 w-8 i-hugeicons-alert-02"></span><h3 class="mt-4 text-lg font-bold">This view could not be refreshed</h3><p class="mx-auto mt-2 max-w-md text-sm">Your last known data is safe. Retry when the connection is available.</p><button type="button" @click="viewState.set('populated')" class="mt-5 min-h-10 rounded-full border border-current px-4 text-xs font-bold">Retry</button>
       </div>
       <div :if="viewState() === 'populated'" class="grid gap-3 sm:grid-cols-3">
-        @foreach(page.metrics as metric)
+        @foreach(page().metrics as metric)
           <article class="rounded-[1.4rem] border border-[#171916]/10 bg-white/75 p-5 shadow-[0_1px_0_rgba(23,25,22,0.04)] dark:border-white/10 dark:bg-white/[0.04]"><p class="text-xs text-[#6c6f68] dark:text-[#aaa9a3]">{{ metric.label }}</p><p class="mt-5 text-3xl font-semibold tracking-[-0.04em]">{{ metric.value }}</p><p class="mt-2 text-xs font-bold text-[#4f7538] dark:text-[#acd294]">{{ metric.note }}</p></article>
         @endforeach
       </div>
@@ -162,7 +155,7 @@ const viewState = state('populated')
       <section class="overflow-hidden rounded-[1.6rem] border border-[#171916]/10 bg-white/80 dark:border-white/10 dark:bg-white/[0.04]" aria-labelledby="records-title">
         <div class="flex items-center justify-between border-b border-[#171916]/10 px-5 py-4 dark:border-white/10"><h2 id="records-title" class="text-sm font-bold">Active work</h2><button type="button" aria-label="Filter records" class="rounded-full p-2 text-[#6c6f68] hover:bg-black/5 dark:text-[#aaa9a3] dark:hover:bg-white/10"><span aria-hidden="true" class="block h-4 w-4 i-hugeicons-filter-horizontal"></span></button></div>
         <div class="divide-y divide-[#171916]/8 dark:divide-white/8">
-          @foreach(page.records as record)
+          @foreach(page().records as record)
             <article class="grid gap-4 px-5 py-5 sm:grid-cols-[1fr_auto] sm:items-center"><div><div class="flex flex-wrap items-center gap-2"><h3 class="text-sm font-bold">{{ record.name }}</h3><span class="rounded-full bg-[#eef5e8] px-2 py-1 text-[10px] font-bold text-[#466833] dark:bg-[#75a65a]/15 dark:text-[#acd294]">{{ record.status }}</span></div><p class="mt-1 text-xs leading-5 text-[#6c6f68] dark:text-[#aaa9a3]">{{ record.detail }}</p></div><p class="text-sm font-bold">{{ record.value }}</p></article>
           @endforeach
         </div>
@@ -171,7 +164,7 @@ const viewState = state('populated')
       <aside class="rounded-[1.6rem] bg-[#1c201b] p-6 text-white shadow-[0_22px_70px_rgba(23,25,22,0.12)]" aria-labelledby="checks-title">
         <div class="flex items-center justify-between"><h2 id="checks-title" class="text-sm font-bold">Readiness checks</h2><span aria-hidden="true" class="h-5 w-5 text-[#ff8c79] i-hugeicons-shield-02"></span></div>
         <div class="mt-5 space-y-1">
-          @foreach(page.checklist as check)
+          @foreach(page().checklist as check)
             <div class="border-b border-white/10 py-4 last:border-0"><div class="flex items-start justify-between gap-4"><p class="text-sm font-bold">{{ check.label }}</p><span class="rounded-full bg-white/10 px-2 py-1 text-[10px] font-bold text-[#bfe2ab]">{{ check.state }}</span></div><p class="mt-1 text-xs leading-5 text-white/55">{{ check.detail }}</p></div>
           @endforeach
         </div>
