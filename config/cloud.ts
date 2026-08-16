@@ -50,7 +50,7 @@ export const tsCloud: TsCloudConfig = {
       redirectHttp: true,
       letsEncrypt: { email: 'postmaster@commshq.org', staging: false, autoRenew: true },
     },
-    dns: { domain },
+    dns: { provider: 'porkbun', domain },
     storage: {
       uploads: { public: false, encryption: true, versioning: true },
       assets: { public: true, encryption: true, versioning: true },
