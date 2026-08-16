@@ -536,6 +536,248 @@ export interface paths {
     patch?: never
     trace?: never
   }
+  "/api/auction-items": {
+    get: {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
+    put?: never
+    post: {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  "/api/auction-items/bulk-delete": {
+    get?: never
+    put?: never
+    post: {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  "/api/auction-items/{id}": {
+    get: {
+    parameters: {
+      query?: never
+      header?: never
+      path: { "id": string }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
+    put: {
+    parameters: {
+      query?: never
+      header?: never
+      path: { "id": string }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
+    post?: never
+    delete: {
+    parameters: {
+      query?: never
+      header?: never
+      path: { "id": string }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
+    options?: never
+    head?: never
+    patch: {
+    parameters: {
+      query?: never
+      header?: never
+      path: { "id": string }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
+    trace?: never
+  }
+  "/api/auctions": {
+    get: {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
+    put?: never
+    post: {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  "/api/auctions/bulk-delete": {
+    get?: never
+    put?: never
+    post: {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  "/api/auctions/{id}": {
+    get: {
+    parameters: {
+      query?: never
+      header?: never
+      path: { "id": string }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
+    put: {
+    parameters: {
+      query?: never
+      header?: never
+      path: { "id": string }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
+    post?: never
+    delete: {
+    parameters: {
+      query?: never
+      header?: never
+      path: { "id": string }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
+    options?: never
+    head?: never
+    patch: {
+    parameters: {
+      query?: never
+      header?: never
+      path: { "id": string }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
+    trace?: never
+  }
   "/api/authors": {
     get: {
     parameters: {
@@ -655,6 +897,219 @@ export interface paths {
       "500": { content: never }
     }
   }
+    trace?: never
+  }
+  "/api/automation-runs": {
+    get: {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
+    put?: never
+    post?: never
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  "/api/automation-runs/{id}": {
+    get: {
+    parameters: {
+      query?: never
+      header?: never
+      path: { "id": string }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
+    put?: never
+    post?: never
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  "/api/automations": {
+    get: {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
+    put?: never
+    post: {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  "/api/automations/bulk-delete": {
+    get?: never
+    put?: never
+    post: {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  "/api/automations/{id}": {
+    get: {
+    parameters: {
+      query?: never
+      header?: never
+      path: { "id": string }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
+    put: {
+    parameters: {
+      query?: never
+      header?: never
+      path: { "id": string }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
+    post?: never
+    delete: {
+    parameters: {
+      query?: never
+      header?: never
+      path: { "id": string }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
+    options?: never
+    head?: never
+    patch: {
+    parameters: {
+      query?: never
+      header?: never
+      path: { "id": string }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
+    trace?: never
+  }
+  "/api/bids": {
+    get: {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
+    put?: never
+    post?: never
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  "/api/bids/{id}": {
+    get: {
+    parameters: {
+      query?: never
+      header?: never
+      path: { "id": string }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
+    put?: never
+    post?: never
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
     trace?: never
   }
   "/api/board-columns": {
@@ -943,6 +1398,127 @@ export interface paths {
     options?: never
     head?: never
     patch?: never
+    trace?: never
+  }
+  "/api/campaign-variants": {
+    get: {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
+    put?: never
+    post: {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  "/api/campaign-variants/bulk-delete": {
+    get?: never
+    put?: never
+    post: {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  "/api/campaign-variants/{id}": {
+    get: {
+    parameters: {
+      query?: never
+      header?: never
+      path: { "id": string }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
+    put: {
+    parameters: {
+      query?: never
+      header?: never
+      path: { "id": string }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
+    post?: never
+    delete: {
+    parameters: {
+      query?: never
+      header?: never
+      path: { "id": string }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
+    options?: never
+    head?: never
+    patch: {
+    parameters: {
+      query?: never
+      header?: never
+      path: { "id": string }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
     trace?: never
   }
   "/api/campaigns": {
@@ -4012,6 +4588,147 @@ export interface paths {
       "500": { content: never }
     }
   }
+    trace?: never
+  }
+  "/api/communication-suppressions": {
+    get: {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
+    put?: never
+    post: {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  "/api/communication-suppressions/bulk-delete": {
+    get?: never
+    put?: never
+    post: {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  "/api/communication-suppressions/{id}": {
+    get: {
+    parameters: {
+      query?: never
+      header?: never
+      path: { "id": string }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
+    put?: never
+    post?: never
+    delete: {
+    parameters: {
+      query?: never
+      header?: never
+      path: { "id": string }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  "/api/consent-events": {
+    get: {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
+    put?: never
+    post?: never
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  "/api/consent-events/{id}": {
+    get: {
+    parameters: {
+      query?: never
+      header?: never
+      path: { "id": string }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
+    put?: never
+    post?: never
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
     trace?: never
   }
   "/api/contact": {
@@ -11494,6 +12211,248 @@ export interface paths {
     patch?: never
     trace?: never
   }
+  "/api/form-fields": {
+    get: {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
+    put?: never
+    post: {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  "/api/form-fields/bulk-delete": {
+    get?: never
+    put?: never
+    post: {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  "/api/form-fields/{id}": {
+    get: {
+    parameters: {
+      query?: never
+      header?: never
+      path: { "id": string }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
+    put: {
+    parameters: {
+      query?: never
+      header?: never
+      path: { "id": string }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
+    post?: never
+    delete: {
+    parameters: {
+      query?: never
+      header?: never
+      path: { "id": string }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
+    options?: never
+    head?: never
+    patch: {
+    parameters: {
+      query?: never
+      header?: never
+      path: { "id": string }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
+    trace?: never
+  }
+  "/api/forms": {
+    get: {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
+    put?: never
+    post: {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  "/api/forms/bulk-delete": {
+    get?: never
+    put?: never
+    post: {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  "/api/forms/{id}": {
+    get: {
+    parameters: {
+      query?: never
+      header?: never
+      path: { "id": string }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
+    put: {
+    parameters: {
+      query?: never
+      header?: never
+      path: { "id": string }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
+    post?: never
+    delete: {
+    parameters: {
+      query?: never
+      header?: never
+      path: { "id": string }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
+    options?: never
+    head?: never
+    patch: {
+    parameters: {
+      query?: never
+      header?: never
+      path: { "id": string }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
+    trace?: never
+  }
   "/api/gift-cards": {
     get: {
     parameters: {
@@ -11613,29 +12572,6 @@ export interface paths {
       "500": { content: never }
     }
   }
-    trace?: never
-  }
-  "/api/hello": {
-    get: {
-    parameters: {
-      query?: never
-      header?: never
-      path?: never
-      cookie?: never
-    }
-    requestBody?: never
-    responses: {
-      "200": { content: { "application/json": Record<string, unknown> } }
-      "422": { content: never }
-      "500": { content: never }
-    }
-  }
-    put?: never
-    post?: never
-    delete?: never
-    options?: never
-    head?: never
-    patch?: never
     trace?: never
   }
   "/api/labels": {
@@ -12356,6 +13292,248 @@ export interface paths {
     options?: never
     head?: never
     patch?: never
+    trace?: never
+  }
+  "/api/menu-items": {
+    get: {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
+    put?: never
+    post: {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  "/api/menu-items/bulk-delete": {
+    get?: never
+    put?: never
+    post: {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  "/api/menu-items/{id}": {
+    get: {
+    parameters: {
+      query?: never
+      header?: never
+      path: { "id": string }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
+    put: {
+    parameters: {
+      query?: never
+      header?: never
+      path: { "id": string }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
+    post?: never
+    delete: {
+    parameters: {
+      query?: never
+      header?: never
+      path: { "id": string }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
+    options?: never
+    head?: never
+    patch: {
+    parameters: {
+      query?: never
+      header?: never
+      path: { "id": string }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
+    trace?: never
+  }
+  "/api/menus": {
+    get: {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
+    put?: never
+    post: {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  "/api/menus/bulk-delete": {
+    get?: never
+    put?: never
+    post: {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  "/api/menus/{id}": {
+    get: {
+    parameters: {
+      query?: never
+      header?: never
+      path: { "id": string }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
+    put: {
+    parameters: {
+      query?: never
+      header?: never
+      path: { "id": string }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
+    post?: never
+    delete: {
+    parameters: {
+      query?: never
+      header?: never
+      path: { "id": string }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
+    options?: never
+    head?: never
+    patch: {
+    parameters: {
+      query?: never
+      header?: never
+      path: { "id": string }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
     trace?: never
   }
   "/api/monitoring/errors": {
@@ -13152,6 +14330,127 @@ export interface paths {
     trace?: never
   }
   "/api/payments/{id}": {
+    get: {
+    parameters: {
+      query?: never
+      header?: never
+      path: { "id": string }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
+    put: {
+    parameters: {
+      query?: never
+      header?: never
+      path: { "id": string }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
+    post?: never
+    delete: {
+    parameters: {
+      query?: never
+      header?: never
+      path: { "id": string }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
+    options?: never
+    head?: never
+    patch: {
+    parameters: {
+      query?: never
+      header?: never
+      path: { "id": string }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
+    trace?: never
+  }
+  "/api/pledges": {
+    get: {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
+    put?: never
+    post: {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  "/api/pledges/bulk-delete": {
+    get?: never
+    put?: never
+    post: {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  "/api/pledges/{id}": {
     get: {
     parameters: {
       query?: never
@@ -14532,6 +15831,127 @@ export interface paths {
     patch?: never
     trace?: never
   }
+  "/api/redirects": {
+    get: {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
+    put?: never
+    post: {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  "/api/redirects/bulk-delete": {
+    get?: never
+    put?: never
+    post: {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  "/api/redirects/{id}": {
+    get: {
+    parameters: {
+      query?: never
+      header?: never
+      path: { "id": string }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
+    put: {
+    parameters: {
+      query?: never
+      header?: never
+      path: { "id": string }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
+    post?: never
+    delete: {
+    parameters: {
+      query?: never
+      header?: never
+      path: { "id": string }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
+    options?: never
+    head?: never
+    patch: {
+    parameters: {
+      query?: never
+      header?: never
+      path: { "id": string }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
+    trace?: never
+  }
   "/api/releases": {
     get: {
     parameters: {
@@ -14720,6 +16140,127 @@ export interface paths {
     options?: never
     head?: never
     patch?: never
+    trace?: never
+  }
+  "/api/sender-domains": {
+    get: {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
+    put?: never
+    post: {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  "/api/sender-domains/bulk-delete": {
+    get?: never
+    put?: never
+    post: {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  "/api/sender-domains/{id}": {
+    get: {
+    parameters: {
+      query?: never
+      header?: never
+      path: { "id": string }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
+    put: {
+    parameters: {
+      query?: never
+      header?: never
+      path: { "id": string }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
+    post?: never
+    delete: {
+    parameters: {
+      query?: never
+      header?: never
+      path: { "id": string }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
+    options?: never
+    head?: never
+    patch: {
+    parameters: {
+      query?: never
+      header?: never
+      path: { "id": string }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
     trace?: never
   }
   "/api/serverless": {
@@ -15083,6 +16624,248 @@ export interface paths {
     trace?: never
   }
   "/api/shipping-zones/{id}": {
+    get: {
+    parameters: {
+      query?: never
+      header?: never
+      path: { "id": string }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
+    put: {
+    parameters: {
+      query?: never
+      header?: never
+      path: { "id": string }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
+    post?: never
+    delete: {
+    parameters: {
+      query?: never
+      header?: never
+      path: { "id": string }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
+    options?: never
+    head?: never
+    patch: {
+    parameters: {
+      query?: never
+      header?: never
+      path: { "id": string }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
+    trace?: never
+  }
+  "/api/site-domains": {
+    get: {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
+    put?: never
+    post: {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  "/api/site-domains/bulk-delete": {
+    get?: never
+    put?: never
+    post: {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  "/api/site-domains/{id}": {
+    get: {
+    parameters: {
+      query?: never
+      header?: never
+      path: { "id": string }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
+    put: {
+    parameters: {
+      query?: never
+      header?: never
+      path: { "id": string }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
+    post?: never
+    delete: {
+    parameters: {
+      query?: never
+      header?: never
+      path: { "id": string }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
+    options?: never
+    head?: never
+    patch: {
+    parameters: {
+      query?: never
+      header?: never
+      path: { "id": string }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
+    trace?: never
+  }
+  "/api/sites": {
+    get: {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
+    put?: never
+    post: {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  "/api/sites/bulk-delete": {
+    get?: never
+    put?: never
+    post: {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  "/api/sites/{id}": {
     get: {
     parameters: {
       query?: never
@@ -16165,6 +17948,52 @@ export interface paths {
   }
     trace?: never
   }
+  "/api/usage-events": {
+    get: {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
+    put?: never
+    post?: never
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  "/api/usage-events/{id}": {
+    get: {
+    parameters: {
+      query?: never
+      header?: never
+      path: { "id": string }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
+    put?: never
+    post?: never
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
   "/api/users": {
     get: {
     parameters: {
@@ -16207,6 +18036,5116 @@ export interface paths {
       query?: never
       header?: never
       path: { "id": string }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
+    put?: never
+    post?: never
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  "/api/v1/ad-inventory": {
+    get: {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
+    put?: never
+    post: {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  "/api/v1/ad-inventory/bulk-delete": {
+    get?: never
+    put?: never
+    post: {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  "/api/v1/ad-inventory/{id}": {
+    get: {
+    parameters: {
+      query?: never
+      header?: never
+      path: { "id": string }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
+    put: {
+    parameters: {
+      query?: never
+      header?: never
+      path: { "id": string }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
+    post?: never
+    delete: {
+    parameters: {
+      query?: never
+      header?: never
+      path: { "id": string }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
+    options?: never
+    head?: never
+    patch: {
+    parameters: {
+      query?: never
+      header?: never
+      path: { "id": string }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
+    trace?: never
+  }
+  "/api/v1/ad-placements": {
+    get: {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
+    put?: never
+    post: {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  "/api/v1/ad-placements/bulk-delete": {
+    get?: never
+    put?: never
+    post: {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  "/api/v1/ad-placements/{id}": {
+    get: {
+    parameters: {
+      query?: never
+      header?: never
+      path: { "id": string }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
+    put: {
+    parameters: {
+      query?: never
+      header?: never
+      path: { "id": string }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
+    post?: never
+    delete: {
+    parameters: {
+      query?: never
+      header?: never
+      path: { "id": string }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
+    options?: never
+    head?: never
+    patch: {
+    parameters: {
+      query?: never
+      header?: never
+      path: { "id": string }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
+    trace?: never
+  }
+  "/api/v1/advertiser-offers": {
+    get: {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
+    put?: never
+    post: {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  "/api/v1/advertiser-offers/bulk-delete": {
+    get?: never
+    put?: never
+    post: {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  "/api/v1/advertiser-offers/{id}": {
+    get: {
+    parameters: {
+      query?: never
+      header?: never
+      path: { "id": string }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
+    put: {
+    parameters: {
+      query?: never
+      header?: never
+      path: { "id": string }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
+    post?: never
+    delete: {
+    parameters: {
+      query?: never
+      header?: never
+      path: { "id": string }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
+    options?: never
+    head?: never
+    patch: {
+    parameters: {
+      query?: never
+      header?: never
+      path: { "id": string }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
+    trace?: never
+  }
+  "/api/v1/ai-generations": {
+    get: {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
+    put?: never
+    post?: never
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  "/api/v1/ai-generations/{id}": {
+    get: {
+    parameters: {
+      query?: never
+      header?: never
+      path: { "id": string }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
+    put?: never
+    post?: never
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  "/api/v1/attribution-events": {
+    get: {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
+    put?: never
+    post?: never
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  "/api/v1/attribution-events/{id}": {
+    get: {
+    parameters: {
+      query?: never
+      header?: never
+      path: { "id": string }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
+    put?: never
+    post?: never
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  "/api/v1/audience-exports": {
+    get: {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
+    put?: never
+    post: {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  "/api/v1/audience-exports/{id}": {
+    get: {
+    parameters: {
+      query?: never
+      header?: never
+      path: { "id": string }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
+    put?: never
+    post?: never
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  "/api/v1/audience-imports": {
+    get: {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
+    put?: never
+    post: {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  "/api/v1/audience-imports/{id}": {
+    get: {
+    parameters: {
+      query?: never
+      header?: never
+      path: { "id": string }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
+    put?: never
+    post?: never
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  "/api/v1/audience-memberships": {
+    get: {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
+    put?: never
+    post: {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  "/api/v1/audience-memberships/bulk-delete": {
+    get?: never
+    put?: never
+    post: {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  "/api/v1/audience-memberships/{id}": {
+    get: {
+    parameters: {
+      query?: never
+      header?: never
+      path: { "id": string }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
+    put?: never
+    post?: never
+    delete: {
+    parameters: {
+      query?: never
+      header?: never
+      path: { "id": string }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  "/api/v1/audience-tags": {
+    get: {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
+    put?: never
+    post: {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  "/api/v1/audience-tags/bulk-delete": {
+    get?: never
+    put?: never
+    post: {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  "/api/v1/audience-tags/{id}": {
+    get: {
+    parameters: {
+      query?: never
+      header?: never
+      path: { "id": string }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
+    put: {
+    parameters: {
+      query?: never
+      header?: never
+      path: { "id": string }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
+    post?: never
+    delete: {
+    parameters: {
+      query?: never
+      header?: never
+      path: { "id": string }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
+    options?: never
+    head?: never
+    patch: {
+    parameters: {
+      query?: never
+      header?: never
+      path: { "id": string }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
+    trace?: never
+  }
+  "/api/v1/audiences": {
+    get: {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
+    put?: never
+    post: {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  "/api/v1/audiences/bulk-delete": {
+    get?: never
+    put?: never
+    post: {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  "/api/v1/audiences/{id}": {
+    get: {
+    parameters: {
+      query?: never
+      header?: never
+      path: { "id": string }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
+    put: {
+    parameters: {
+      query?: never
+      header?: never
+      path: { "id": string }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
+    post?: never
+    delete: {
+    parameters: {
+      query?: never
+      header?: never
+      path: { "id": string }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
+    options?: never
+    head?: never
+    patch: {
+    parameters: {
+      query?: never
+      header?: never
+      path: { "id": string }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
+    trace?: never
+  }
+  "/api/v1/audit-events": {
+    get: {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
+    put?: never
+    post?: never
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  "/api/v1/audit-events/{id}": {
+    get: {
+    parameters: {
+      query?: never
+      header?: never
+      path: { "id": string }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
+    put?: never
+    post?: never
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  "/api/v1/automation-approvals": {
+    get: {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
+    put?: never
+    post?: never
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  "/api/v1/automation-approvals/{id}": {
+    get: {
+    parameters: {
+      query?: never
+      header?: never
+      path: { "id": string }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
+    put: {
+    parameters: {
+      query?: never
+      header?: never
+      path: { "id": string }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
+    post?: never
+    delete?: never
+    options?: never
+    head?: never
+    patch: {
+    parameters: {
+      query?: never
+      header?: never
+      path: { "id": string }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
+    trace?: never
+  }
+  "/api/v1/automation-dead-letters": {
+    get: {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
+    put?: never
+    post?: never
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  "/api/v1/automation-dead-letters/{id}": {
+    get: {
+    parameters: {
+      query?: never
+      header?: never
+      path: { "id": string }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
+    put: {
+    parameters: {
+      query?: never
+      header?: never
+      path: { "id": string }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
+    post?: never
+    delete?: never
+    options?: never
+    head?: never
+    patch: {
+    parameters: {
+      query?: never
+      header?: never
+      path: { "id": string }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
+    trace?: never
+  }
+  "/api/v1/automation-step-runs": {
+    get: {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
+    put?: never
+    post?: never
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  "/api/v1/automation-step-runs/{id}": {
+    get: {
+    parameters: {
+      query?: never
+      header?: never
+      path: { "id": string }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
+    put?: never
+    post?: never
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  "/api/v1/automation-versions": {
+    get: {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
+    put?: never
+    post?: never
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  "/api/v1/automation-versions/{id}": {
+    get: {
+    parameters: {
+      query?: never
+      header?: never
+      path: { "id": string }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
+    put?: never
+    post?: never
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  "/api/v1/campaign-experiments": {
+    get: {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
+    put?: never
+    post: {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  "/api/v1/campaign-experiments/{id}": {
+    get: {
+    parameters: {
+      query?: never
+      header?: never
+      path: { "id": string }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
+    put: {
+    parameters: {
+      query?: never
+      header?: never
+      path: { "id": string }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
+    post?: never
+    delete?: never
+    options?: never
+    head?: never
+    patch: {
+    parameters: {
+      query?: never
+      header?: never
+      path: { "id": string }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
+    trace?: never
+  }
+  "/api/v1/campaign-recipients": {
+    get: {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
+    put?: never
+    post?: never
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  "/api/v1/campaign-recipients/{id}": {
+    get: {
+    parameters: {
+      query?: never
+      header?: never
+      path: { "id": string }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
+    put?: never
+    post?: never
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  "/api/v1/campaigns/{id}/dispatch": {
+    get?: never
+    put?: never
+    post: {
+    parameters: {
+      query?: never
+      header?: never
+      path: { "id": string }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  "/api/v1/commerce-connections": {
+    get: {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
+    put?: never
+    post: {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  "/api/v1/commerce-connections/bulk-delete": {
+    get?: never
+    put?: never
+    post: {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  "/api/v1/commerce-connections/{id}": {
+    get: {
+    parameters: {
+      query?: never
+      header?: never
+      path: { "id": string }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
+    put: {
+    parameters: {
+      query?: never
+      header?: never
+      path: { "id": string }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
+    post?: never
+    delete: {
+    parameters: {
+      query?: never
+      header?: never
+      path: { "id": string }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
+    options?: never
+    head?: never
+    patch: {
+    parameters: {
+      query?: never
+      header?: never
+      path: { "id": string }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
+    trace?: never
+  }
+  "/api/v1/commerce-events": {
+    get: {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
+    put?: never
+    post?: never
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  "/api/v1/commerce-events/{id}": {
+    get: {
+    parameters: {
+      query?: never
+      header?: never
+      path: { "id": string }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
+    put?: never
+    post?: never
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  "/api/v1/commissions": {
+    get: {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
+    put?: never
+    post?: never
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  "/api/v1/commissions/{id}": {
+    get: {
+    parameters: {
+      query?: never
+      header?: never
+      path: { "id": string }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
+    put?: never
+    post?: never
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  "/api/v1/contact-field-values": {
+    get: {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
+    put?: never
+    post: {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  "/api/v1/contact-field-values/bulk-delete": {
+    get?: never
+    put?: never
+    post: {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  "/api/v1/contact-field-values/{id}": {
+    get: {
+    parameters: {
+      query?: never
+      header?: never
+      path: { "id": string }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
+    put: {
+    parameters: {
+      query?: never
+      header?: never
+      path: { "id": string }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
+    post?: never
+    delete: {
+    parameters: {
+      query?: never
+      header?: never
+      path: { "id": string }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
+    options?: never
+    head?: never
+    patch: {
+    parameters: {
+      query?: never
+      header?: never
+      path: { "id": string }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
+    trace?: never
+  }
+  "/api/v1/contact-identities": {
+    get: {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
+    put?: never
+    post: {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  "/api/v1/contact-identities/bulk-delete": {
+    get?: never
+    put?: never
+    post: {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  "/api/v1/contact-identities/{id}": {
+    get: {
+    parameters: {
+      query?: never
+      header?: never
+      path: { "id": string }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
+    put: {
+    parameters: {
+      query?: never
+      header?: never
+      path: { "id": string }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
+    post?: never
+    delete: {
+    parameters: {
+      query?: never
+      header?: never
+      path: { "id": string }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
+    options?: never
+    head?: never
+    patch: {
+    parameters: {
+      query?: never
+      header?: never
+      path: { "id": string }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
+    trace?: never
+  }
+  "/api/v1/contact-merges": {
+    get: {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
+    put?: never
+    post?: never
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  "/api/v1/contact-merges/{id}": {
+    get: {
+    parameters: {
+      query?: never
+      header?: never
+      path: { "id": string }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
+    put?: never
+    post?: never
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  "/api/v1/contact-tags": {
+    get: {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
+    put?: never
+    post: {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  "/api/v1/contact-tags/bulk-delete": {
+    get?: never
+    put?: never
+    post: {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  "/api/v1/contact-tags/{id}": {
+    get?: never
+    put?: never
+    post?: never
+    delete: {
+    parameters: {
+      query?: never
+      header?: never
+      path: { "id": string }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  "/api/v1/contacts": {
+    get: {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
+    put?: never
+    post: {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  "/api/v1/contacts/bulk-delete": {
+    get?: never
+    put?: never
+    post: {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  "/api/v1/contacts/{id}": {
+    get: {
+    parameters: {
+      query?: never
+      header?: never
+      path: { "id": string }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
+    put: {
+    parameters: {
+      query?: never
+      header?: never
+      path: { "id": string }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
+    post?: never
+    delete: {
+    parameters: {
+      query?: never
+      header?: never
+      path: { "id": string }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
+    options?: never
+    head?: never
+    patch: {
+    parameters: {
+      query?: never
+      header?: never
+      path: { "id": string }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
+    trace?: never
+  }
+  "/api/v1/custom-fields": {
+    get: {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
+    put?: never
+    post: {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  "/api/v1/custom-fields/bulk-delete": {
+    get?: never
+    put?: never
+    post: {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  "/api/v1/custom-fields/{id}": {
+    get: {
+    parameters: {
+      query?: never
+      header?: never
+      path: { "id": string }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
+    put: {
+    parameters: {
+      query?: never
+      header?: never
+      path: { "id": string }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
+    post?: never
+    delete: {
+    parameters: {
+      query?: never
+      header?: never
+      path: { "id": string }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
+    options?: never
+    head?: never
+    patch: {
+    parameters: {
+      query?: never
+      header?: never
+      path: { "id": string }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
+    trace?: never
+  }
+  "/api/v1/data-requests": {
+    get: {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
+    put?: never
+    post: {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  "/api/v1/data-requests/{id}": {
+    get: {
+    parameters: {
+      query?: never
+      header?: never
+      path: { "id": string }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
+    put: {
+    parameters: {
+      query?: never
+      header?: never
+      path: { "id": string }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
+    post?: never
+    delete?: never
+    options?: never
+    head?: never
+    patch: {
+    parameters: {
+      query?: never
+      header?: never
+      path: { "id": string }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
+    trace?: never
+  }
+  "/api/v1/data-retention-policies": {
+    get: {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
+    put?: never
+    post: {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  "/api/v1/data-retention-policies/{id}": {
+    get: {
+    parameters: {
+      query?: never
+      header?: never
+      path: { "id": string }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
+    put: {
+    parameters: {
+      query?: never
+      header?: never
+      path: { "id": string }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
+    post?: never
+    delete?: never
+    options?: never
+    head?: never
+    patch: {
+    parameters: {
+      query?: never
+      header?: never
+      path: { "id": string }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
+    trace?: never
+  }
+  "/api/v1/delivery-attempts": {
+    get: {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
+    put?: never
+    post?: never
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  "/api/v1/delivery-attempts/{id}": {
+    get: {
+    parameters: {
+      query?: never
+      header?: never
+      path: { "id": string }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
+    put?: never
+    post?: never
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  "/api/v1/delivery-events": {
+    get: {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
+    put?: never
+    post?: never
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  "/api/v1/delivery-events/{id}": {
+    get: {
+    parameters: {
+      query?: never
+      header?: never
+      path: { "id": string }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
+    put?: never
+    post?: never
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  "/api/v1/earnings": {
+    get: {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
+    put?: never
+    post?: never
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  "/api/v1/earnings/{id}": {
+    get: {
+    parameters: {
+      query?: never
+      header?: never
+      path: { "id": string }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
+    put?: never
+    post?: never
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  "/api/v1/email-messages": {
+    get: {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
+    put?: never
+    post: {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  "/api/v1/email-messages/bulk-delete": {
+    get?: never
+    put?: never
+    post: {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  "/api/v1/email-messages/{id}": {
+    get: {
+    parameters: {
+      query?: never
+      header?: never
+      path: { "id": string }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
+    put: {
+    parameters: {
+      query?: never
+      header?: never
+      path: { "id": string }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
+    post?: never
+    delete: {
+    parameters: {
+      query?: never
+      header?: never
+      path: { "id": string }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
+    options?: never
+    head?: never
+    patch: {
+    parameters: {
+      query?: never
+      header?: never
+      path: { "id": string }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
+    trace?: never
+  }
+  "/api/v1/entitlements": {
+    get: {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
+    put?: never
+    post?: never
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  "/api/v1/entitlements/{id}": {
+    get: {
+    parameters: {
+      query?: never
+      header?: never
+      path: { "id": string }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
+    put?: never
+    post?: never
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  "/api/v1/episodes": {
+    get: {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
+    put?: never
+    post: {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  "/api/v1/episodes/bulk-delete": {
+    get?: never
+    put?: never
+    post: {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  "/api/v1/episodes/{id}": {
+    get: {
+    parameters: {
+      query?: never
+      header?: never
+      path: { "id": string }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
+    put: {
+    parameters: {
+      query?: never
+      header?: never
+      path: { "id": string }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
+    post?: never
+    delete: {
+    parameters: {
+      query?: never
+      header?: never
+      path: { "id": string }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
+    options?: never
+    head?: never
+    patch: {
+    parameters: {
+      query?: never
+      header?: never
+      path: { "id": string }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
+    trace?: never
+  }
+  "/api/v1/form-submissions": {
+    get: {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
+    put?: never
+    post?: never
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  "/api/v1/form-submissions/{id}": {
+    get: {
+    parameters: {
+      query?: never
+      header?: never
+      path: { "id": string }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
+    put?: never
+    post?: never
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  "/api/v1/forms": {
+    get: {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
+    put?: never
+    post: {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  "/api/v1/forms/bulk-delete": {
+    get?: never
+    put?: never
+    post: {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  "/api/v1/forms/{id}": {
+    get: {
+    parameters: {
+      query?: never
+      header?: never
+      path: { "id": string }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
+    put: {
+    parameters: {
+      query?: never
+      header?: never
+      path: { "id": string }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
+    post?: never
+    delete: {
+    parameters: {
+      query?: never
+      header?: never
+      path: { "id": string }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
+    options?: never
+    head?: never
+    patch: {
+    parameters: {
+      query?: never
+      header?: never
+      path: { "id": string }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
+    trace?: never
+  }
+  "/api/v1/gated-resources": {
+    get: {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
+    put?: never
+    post: {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  "/api/v1/gated-resources/bulk-delete": {
+    get?: never
+    put?: never
+    post: {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  "/api/v1/gated-resources/{id}": {
+    get: {
+    parameters: {
+      query?: never
+      header?: never
+      path: { "id": string }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
+    put: {
+    parameters: {
+      query?: never
+      header?: never
+      path: { "id": string }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
+    post?: never
+    delete: {
+    parameters: {
+      query?: never
+      header?: never
+      path: { "id": string }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
+    options?: never
+    head?: never
+    patch: {
+    parameters: {
+      query?: never
+      header?: never
+      path: { "id": string }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
+    trace?: never
+  }
+  "/api/v1/integration-credentials": {
+    get: {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
+    put?: never
+    post?: never
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  "/api/v1/integration-credentials/bulk-delete": {
+    get?: never
+    put?: never
+    post: {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  "/api/v1/integration-credentials/{id}": {
+    get: {
+    parameters: {
+      query?: never
+      header?: never
+      path: { "id": string }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
+    put?: never
+    post?: never
+    delete: {
+    parameters: {
+      query?: never
+      header?: never
+      path: { "id": string }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  "/api/v1/landing-pages": {
+    get: {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
+    put?: never
+    post: {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  "/api/v1/landing-pages/bulk-delete": {
+    get?: never
+    put?: never
+    post: {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  "/api/v1/landing-pages/{id}": {
+    get: {
+    parameters: {
+      query?: never
+      header?: never
+      path: { "id": string }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
+    put: {
+    parameters: {
+      query?: never
+      header?: never
+      path: { "id": string }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
+    post?: never
+    delete: {
+    parameters: {
+      query?: never
+      header?: never
+      path: { "id": string }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
+    options?: never
+    head?: never
+    patch: {
+    parameters: {
+      query?: never
+      header?: never
+      path: { "id": string }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
+    trace?: never
+  }
+  "/api/v1/link-pages": {
+    get: {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
+    put?: never
+    post: {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  "/api/v1/link-pages/bulk-delete": {
+    get?: never
+    put?: never
+    post: {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  "/api/v1/link-pages/{id}": {
+    get: {
+    parameters: {
+      query?: never
+      header?: never
+      path: { "id": string }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
+    put: {
+    parameters: {
+      query?: never
+      header?: never
+      path: { "id": string }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
+    post?: never
+    delete: {
+    parameters: {
+      query?: never
+      header?: never
+      path: { "id": string }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
+    options?: never
+    head?: never
+    patch: {
+    parameters: {
+      query?: never
+      header?: never
+      path: { "id": string }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
+    trace?: never
+  }
+  "/api/v1/message-blocks": {
+    get: {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
+    put?: never
+    post: {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  "/api/v1/message-blocks/bulk-delete": {
+    get?: never
+    put?: never
+    post: {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  "/api/v1/message-blocks/{id}": {
+    get: {
+    parameters: {
+      query?: never
+      header?: never
+      path: { "id": string }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
+    put: {
+    parameters: {
+      query?: never
+      header?: never
+      path: { "id": string }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
+    post?: never
+    delete: {
+    parameters: {
+      query?: never
+      header?: never
+      path: { "id": string }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
+    options?: never
+    head?: never
+    patch: {
+    parameters: {
+      query?: never
+      header?: never
+      path: { "id": string }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
+    trace?: never
+  }
+  "/api/v1/message-templates": {
+    get: {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
+    put?: never
+    post: {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  "/api/v1/message-templates/bulk-delete": {
+    get?: never
+    put?: never
+    post: {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  "/api/v1/message-templates/{id}": {
+    get: {
+    parameters: {
+      query?: never
+      header?: never
+      path: { "id": string }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
+    put: {
+    parameters: {
+      query?: never
+      header?: never
+      path: { "id": string }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
+    post?: never
+    delete: {
+    parameters: {
+      query?: never
+      header?: never
+      path: { "id": string }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
+    options?: never
+    head?: never
+    patch: {
+    parameters: {
+      query?: never
+      header?: never
+      path: { "id": string }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
+    trace?: never
+  }
+  "/api/v1/payouts": {
+    get: {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
+    put?: never
+    post?: never
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  "/api/v1/payouts/{id}": {
+    get: {
+    parameters: {
+      query?: never
+      header?: never
+      path: { "id": string }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
+    put?: never
+    post?: never
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  "/api/v1/podcasts": {
+    get: {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
+    put?: never
+    post: {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  "/api/v1/podcasts/bulk-delete": {
+    get?: never
+    put?: never
+    post: {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  "/api/v1/podcasts/{id}": {
+    get: {
+    parameters: {
+      query?: never
+      header?: never
+      path: { "id": string }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
+    put: {
+    parameters: {
+      query?: never
+      header?: never
+      path: { "id": string }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
+    post?: never
+    delete: {
+    parameters: {
+      query?: never
+      header?: never
+      path: { "id": string }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
+    options?: never
+    head?: never
+    patch: {
+    parameters: {
+      query?: never
+      header?: never
+      path: { "id": string }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
+    trace?: never
+  }
+  "/api/v1/publication-members": {
+    get: {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
+    put?: never
+    post: {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  "/api/v1/publication-members/bulk-delete": {
+    get?: never
+    put?: never
+    post: {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  "/api/v1/publication-members/{id}": {
+    get: {
+    parameters: {
+      query?: never
+      header?: never
+      path: { "id": string }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
+    put: {
+    parameters: {
+      query?: never
+      header?: never
+      path: { "id": string }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
+    post?: never
+    delete: {
+    parameters: {
+      query?: never
+      header?: never
+      path: { "id": string }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
+    options?: never
+    head?: never
+    patch: {
+    parameters: {
+      query?: never
+      header?: never
+      path: { "id": string }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
+    trace?: never
+  }
+  "/api/v1/publications": {
+    get: {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
+    put?: never
+    post: {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  "/api/v1/publications/bulk-delete": {
+    get?: never
+    put?: never
+    post: {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  "/api/v1/publications/{id}": {
+    get: {
+    parameters: {
+      query?: never
+      header?: never
+      path: { "id": string }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
+    put: {
+    parameters: {
+      query?: never
+      header?: never
+      path: { "id": string }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
+    post?: never
+    delete: {
+    parameters: {
+      query?: never
+      header?: never
+      path: { "id": string }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
+    options?: never
+    head?: never
+    patch: {
+    parameters: {
+      query?: never
+      header?: never
+      path: { "id": string }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
+    trace?: never
+  }
+  "/api/v1/recommendations": {
+    get: {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
+    put?: never
+    post: {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  "/api/v1/recommendations/bulk-delete": {
+    get?: never
+    put?: never
+    post: {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  "/api/v1/recommendations/{id}": {
+    get: {
+    parameters: {
+      query?: never
+      header?: never
+      path: { "id": string }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
+    put: {
+    parameters: {
+      query?: never
+      header?: never
+      path: { "id": string }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
+    post?: never
+    delete: {
+    parameters: {
+      query?: never
+      header?: never
+      path: { "id": string }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
+    options?: never
+    head?: never
+    patch: {
+    parameters: {
+      query?: never
+      header?: never
+      path: { "id": string }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
+    trace?: never
+  }
+  "/api/v1/referrals": {
+    get: {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
+    put?: never
+    post?: never
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  "/api/v1/referrals/{id}": {
+    get: {
+    parameters: {
+      query?: never
+      header?: never
+      path: { "id": string }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
+    put: {
+    parameters: {
+      query?: never
+      header?: never
+      path: { "id": string }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
+    post?: never
+    delete?: never
+    options?: never
+    head?: never
+    patch: {
+    parameters: {
+      query?: never
+      header?: never
+      path: { "id": string }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
+    trace?: never
+  }
+  "/api/v1/segment-rules": {
+    get: {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
+    put?: never
+    post: {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  "/api/v1/segment-rules/bulk-delete": {
+    get?: never
+    put?: never
+    post: {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  "/api/v1/segment-rules/{id}": {
+    get: {
+    parameters: {
+      query?: never
+      header?: never
+      path: { "id": string }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
+    put: {
+    parameters: {
+      query?: never
+      header?: never
+      path: { "id": string }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
+    post?: never
+    delete: {
+    parameters: {
+      query?: never
+      header?: never
+      path: { "id": string }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
+    options?: never
+    head?: never
+    patch: {
+    parameters: {
+      query?: never
+      header?: never
+      path: { "id": string }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
+    trace?: never
+  }
+  "/api/v1/segment-snapshots": {
+    get: {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
+    put?: never
+    post?: never
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  "/api/v1/segment-snapshots/{id}": {
+    get: {
+    parameters: {
+      query?: never
+      header?: never
+      path: { "id": string }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
+    put?: never
+    post?: never
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  "/api/v1/segments": {
+    get: {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
+    put?: never
+    post: {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  "/api/v1/segments/bulk-delete": {
+    get?: never
+    put?: never
+    post: {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  "/api/v1/segments/{id}": {
+    get: {
+    parameters: {
+      query?: never
+      header?: never
+      path: { "id": string }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
+    put: {
+    parameters: {
+      query?: never
+      header?: never
+      path: { "id": string }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
+    post?: never
+    delete: {
+    parameters: {
+      query?: never
+      header?: never
+      path: { "id": string }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
+    options?: never
+    head?: never
+    patch: {
+    parameters: {
+      query?: never
+      header?: never
+      path: { "id": string }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
+    trace?: never
+  }
+  "/api/v1/sender-identities": {
+    get: {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
+    put?: never
+    post: {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  "/api/v1/sender-identities/bulk-delete": {
+    get?: never
+    put?: never
+    post: {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  "/api/v1/sender-identities/{id}": {
+    get: {
+    parameters: {
+      query?: never
+      header?: never
+      path: { "id": string }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
+    put: {
+    parameters: {
+      query?: never
+      header?: never
+      path: { "id": string }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
+    post?: never
+    delete: {
+    parameters: {
+      query?: never
+      header?: never
+      path: { "id": string }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
+    options?: never
+    head?: never
+    patch: {
+    parameters: {
+      query?: never
+      header?: never
+      path: { "id": string }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
+    trace?: never
+  }
+  "/api/v1/sms-messages": {
+    get: {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
+    put?: never
+    post: {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  "/api/v1/sms-messages/bulk-delete": {
+    get?: never
+    put?: never
+    post: {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  "/api/v1/sms-messages/{id}": {
+    get: {
+    parameters: {
+      query?: never
+      header?: never
+      path: { "id": string }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
+    put: {
+    parameters: {
+      query?: never
+      header?: never
+      path: { "id": string }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
+    post?: never
+    delete: {
+    parameters: {
+      query?: never
+      header?: never
+      path: { "id": string }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
+    options?: never
+    head?: never
+    patch: {
+    parameters: {
+      query?: never
+      header?: never
+      path: { "id": string }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
+    trace?: never
+  }
+  "/api/v1/sponsors": {
+    get: {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
+    put?: never
+    post: {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  "/api/v1/sponsors/bulk-delete": {
+    get?: never
+    put?: never
+    post: {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  "/api/v1/sponsors/{id}": {
+    get: {
+    parameters: {
+      query?: never
+      header?: never
+      path: { "id": string }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
+    put: {
+    parameters: {
+      query?: never
+      header?: never
+      path: { "id": string }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
+    post?: never
+    delete: {
+    parameters: {
+      query?: never
+      header?: never
+      path: { "id": string }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
+    options?: never
+    head?: never
+    patch: {
+    parameters: {
+      query?: never
+      header?: never
+      path: { "id": string }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
+    trace?: never
+  }
+  "/api/v1/usage-meters": {
+    get: {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
+    put?: never
+    post?: never
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  "/api/v1/usage-meters/{id}": {
+    get: {
+    parameters: {
+      query?: never
+      header?: never
+      path: { "id": string }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
+    put?: never
+    post?: never
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  "/api/v1/webhook-endpoints": {
+    get: {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
+    put?: never
+    post: {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  "/api/v1/webhook-endpoints/bulk-delete": {
+    get?: never
+    put?: never
+    post: {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  "/api/v1/webhook-endpoints/{id}": {
+    get: {
+    parameters: {
+      query?: never
+      header?: never
+      path: { "id": string }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
+    put: {
+    parameters: {
+      query?: never
+      header?: never
+      path: { "id": string }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
+    post?: never
+    delete: {
+    parameters: {
+      query?: never
+      header?: never
+      path: { "id": string }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
+    options?: never
+    head?: never
+    patch: {
+    parameters: {
+      query?: never
+      header?: never
+      path: { "id": string }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
+    trace?: never
+  }
+  "/api/v1/webhook-events": {
+    get: {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
+    put?: never
+    post?: never
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  "/api/v1/webhook-events/{id}": {
+    get: {
+    parameters: {
+      query?: never
+      header?: never
+      path: { "id": string }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
+    put?: never
+    post?: never
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  "/api/v1/workspace": {
+    get: {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
       cookie?: never
     }
     requestBody?: never
@@ -16466,6 +23405,29 @@ export interface paths {
   }
     trace?: never
   }
+  "/api/webhooks/{provider}/{endpoint}": {
+    get?: never
+    put?: never
+    post: {
+    parameters: {
+      query?: never
+      header?: never
+      path: { "provider": string; "endpoint": string }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
   "/api/websockets": {
     get: {
     parameters: {
@@ -16542,6 +23504,52 @@ export interface paths {
   }
     put?: never
     post?: never
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  "/auth/magic-link": {
+    get?: never
+    put?: never
+    post: {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    requestBody?: { content: { "application/json": { "email"?: string } } }
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  "/auth/magic-link/consume": {
+    get?: never
+    put?: never
+    post: {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    requestBody?: { content: { "application/json": { "token"?: string } } }
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
     delete?: never
     options?: never
     head?: never
@@ -17204,6 +24212,29 @@ export interface paths {
       "500": { content: never }
     }
   }
+    trace?: never
+  }
+  "/confirm/{token}": {
+    get: {
+    parameters: {
+      query?: never
+      header?: never
+      path: { "token": string }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
+    put?: never
+    post?: never
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
     trace?: never
   }
   "/dashboard/activity": {
@@ -17933,6 +24964,29 @@ export interface paths {
       cookie?: never
     }
     requestBody?: { content: { "application/json": { "code"?: string } } }
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  "/forms/{form}/submit": {
+    get?: never
+    put?: never
+    post: {
+    parameters: {
+      query?: never
+      header?: never
+      path: { "form": string }
+      cookie?: never
+    }
+    requestBody?: never
     responses: {
       "200": { content: { "application/json": Record<string, unknown> } }
       "422": { content: never }
@@ -19282,6 +26336,42 @@ export interface paths {
     patch?: never
     trace?: never
   }
+  "/preferences/{token}": {
+    get: {
+    parameters: {
+      query?: never
+      header?: never
+      path: { "token": string }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
+    put?: never
+    post: {
+    parameters: {
+      query?: never
+      header?: never
+      path: { "token": string }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
   "/queue/retry-failed": {
     get?: never
     put?: never
@@ -19552,6 +26642,29 @@ export interface paths {
   }
     put?: never
     post?: never
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  "/unsubscribe/{token}": {
+    get?: never
+    put?: never
+    post: {
+    parameters: {
+      query?: never
+      header?: never
+      path: { "token": string }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
     delete?: never
     options?: never
     head?: never

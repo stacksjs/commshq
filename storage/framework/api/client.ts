@@ -261,6 +261,104 @@ export function createClient(config: ClientConfig) {
   },
 
   /**
+   * GET /api/auction-items
+   */
+  getAuctionItems(options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "GET", "/api/auction-items", {}, [], false, options)
+  },
+
+  /**
+   * POST /api/auction-items
+   */
+  postAuctionItems(options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "POST", "/api/auction-items", {}, [], false, options)
+  },
+
+  /**
+   * POST /api/auction-items/bulk-delete
+   */
+  postAuctionItemsBulkDelete(options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "POST", "/api/auction-items/bulk-delete", {}, [], false, options)
+  },
+
+  /**
+   * GET /api/auction-items/{id}
+   */
+  getAuctionItemsId(input: { "id": string }, options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "GET", "/api/auction-items/{id}", input ?? {}, [], false, options)
+  },
+
+  /**
+   * PUT /api/auction-items/{id}
+   */
+  putAuctionItemsId(input: { "id": string }, options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "PUT", "/api/auction-items/{id}", input ?? {}, [], false, options)
+  },
+
+  /**
+   * DELETE /api/auction-items/{id}
+   */
+  deleteAuctionItemsId(input: { "id": string }, options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "DELETE", "/api/auction-items/{id}", input ?? {}, [], false, options)
+  },
+
+  /**
+   * PATCH /api/auction-items/{id}
+   */
+  patchAuctionItemsId(input: { "id": string }, options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "PATCH", "/api/auction-items/{id}", input ?? {}, [], false, options)
+  },
+
+  /**
+   * GET /api/auctions
+   */
+  getAuctions(options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "GET", "/api/auctions", {}, [], false, options)
+  },
+
+  /**
+   * POST /api/auctions
+   */
+  postAuctions(options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "POST", "/api/auctions", {}, [], false, options)
+  },
+
+  /**
+   * POST /api/auctions/bulk-delete
+   */
+  postAuctionsBulkDelete(options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "POST", "/api/auctions/bulk-delete", {}, [], false, options)
+  },
+
+  /**
+   * GET /api/auctions/{id}
+   */
+  getAuctionsId(input: { "id": string }, options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "GET", "/api/auctions/{id}", input ?? {}, [], false, options)
+  },
+
+  /**
+   * PUT /api/auctions/{id}
+   */
+  putAuctionsId(input: { "id": string }, options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "PUT", "/api/auctions/{id}", input ?? {}, [], false, options)
+  },
+
+  /**
+   * DELETE /api/auctions/{id}
+   */
+  deleteAuctionsId(input: { "id": string }, options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "DELETE", "/api/auctions/{id}", input ?? {}, [], false, options)
+  },
+
+  /**
+   * PATCH /api/auctions/{id}
+   */
+  patchAuctionsId(input: { "id": string }, options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "PATCH", "/api/auctions/{id}", input ?? {}, [], false, options)
+  },
+
+  /**
    * GET /api/authors
    */
   getAuthors(options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
@@ -307,6 +405,83 @@ export function createClient(config: ClientConfig) {
    */
   patchAuthorsId(input: { "id": string }, options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
     return request(config, "PATCH", "/api/authors/{id}", input ?? {}, [], false, options)
+  },
+
+  /**
+   * GET /api/automation-runs
+   */
+  getAutomationRuns(options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "GET", "/api/automation-runs", {}, [], false, options)
+  },
+
+  /**
+   * GET /api/automation-runs/{id}
+   */
+  getAutomationRunsId(input: { "id": string }, options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "GET", "/api/automation-runs/{id}", input ?? {}, [], false, options)
+  },
+
+  /**
+   * GET /api/automations
+   */
+  getAutomations(options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "GET", "/api/automations", {}, [], false, options)
+  },
+
+  /**
+   * POST /api/automations
+   */
+  postAutomations(options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "POST", "/api/automations", {}, [], false, options)
+  },
+
+  /**
+   * POST /api/automations/bulk-delete
+   */
+  postAutomationsBulkDelete(options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "POST", "/api/automations/bulk-delete", {}, [], false, options)
+  },
+
+  /**
+   * GET /api/automations/{id}
+   */
+  getAutomationsId(input: { "id": string }, options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "GET", "/api/automations/{id}", input ?? {}, [], false, options)
+  },
+
+  /**
+   * PUT /api/automations/{id}
+   */
+  putAutomationsId(input: { "id": string }, options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "PUT", "/api/automations/{id}", input ?? {}, [], false, options)
+  },
+
+  /**
+   * DELETE /api/automations/{id}
+   */
+  deleteAutomationsId(input: { "id": string }, options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "DELETE", "/api/automations/{id}", input ?? {}, [], false, options)
+  },
+
+  /**
+   * PATCH /api/automations/{id}
+   */
+  patchAutomationsId(input: { "id": string }, options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "PATCH", "/api/automations/{id}", input ?? {}, [], false, options)
+  },
+
+  /**
+   * GET /api/bids
+   */
+  getBids(options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "GET", "/api/bids", {}, [], false, options)
+  },
+
+  /**
+   * GET /api/bids/{id}
+   */
+  getBidsId(input: { "id": string }, options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "GET", "/api/bids/{id}", input ?? {}, [], false, options)
   },
 
   /**
@@ -419,6 +594,55 @@ export function createClient(config: ClientConfig) {
    */
   getCampaignSendsId(input: { "id": string }, options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
     return request(config, "GET", "/api/campaign-sends/{id}", input ?? {}, [], false, options)
+  },
+
+  /**
+   * GET /api/campaign-variants
+   */
+  getCampaignVariants(options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "GET", "/api/campaign-variants", {}, [], false, options)
+  },
+
+  /**
+   * POST /api/campaign-variants
+   */
+  postCampaignVariants(options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "POST", "/api/campaign-variants", {}, [], false, options)
+  },
+
+  /**
+   * POST /api/campaign-variants/bulk-delete
+   */
+  postCampaignVariantsBulkDelete(options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "POST", "/api/campaign-variants/bulk-delete", {}, [], false, options)
+  },
+
+  /**
+   * GET /api/campaign-variants/{id}
+   */
+  getCampaignVariantsId(input: { "id": string }, options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "GET", "/api/campaign-variants/{id}", input ?? {}, [], false, options)
+  },
+
+  /**
+   * PUT /api/campaign-variants/{id}
+   */
+  putCampaignVariantsId(input: { "id": string }, options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "PUT", "/api/campaign-variants/{id}", input ?? {}, [], false, options)
+  },
+
+  /**
+   * DELETE /api/campaign-variants/{id}
+   */
+  deleteCampaignVariantsId(input: { "id": string }, options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "DELETE", "/api/campaign-variants/{id}", input ?? {}, [], false, options)
+  },
+
+  /**
+   * PATCH /api/campaign-variants/{id}
+   */
+  patchCampaignVariantsId(input: { "id": string }, options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "PATCH", "/api/campaign-variants/{id}", input ?? {}, [], false, options)
   },
 
   /**
@@ -1630,6 +1854,55 @@ export function createClient(config: ClientConfig) {
    */
   patchCommerceWaitlistRestaurantsId(input: { "id": string }, options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
     return request(config, "PATCH", "/api/commerce/waitlist/restaurants/{id}", input ?? {}, [], false, options)
+  },
+
+  /**
+   * GET /api/communication-suppressions
+   */
+  getCommunicationSuppressions(options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "GET", "/api/communication-suppressions", {}, [], false, options)
+  },
+
+  /**
+   * POST /api/communication-suppressions
+   */
+  postCommunicationSuppressions(options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "POST", "/api/communication-suppressions", {}, [], false, options)
+  },
+
+  /**
+   * POST /api/communication-suppressions/bulk-delete
+   */
+  postCommunicationSuppressionsBulkDelete(options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "POST", "/api/communication-suppressions/bulk-delete", {}, [], false, options)
+  },
+
+  /**
+   * GET /api/communication-suppressions/{id}
+   */
+  getCommunicationSuppressionsId(input: { "id": string }, options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "GET", "/api/communication-suppressions/{id}", input ?? {}, [], false, options)
+  },
+
+  /**
+   * DELETE /api/communication-suppressions/{id}
+   */
+  deleteCommunicationSuppressionsId(input: { "id": string }, options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "DELETE", "/api/communication-suppressions/{id}", input ?? {}, [], false, options)
+  },
+
+  /**
+   * GET /api/consent-events
+   */
+  getConsentEvents(options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "GET", "/api/consent-events", {}, [], false, options)
+  },
+
+  /**
+   * GET /api/consent-events/{id}
+   */
+  getConsentEventsId(input: { "id": string }, options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "GET", "/api/consent-events/{id}", input ?? {}, [], false, options)
   },
 
   /**
@@ -4293,6 +4566,104 @@ export function createClient(config: ClientConfig) {
   },
 
   /**
+   * GET /api/form-fields
+   */
+  getFormFields(options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "GET", "/api/form-fields", {}, [], false, options)
+  },
+
+  /**
+   * POST /api/form-fields
+   */
+  postFormFields(options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "POST", "/api/form-fields", {}, [], false, options)
+  },
+
+  /**
+   * POST /api/form-fields/bulk-delete
+   */
+  postFormFieldsBulkDelete(options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "POST", "/api/form-fields/bulk-delete", {}, [], false, options)
+  },
+
+  /**
+   * GET /api/form-fields/{id}
+   */
+  getFormFieldsId(input: { "id": string }, options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "GET", "/api/form-fields/{id}", input ?? {}, [], false, options)
+  },
+
+  /**
+   * PUT /api/form-fields/{id}
+   */
+  putFormFieldsId(input: { "id": string }, options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "PUT", "/api/form-fields/{id}", input ?? {}, [], false, options)
+  },
+
+  /**
+   * DELETE /api/form-fields/{id}
+   */
+  deleteFormFieldsId(input: { "id": string }, options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "DELETE", "/api/form-fields/{id}", input ?? {}, [], false, options)
+  },
+
+  /**
+   * PATCH /api/form-fields/{id}
+   */
+  patchFormFieldsId(input: { "id": string }, options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "PATCH", "/api/form-fields/{id}", input ?? {}, [], false, options)
+  },
+
+  /**
+   * GET /api/forms
+   */
+  getForms(options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "GET", "/api/forms", {}, [], false, options)
+  },
+
+  /**
+   * POST /api/forms
+   */
+  postForms(options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "POST", "/api/forms", {}, [], false, options)
+  },
+
+  /**
+   * POST /api/forms/bulk-delete
+   */
+  postFormsBulkDelete(options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "POST", "/api/forms/bulk-delete", {}, [], false, options)
+  },
+
+  /**
+   * GET /api/forms/{id}
+   */
+  getFormsId(input: { "id": string }, options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "GET", "/api/forms/{id}", input ?? {}, [], false, options)
+  },
+
+  /**
+   * PUT /api/forms/{id}
+   */
+  putFormsId(input: { "id": string }, options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "PUT", "/api/forms/{id}", input ?? {}, [], false, options)
+  },
+
+  /**
+   * DELETE /api/forms/{id}
+   */
+  deleteFormsId(input: { "id": string }, options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "DELETE", "/api/forms/{id}", input ?? {}, [], false, options)
+  },
+
+  /**
+   * PATCH /api/forms/{id}
+   */
+  patchFormsId(input: { "id": string }, options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "PATCH", "/api/forms/{id}", input ?? {}, [], false, options)
+  },
+
+  /**
    * GET /api/gift-cards
    */
   getGiftCards(options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
@@ -4339,13 +4710,6 @@ export function createClient(config: ClientConfig) {
    */
   patchGiftCardsId(input: { "id": string }, options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
     return request(config, "PATCH", "/api/gift-cards/{id}", input ?? {}, [], false, options)
-  },
-
-  /**
-   * GET /api/hello
-   */
-  getHello(options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
-    return request(config, "GET", "/api/hello", {}, [], false, options)
   },
 
   /**
@@ -4626,6 +4990,104 @@ export function createClient(config: ClientConfig) {
    */
   getMarketingSocialPosts(options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
     return request(config, "GET", "/api/marketing/social-posts", {}, [], false, options)
+  },
+
+  /**
+   * GET /api/menu-items
+   */
+  getMenuItems(options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "GET", "/api/menu-items", {}, [], false, options)
+  },
+
+  /**
+   * POST /api/menu-items
+   */
+  postMenuItems(options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "POST", "/api/menu-items", {}, [], false, options)
+  },
+
+  /**
+   * POST /api/menu-items/bulk-delete
+   */
+  postMenuItemsBulkDelete(options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "POST", "/api/menu-items/bulk-delete", {}, [], false, options)
+  },
+
+  /**
+   * GET /api/menu-items/{id}
+   */
+  getMenuItemsId(input: { "id": string }, options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "GET", "/api/menu-items/{id}", input ?? {}, [], false, options)
+  },
+
+  /**
+   * PUT /api/menu-items/{id}
+   */
+  putMenuItemsId(input: { "id": string }, options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "PUT", "/api/menu-items/{id}", input ?? {}, [], false, options)
+  },
+
+  /**
+   * DELETE /api/menu-items/{id}
+   */
+  deleteMenuItemsId(input: { "id": string }, options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "DELETE", "/api/menu-items/{id}", input ?? {}, [], false, options)
+  },
+
+  /**
+   * PATCH /api/menu-items/{id}
+   */
+  patchMenuItemsId(input: { "id": string }, options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "PATCH", "/api/menu-items/{id}", input ?? {}, [], false, options)
+  },
+
+  /**
+   * GET /api/menus
+   */
+  getMenus(options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "GET", "/api/menus", {}, [], false, options)
+  },
+
+  /**
+   * POST /api/menus
+   */
+  postMenus(options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "POST", "/api/menus", {}, [], false, options)
+  },
+
+  /**
+   * POST /api/menus/bulk-delete
+   */
+  postMenusBulkDelete(options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "POST", "/api/menus/bulk-delete", {}, [], false, options)
+  },
+
+  /**
+   * GET /api/menus/{id}
+   */
+  getMenusId(input: { "id": string }, options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "GET", "/api/menus/{id}", input ?? {}, [], false, options)
+  },
+
+  /**
+   * PUT /api/menus/{id}
+   */
+  putMenusId(input: { "id": string }, options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "PUT", "/api/menus/{id}", input ?? {}, [], false, options)
+  },
+
+  /**
+   * DELETE /api/menus/{id}
+   */
+  deleteMenusId(input: { "id": string }, options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "DELETE", "/api/menus/{id}", input ?? {}, [], false, options)
+  },
+
+  /**
+   * PATCH /api/menus/{id}
+   */
+  patchMenusId(input: { "id": string }, options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "PATCH", "/api/menus/{id}", input ?? {}, [], false, options)
   },
 
   /**
@@ -4941,6 +5403,55 @@ export function createClient(config: ClientConfig) {
    */
   patchPaymentsId(input: { "id": string }, options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
     return request(config, "PATCH", "/api/payments/{id}", input ?? {}, [], false, options)
+  },
+
+  /**
+   * GET /api/pledges
+   */
+  getPledges(options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "GET", "/api/pledges", {}, [], false, options)
+  },
+
+  /**
+   * POST /api/pledges
+   */
+  postPledges(options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "POST", "/api/pledges", {}, [], false, options)
+  },
+
+  /**
+   * POST /api/pledges/bulk-delete
+   */
+  postPledgesBulkDelete(options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "POST", "/api/pledges/bulk-delete", {}, [], false, options)
+  },
+
+  /**
+   * GET /api/pledges/{id}
+   */
+  getPledgesId(input: { "id": string }, options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "GET", "/api/pledges/{id}", input ?? {}, [], false, options)
+  },
+
+  /**
+   * PUT /api/pledges/{id}
+   */
+  putPledgesId(input: { "id": string }, options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "PUT", "/api/pledges/{id}", input ?? {}, [], false, options)
+  },
+
+  /**
+   * DELETE /api/pledges/{id}
+   */
+  deletePledgesId(input: { "id": string }, options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "DELETE", "/api/pledges/{id}", input ?? {}, [], false, options)
+  },
+
+  /**
+   * PATCH /api/pledges/{id}
+   */
+  patchPledgesId(input: { "id": string }, options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "PATCH", "/api/pledges/{id}", input ?? {}, [], false, options)
   },
 
   /**
@@ -5455,6 +5966,55 @@ export function createClient(config: ClientConfig) {
   },
 
   /**
+   * GET /api/redirects
+   */
+  getRedirects(options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "GET", "/api/redirects", {}, [], false, options)
+  },
+
+  /**
+   * POST /api/redirects
+   */
+  postRedirects(options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "POST", "/api/redirects", {}, [], false, options)
+  },
+
+  /**
+   * POST /api/redirects/bulk-delete
+   */
+  postRedirectsBulkDelete(options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "POST", "/api/redirects/bulk-delete", {}, [], false, options)
+  },
+
+  /**
+   * GET /api/redirects/{id}
+   */
+  getRedirectsId(input: { "id": string }, options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "GET", "/api/redirects/{id}", input ?? {}, [], false, options)
+  },
+
+  /**
+   * PUT /api/redirects/{id}
+   */
+  putRedirectsId(input: { "id": string }, options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "PUT", "/api/redirects/{id}", input ?? {}, [], false, options)
+  },
+
+  /**
+   * DELETE /api/redirects/{id}
+   */
+  deleteRedirectsId(input: { "id": string }, options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "DELETE", "/api/redirects/{id}", input ?? {}, [], false, options)
+  },
+
+  /**
+   * PATCH /api/redirects/{id}
+   */
+  patchRedirectsId(input: { "id": string }, options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "PATCH", "/api/redirects/{id}", input ?? {}, [], false, options)
+  },
+
+  /**
    * GET /api/releases
    */
   getReleases(options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
@@ -5522,6 +6082,55 @@ export function createClient(config: ClientConfig) {
    */
   postReviewsSubmit(options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
     return request(config, "POST", "/api/reviews/submit", {}, [], false, options)
+  },
+
+  /**
+   * GET /api/sender-domains
+   */
+  getSenderDomains(options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "GET", "/api/sender-domains", {}, [], false, options)
+  },
+
+  /**
+   * POST /api/sender-domains
+   */
+  postSenderDomains(options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "POST", "/api/sender-domains", {}, [], false, options)
+  },
+
+  /**
+   * POST /api/sender-domains/bulk-delete
+   */
+  postSenderDomainsBulkDelete(options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "POST", "/api/sender-domains/bulk-delete", {}, [], false, options)
+  },
+
+  /**
+   * GET /api/sender-domains/{id}
+   */
+  getSenderDomainsId(input: { "id": string }, options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "GET", "/api/sender-domains/{id}", input ?? {}, [], false, options)
+  },
+
+  /**
+   * PUT /api/sender-domains/{id}
+   */
+  putSenderDomainsId(input: { "id": string }, options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "PUT", "/api/sender-domains/{id}", input ?? {}, [], false, options)
+  },
+
+  /**
+   * DELETE /api/sender-domains/{id}
+   */
+  deleteSenderDomainsId(input: { "id": string }, options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "DELETE", "/api/sender-domains/{id}", input ?? {}, [], false, options)
+  },
+
+  /**
+   * PATCH /api/sender-domains/{id}
+   */
+  patchSenderDomainsId(input: { "id": string }, options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "PATCH", "/api/sender-domains/{id}", input ?? {}, [], false, options)
   },
 
   /**
@@ -5690,6 +6299,104 @@ export function createClient(config: ClientConfig) {
    */
   patchShippingZonesId(input: { "id": string }, options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
     return request(config, "PATCH", "/api/shipping-zones/{id}", input ?? {}, [], false, options)
+  },
+
+  /**
+   * GET /api/site-domains
+   */
+  getSiteDomains(options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "GET", "/api/site-domains", {}, [], false, options)
+  },
+
+  /**
+   * POST /api/site-domains
+   */
+  postSiteDomains(options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "POST", "/api/site-domains", {}, [], false, options)
+  },
+
+  /**
+   * POST /api/site-domains/bulk-delete
+   */
+  postSiteDomainsBulkDelete(options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "POST", "/api/site-domains/bulk-delete", {}, [], false, options)
+  },
+
+  /**
+   * GET /api/site-domains/{id}
+   */
+  getSiteDomainsId(input: { "id": string }, options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "GET", "/api/site-domains/{id}", input ?? {}, [], false, options)
+  },
+
+  /**
+   * PUT /api/site-domains/{id}
+   */
+  putSiteDomainsId(input: { "id": string }, options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "PUT", "/api/site-domains/{id}", input ?? {}, [], false, options)
+  },
+
+  /**
+   * DELETE /api/site-domains/{id}
+   */
+  deleteSiteDomainsId(input: { "id": string }, options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "DELETE", "/api/site-domains/{id}", input ?? {}, [], false, options)
+  },
+
+  /**
+   * PATCH /api/site-domains/{id}
+   */
+  patchSiteDomainsId(input: { "id": string }, options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "PATCH", "/api/site-domains/{id}", input ?? {}, [], false, options)
+  },
+
+  /**
+   * GET /api/sites
+   */
+  getSites(options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "GET", "/api/sites", {}, [], false, options)
+  },
+
+  /**
+   * POST /api/sites
+   */
+  postSites(options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "POST", "/api/sites", {}, [], false, options)
+  },
+
+  /**
+   * POST /api/sites/bulk-delete
+   */
+  postSitesBulkDelete(options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "POST", "/api/sites/bulk-delete", {}, [], false, options)
+  },
+
+  /**
+   * GET /api/sites/{id}
+   */
+  getSitesId(input: { "id": string }, options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "GET", "/api/sites/{id}", input ?? {}, [], false, options)
+  },
+
+  /**
+   * PUT /api/sites/{id}
+   */
+  putSitesId(input: { "id": string }, options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "PUT", "/api/sites/{id}", input ?? {}, [], false, options)
+  },
+
+  /**
+   * DELETE /api/sites/{id}
+   */
+  deleteSitesId(input: { "id": string }, options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "DELETE", "/api/sites/{id}", input ?? {}, [], false, options)
+  },
+
+  /**
+   * PATCH /api/sites/{id}
+   */
+  patchSitesId(input: { "id": string }, options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "PATCH", "/api/sites/{id}", input ?? {}, [], false, options)
   },
 
   /**
@@ -6092,6 +6799,20 @@ export function createClient(config: ClientConfig) {
   },
 
   /**
+   * GET /api/usage-events
+   */
+  getUsageEvents(options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "GET", "/api/usage-events", {}, [], false, options)
+  },
+
+  /**
+   * GET /api/usage-events/{id}
+   */
+  getUsageEventsId(input: { "id": string }, options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "GET", "/api/usage-events/{id}", input ?? {}, [], false, options)
+  },
+
+  /**
    * GET /api/users
    */
   getUsers(options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
@@ -6110,6 +6831,1966 @@ export function createClient(config: ClientConfig) {
    */
   getUsersId(input: { "id": string }, options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
     return request(config, "GET", "/api/users/{id}", input ?? {}, [], false, options)
+  },
+
+  /**
+   * GET /api/v1/ad-inventory
+   */
+  getV1AdInventory(options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "GET", "/api/v1/ad-inventory", {}, [], false, options)
+  },
+
+  /**
+   * POST /api/v1/ad-inventory
+   */
+  postV1AdInventory(options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "POST", "/api/v1/ad-inventory", {}, [], false, options)
+  },
+
+  /**
+   * POST /api/v1/ad-inventory/bulk-delete
+   */
+  postV1AdInventoryBulkDelete(options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "POST", "/api/v1/ad-inventory/bulk-delete", {}, [], false, options)
+  },
+
+  /**
+   * GET /api/v1/ad-inventory/{id}
+   */
+  getV1AdInventoryId(input: { "id": string }, options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "GET", "/api/v1/ad-inventory/{id}", input ?? {}, [], false, options)
+  },
+
+  /**
+   * PUT /api/v1/ad-inventory/{id}
+   */
+  putV1AdInventoryId(input: { "id": string }, options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "PUT", "/api/v1/ad-inventory/{id}", input ?? {}, [], false, options)
+  },
+
+  /**
+   * DELETE /api/v1/ad-inventory/{id}
+   */
+  deleteV1AdInventoryId(input: { "id": string }, options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "DELETE", "/api/v1/ad-inventory/{id}", input ?? {}, [], false, options)
+  },
+
+  /**
+   * PATCH /api/v1/ad-inventory/{id}
+   */
+  patchV1AdInventoryId(input: { "id": string }, options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "PATCH", "/api/v1/ad-inventory/{id}", input ?? {}, [], false, options)
+  },
+
+  /**
+   * GET /api/v1/ad-placements
+   */
+  getV1AdPlacements(options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "GET", "/api/v1/ad-placements", {}, [], false, options)
+  },
+
+  /**
+   * POST /api/v1/ad-placements
+   */
+  postV1AdPlacements(options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "POST", "/api/v1/ad-placements", {}, [], false, options)
+  },
+
+  /**
+   * POST /api/v1/ad-placements/bulk-delete
+   */
+  postV1AdPlacementsBulkDelete(options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "POST", "/api/v1/ad-placements/bulk-delete", {}, [], false, options)
+  },
+
+  /**
+   * GET /api/v1/ad-placements/{id}
+   */
+  getV1AdPlacementsId(input: { "id": string }, options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "GET", "/api/v1/ad-placements/{id}", input ?? {}, [], false, options)
+  },
+
+  /**
+   * PUT /api/v1/ad-placements/{id}
+   */
+  putV1AdPlacementsId(input: { "id": string }, options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "PUT", "/api/v1/ad-placements/{id}", input ?? {}, [], false, options)
+  },
+
+  /**
+   * DELETE /api/v1/ad-placements/{id}
+   */
+  deleteV1AdPlacementsId(input: { "id": string }, options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "DELETE", "/api/v1/ad-placements/{id}", input ?? {}, [], false, options)
+  },
+
+  /**
+   * PATCH /api/v1/ad-placements/{id}
+   */
+  patchV1AdPlacementsId(input: { "id": string }, options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "PATCH", "/api/v1/ad-placements/{id}", input ?? {}, [], false, options)
+  },
+
+  /**
+   * GET /api/v1/advertiser-offers
+   */
+  getV1AdvertiserOffers(options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "GET", "/api/v1/advertiser-offers", {}, [], false, options)
+  },
+
+  /**
+   * POST /api/v1/advertiser-offers
+   */
+  postV1AdvertiserOffers(options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "POST", "/api/v1/advertiser-offers", {}, [], false, options)
+  },
+
+  /**
+   * POST /api/v1/advertiser-offers/bulk-delete
+   */
+  postV1AdvertiserOffersBulkDelete(options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "POST", "/api/v1/advertiser-offers/bulk-delete", {}, [], false, options)
+  },
+
+  /**
+   * GET /api/v1/advertiser-offers/{id}
+   */
+  getV1AdvertiserOffersId(input: { "id": string }, options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "GET", "/api/v1/advertiser-offers/{id}", input ?? {}, [], false, options)
+  },
+
+  /**
+   * PUT /api/v1/advertiser-offers/{id}
+   */
+  putV1AdvertiserOffersId(input: { "id": string }, options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "PUT", "/api/v1/advertiser-offers/{id}", input ?? {}, [], false, options)
+  },
+
+  /**
+   * DELETE /api/v1/advertiser-offers/{id}
+   */
+  deleteV1AdvertiserOffersId(input: { "id": string }, options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "DELETE", "/api/v1/advertiser-offers/{id}", input ?? {}, [], false, options)
+  },
+
+  /**
+   * PATCH /api/v1/advertiser-offers/{id}
+   */
+  patchV1AdvertiserOffersId(input: { "id": string }, options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "PATCH", "/api/v1/advertiser-offers/{id}", input ?? {}, [], false, options)
+  },
+
+  /**
+   * GET /api/v1/ai-generations
+   */
+  getV1AiGenerations(options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "GET", "/api/v1/ai-generations", {}, [], false, options)
+  },
+
+  /**
+   * GET /api/v1/ai-generations/{id}
+   */
+  getV1AiGenerationsId(input: { "id": string }, options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "GET", "/api/v1/ai-generations/{id}", input ?? {}, [], false, options)
+  },
+
+  /**
+   * GET /api/v1/attribution-events
+   */
+  getV1AttributionEvents(options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "GET", "/api/v1/attribution-events", {}, [], false, options)
+  },
+
+  /**
+   * GET /api/v1/attribution-events/{id}
+   */
+  getV1AttributionEventsId(input: { "id": string }, options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "GET", "/api/v1/attribution-events/{id}", input ?? {}, [], false, options)
+  },
+
+  /**
+   * GET /api/v1/audience-exports
+   */
+  getV1AudienceExports(options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "GET", "/api/v1/audience-exports", {}, [], false, options)
+  },
+
+  /**
+   * POST /api/v1/audience-exports
+   */
+  postV1AudienceExports(options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "POST", "/api/v1/audience-exports", {}, [], false, options)
+  },
+
+  /**
+   * GET /api/v1/audience-exports/{id}
+   */
+  getV1AudienceExportsId(input: { "id": string }, options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "GET", "/api/v1/audience-exports/{id}", input ?? {}, [], false, options)
+  },
+
+  /**
+   * GET /api/v1/audience-imports
+   */
+  getV1AudienceImports(options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "GET", "/api/v1/audience-imports", {}, [], false, options)
+  },
+
+  /**
+   * POST /api/v1/audience-imports
+   */
+  postV1AudienceImports(options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "POST", "/api/v1/audience-imports", {}, [], false, options)
+  },
+
+  /**
+   * GET /api/v1/audience-imports/{id}
+   */
+  getV1AudienceImportsId(input: { "id": string }, options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "GET", "/api/v1/audience-imports/{id}", input ?? {}, [], false, options)
+  },
+
+  /**
+   * GET /api/v1/audience-memberships
+   */
+  getV1AudienceMemberships(options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "GET", "/api/v1/audience-memberships", {}, [], false, options)
+  },
+
+  /**
+   * POST /api/v1/audience-memberships
+   */
+  postV1AudienceMemberships(options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "POST", "/api/v1/audience-memberships", {}, [], false, options)
+  },
+
+  /**
+   * POST /api/v1/audience-memberships/bulk-delete
+   */
+  postV1AudienceMembershipsBulkDelete(options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "POST", "/api/v1/audience-memberships/bulk-delete", {}, [], false, options)
+  },
+
+  /**
+   * GET /api/v1/audience-memberships/{id}
+   */
+  getV1AudienceMembershipsId(input: { "id": string }, options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "GET", "/api/v1/audience-memberships/{id}", input ?? {}, [], false, options)
+  },
+
+  /**
+   * DELETE /api/v1/audience-memberships/{id}
+   */
+  deleteV1AudienceMembershipsId(input: { "id": string }, options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "DELETE", "/api/v1/audience-memberships/{id}", input ?? {}, [], false, options)
+  },
+
+  /**
+   * GET /api/v1/audience-tags
+   */
+  getV1AudienceTags(options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "GET", "/api/v1/audience-tags", {}, [], false, options)
+  },
+
+  /**
+   * POST /api/v1/audience-tags
+   */
+  postV1AudienceTags(options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "POST", "/api/v1/audience-tags", {}, [], false, options)
+  },
+
+  /**
+   * POST /api/v1/audience-tags/bulk-delete
+   */
+  postV1AudienceTagsBulkDelete(options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "POST", "/api/v1/audience-tags/bulk-delete", {}, [], false, options)
+  },
+
+  /**
+   * GET /api/v1/audience-tags/{id}
+   */
+  getV1AudienceTagsId(input: { "id": string }, options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "GET", "/api/v1/audience-tags/{id}", input ?? {}, [], false, options)
+  },
+
+  /**
+   * PUT /api/v1/audience-tags/{id}
+   */
+  putV1AudienceTagsId(input: { "id": string }, options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "PUT", "/api/v1/audience-tags/{id}", input ?? {}, [], false, options)
+  },
+
+  /**
+   * DELETE /api/v1/audience-tags/{id}
+   */
+  deleteV1AudienceTagsId(input: { "id": string }, options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "DELETE", "/api/v1/audience-tags/{id}", input ?? {}, [], false, options)
+  },
+
+  /**
+   * PATCH /api/v1/audience-tags/{id}
+   */
+  patchV1AudienceTagsId(input: { "id": string }, options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "PATCH", "/api/v1/audience-tags/{id}", input ?? {}, [], false, options)
+  },
+
+  /**
+   * GET /api/v1/audiences
+   */
+  getV1Audiences(options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "GET", "/api/v1/audiences", {}, [], false, options)
+  },
+
+  /**
+   * POST /api/v1/audiences
+   */
+  postV1Audiences(options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "POST", "/api/v1/audiences", {}, [], false, options)
+  },
+
+  /**
+   * POST /api/v1/audiences/bulk-delete
+   */
+  postV1AudiencesBulkDelete(options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "POST", "/api/v1/audiences/bulk-delete", {}, [], false, options)
+  },
+
+  /**
+   * GET /api/v1/audiences/{id}
+   */
+  getV1AudiencesId(input: { "id": string }, options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "GET", "/api/v1/audiences/{id}", input ?? {}, [], false, options)
+  },
+
+  /**
+   * PUT /api/v1/audiences/{id}
+   */
+  putV1AudiencesId(input: { "id": string }, options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "PUT", "/api/v1/audiences/{id}", input ?? {}, [], false, options)
+  },
+
+  /**
+   * DELETE /api/v1/audiences/{id}
+   */
+  deleteV1AudiencesId(input: { "id": string }, options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "DELETE", "/api/v1/audiences/{id}", input ?? {}, [], false, options)
+  },
+
+  /**
+   * PATCH /api/v1/audiences/{id}
+   */
+  patchV1AudiencesId(input: { "id": string }, options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "PATCH", "/api/v1/audiences/{id}", input ?? {}, [], false, options)
+  },
+
+  /**
+   * GET /api/v1/audit-events
+   */
+  getV1AuditEvents(options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "GET", "/api/v1/audit-events", {}, [], false, options)
+  },
+
+  /**
+   * GET /api/v1/audit-events/{id}
+   */
+  getV1AuditEventsId(input: { "id": string }, options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "GET", "/api/v1/audit-events/{id}", input ?? {}, [], false, options)
+  },
+
+  /**
+   * GET /api/v1/automation-approvals
+   */
+  getV1AutomationApprovals(options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "GET", "/api/v1/automation-approvals", {}, [], false, options)
+  },
+
+  /**
+   * GET /api/v1/automation-approvals/{id}
+   */
+  getV1AutomationApprovalsId(input: { "id": string }, options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "GET", "/api/v1/automation-approvals/{id}", input ?? {}, [], false, options)
+  },
+
+  /**
+   * PUT /api/v1/automation-approvals/{id}
+   */
+  putV1AutomationApprovalsId(input: { "id": string }, options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "PUT", "/api/v1/automation-approvals/{id}", input ?? {}, [], false, options)
+  },
+
+  /**
+   * PATCH /api/v1/automation-approvals/{id}
+   */
+  patchV1AutomationApprovalsId(input: { "id": string }, options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "PATCH", "/api/v1/automation-approvals/{id}", input ?? {}, [], false, options)
+  },
+
+  /**
+   * GET /api/v1/automation-dead-letters
+   */
+  getV1AutomationDeadLetters(options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "GET", "/api/v1/automation-dead-letters", {}, [], false, options)
+  },
+
+  /**
+   * GET /api/v1/automation-dead-letters/{id}
+   */
+  getV1AutomationDeadLettersId(input: { "id": string }, options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "GET", "/api/v1/automation-dead-letters/{id}", input ?? {}, [], false, options)
+  },
+
+  /**
+   * PUT /api/v1/automation-dead-letters/{id}
+   */
+  putV1AutomationDeadLettersId(input: { "id": string }, options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "PUT", "/api/v1/automation-dead-letters/{id}", input ?? {}, [], false, options)
+  },
+
+  /**
+   * PATCH /api/v1/automation-dead-letters/{id}
+   */
+  patchV1AutomationDeadLettersId(input: { "id": string }, options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "PATCH", "/api/v1/automation-dead-letters/{id}", input ?? {}, [], false, options)
+  },
+
+  /**
+   * GET /api/v1/automation-step-runs
+   */
+  getV1AutomationStepRuns(options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "GET", "/api/v1/automation-step-runs", {}, [], false, options)
+  },
+
+  /**
+   * GET /api/v1/automation-step-runs/{id}
+   */
+  getV1AutomationStepRunsId(input: { "id": string }, options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "GET", "/api/v1/automation-step-runs/{id}", input ?? {}, [], false, options)
+  },
+
+  /**
+   * GET /api/v1/automation-versions
+   */
+  getV1AutomationVersions(options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "GET", "/api/v1/automation-versions", {}, [], false, options)
+  },
+
+  /**
+   * GET /api/v1/automation-versions/{id}
+   */
+  getV1AutomationVersionsId(input: { "id": string }, options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "GET", "/api/v1/automation-versions/{id}", input ?? {}, [], false, options)
+  },
+
+  /**
+   * GET /api/v1/campaign-experiments
+   */
+  getV1CampaignExperiments(options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "GET", "/api/v1/campaign-experiments", {}, [], false, options)
+  },
+
+  /**
+   * POST /api/v1/campaign-experiments
+   */
+  postV1CampaignExperiments(options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "POST", "/api/v1/campaign-experiments", {}, [], false, options)
+  },
+
+  /**
+   * GET /api/v1/campaign-experiments/{id}
+   */
+  getV1CampaignExperimentsId(input: { "id": string }, options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "GET", "/api/v1/campaign-experiments/{id}", input ?? {}, [], false, options)
+  },
+
+  /**
+   * PUT /api/v1/campaign-experiments/{id}
+   */
+  putV1CampaignExperimentsId(input: { "id": string }, options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "PUT", "/api/v1/campaign-experiments/{id}", input ?? {}, [], false, options)
+  },
+
+  /**
+   * PATCH /api/v1/campaign-experiments/{id}
+   */
+  patchV1CampaignExperimentsId(input: { "id": string }, options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "PATCH", "/api/v1/campaign-experiments/{id}", input ?? {}, [], false, options)
+  },
+
+  /**
+   * GET /api/v1/campaign-recipients
+   */
+  getV1CampaignRecipients(options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "GET", "/api/v1/campaign-recipients", {}, [], false, options)
+  },
+
+  /**
+   * GET /api/v1/campaign-recipients/{id}
+   */
+  getV1CampaignRecipientsId(input: { "id": string }, options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "GET", "/api/v1/campaign-recipients/{id}", input ?? {}, [], false, options)
+  },
+
+  /**
+   * POST /api/v1/campaigns/{id}/dispatch
+   */
+  postV1CampaignsIdDispatch(input: { "id": string }, options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "POST", "/api/v1/campaigns/{id}/dispatch", input ?? {}, [], false, options)
+  },
+
+  /**
+   * GET /api/v1/commerce-connections
+   */
+  getV1CommerceConnections(options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "GET", "/api/v1/commerce-connections", {}, [], false, options)
+  },
+
+  /**
+   * POST /api/v1/commerce-connections
+   */
+  postV1CommerceConnections(options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "POST", "/api/v1/commerce-connections", {}, [], false, options)
+  },
+
+  /**
+   * POST /api/v1/commerce-connections/bulk-delete
+   */
+  postV1CommerceConnectionsBulkDelete(options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "POST", "/api/v1/commerce-connections/bulk-delete", {}, [], false, options)
+  },
+
+  /**
+   * GET /api/v1/commerce-connections/{id}
+   */
+  getV1CommerceConnectionsId(input: { "id": string }, options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "GET", "/api/v1/commerce-connections/{id}", input ?? {}, [], false, options)
+  },
+
+  /**
+   * PUT /api/v1/commerce-connections/{id}
+   */
+  putV1CommerceConnectionsId(input: { "id": string }, options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "PUT", "/api/v1/commerce-connections/{id}", input ?? {}, [], false, options)
+  },
+
+  /**
+   * DELETE /api/v1/commerce-connections/{id}
+   */
+  deleteV1CommerceConnectionsId(input: { "id": string }, options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "DELETE", "/api/v1/commerce-connections/{id}", input ?? {}, [], false, options)
+  },
+
+  /**
+   * PATCH /api/v1/commerce-connections/{id}
+   */
+  patchV1CommerceConnectionsId(input: { "id": string }, options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "PATCH", "/api/v1/commerce-connections/{id}", input ?? {}, [], false, options)
+  },
+
+  /**
+   * GET /api/v1/commerce-events
+   */
+  getV1CommerceEvents(options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "GET", "/api/v1/commerce-events", {}, [], false, options)
+  },
+
+  /**
+   * GET /api/v1/commerce-events/{id}
+   */
+  getV1CommerceEventsId(input: { "id": string }, options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "GET", "/api/v1/commerce-events/{id}", input ?? {}, [], false, options)
+  },
+
+  /**
+   * GET /api/v1/commissions
+   */
+  getV1Commissions(options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "GET", "/api/v1/commissions", {}, [], false, options)
+  },
+
+  /**
+   * GET /api/v1/commissions/{id}
+   */
+  getV1CommissionsId(input: { "id": string }, options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "GET", "/api/v1/commissions/{id}", input ?? {}, [], false, options)
+  },
+
+  /**
+   * GET /api/v1/contact-field-values
+   */
+  getV1ContactFieldValues(options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "GET", "/api/v1/contact-field-values", {}, [], false, options)
+  },
+
+  /**
+   * POST /api/v1/contact-field-values
+   */
+  postV1ContactFieldValues(options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "POST", "/api/v1/contact-field-values", {}, [], false, options)
+  },
+
+  /**
+   * POST /api/v1/contact-field-values/bulk-delete
+   */
+  postV1ContactFieldValuesBulkDelete(options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "POST", "/api/v1/contact-field-values/bulk-delete", {}, [], false, options)
+  },
+
+  /**
+   * GET /api/v1/contact-field-values/{id}
+   */
+  getV1ContactFieldValuesId(input: { "id": string }, options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "GET", "/api/v1/contact-field-values/{id}", input ?? {}, [], false, options)
+  },
+
+  /**
+   * PUT /api/v1/contact-field-values/{id}
+   */
+  putV1ContactFieldValuesId(input: { "id": string }, options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "PUT", "/api/v1/contact-field-values/{id}", input ?? {}, [], false, options)
+  },
+
+  /**
+   * DELETE /api/v1/contact-field-values/{id}
+   */
+  deleteV1ContactFieldValuesId(input: { "id": string }, options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "DELETE", "/api/v1/contact-field-values/{id}", input ?? {}, [], false, options)
+  },
+
+  /**
+   * PATCH /api/v1/contact-field-values/{id}
+   */
+  patchV1ContactFieldValuesId(input: { "id": string }, options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "PATCH", "/api/v1/contact-field-values/{id}", input ?? {}, [], false, options)
+  },
+
+  /**
+   * GET /api/v1/contact-identities
+   */
+  getV1ContactIdentities(options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "GET", "/api/v1/contact-identities", {}, [], false, options)
+  },
+
+  /**
+   * POST /api/v1/contact-identities
+   */
+  postV1ContactIdentities(options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "POST", "/api/v1/contact-identities", {}, [], false, options)
+  },
+
+  /**
+   * POST /api/v1/contact-identities/bulk-delete
+   */
+  postV1ContactIdentitiesBulkDelete(options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "POST", "/api/v1/contact-identities/bulk-delete", {}, [], false, options)
+  },
+
+  /**
+   * GET /api/v1/contact-identities/{id}
+   */
+  getV1ContactIdentitiesId(input: { "id": string }, options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "GET", "/api/v1/contact-identities/{id}", input ?? {}, [], false, options)
+  },
+
+  /**
+   * PUT /api/v1/contact-identities/{id}
+   */
+  putV1ContactIdentitiesId(input: { "id": string }, options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "PUT", "/api/v1/contact-identities/{id}", input ?? {}, [], false, options)
+  },
+
+  /**
+   * DELETE /api/v1/contact-identities/{id}
+   */
+  deleteV1ContactIdentitiesId(input: { "id": string }, options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "DELETE", "/api/v1/contact-identities/{id}", input ?? {}, [], false, options)
+  },
+
+  /**
+   * PATCH /api/v1/contact-identities/{id}
+   */
+  patchV1ContactIdentitiesId(input: { "id": string }, options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "PATCH", "/api/v1/contact-identities/{id}", input ?? {}, [], false, options)
+  },
+
+  /**
+   * GET /api/v1/contact-merges
+   */
+  getV1ContactMerges(options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "GET", "/api/v1/contact-merges", {}, [], false, options)
+  },
+
+  /**
+   * GET /api/v1/contact-merges/{id}
+   */
+  getV1ContactMergesId(input: { "id": string }, options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "GET", "/api/v1/contact-merges/{id}", input ?? {}, [], false, options)
+  },
+
+  /**
+   * GET /api/v1/contact-tags
+   */
+  getV1ContactTags(options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "GET", "/api/v1/contact-tags", {}, [], false, options)
+  },
+
+  /**
+   * POST /api/v1/contact-tags
+   */
+  postV1ContactTags(options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "POST", "/api/v1/contact-tags", {}, [], false, options)
+  },
+
+  /**
+   * POST /api/v1/contact-tags/bulk-delete
+   */
+  postV1ContactTagsBulkDelete(options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "POST", "/api/v1/contact-tags/bulk-delete", {}, [], false, options)
+  },
+
+  /**
+   * DELETE /api/v1/contact-tags/{id}
+   */
+  deleteV1ContactTagsId(input: { "id": string }, options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "DELETE", "/api/v1/contact-tags/{id}", input ?? {}, [], false, options)
+  },
+
+  /**
+   * GET /api/v1/contacts
+   */
+  getV1Contacts(options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "GET", "/api/v1/contacts", {}, [], false, options)
+  },
+
+  /**
+   * POST /api/v1/contacts
+   */
+  postV1Contacts(options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "POST", "/api/v1/contacts", {}, [], false, options)
+  },
+
+  /**
+   * POST /api/v1/contacts/bulk-delete
+   */
+  postV1ContactsBulkDelete(options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "POST", "/api/v1/contacts/bulk-delete", {}, [], false, options)
+  },
+
+  /**
+   * GET /api/v1/contacts/{id}
+   */
+  getV1ContactsId(input: { "id": string }, options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "GET", "/api/v1/contacts/{id}", input ?? {}, [], false, options)
+  },
+
+  /**
+   * PUT /api/v1/contacts/{id}
+   */
+  putV1ContactsId(input: { "id": string }, options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "PUT", "/api/v1/contacts/{id}", input ?? {}, [], false, options)
+  },
+
+  /**
+   * DELETE /api/v1/contacts/{id}
+   */
+  deleteV1ContactsId(input: { "id": string }, options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "DELETE", "/api/v1/contacts/{id}", input ?? {}, [], false, options)
+  },
+
+  /**
+   * PATCH /api/v1/contacts/{id}
+   */
+  patchV1ContactsId(input: { "id": string }, options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "PATCH", "/api/v1/contacts/{id}", input ?? {}, [], false, options)
+  },
+
+  /**
+   * GET /api/v1/custom-fields
+   */
+  getV1CustomFields(options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "GET", "/api/v1/custom-fields", {}, [], false, options)
+  },
+
+  /**
+   * POST /api/v1/custom-fields
+   */
+  postV1CustomFields(options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "POST", "/api/v1/custom-fields", {}, [], false, options)
+  },
+
+  /**
+   * POST /api/v1/custom-fields/bulk-delete
+   */
+  postV1CustomFieldsBulkDelete(options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "POST", "/api/v1/custom-fields/bulk-delete", {}, [], false, options)
+  },
+
+  /**
+   * GET /api/v1/custom-fields/{id}
+   */
+  getV1CustomFieldsId(input: { "id": string }, options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "GET", "/api/v1/custom-fields/{id}", input ?? {}, [], false, options)
+  },
+
+  /**
+   * PUT /api/v1/custom-fields/{id}
+   */
+  putV1CustomFieldsId(input: { "id": string }, options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "PUT", "/api/v1/custom-fields/{id}", input ?? {}, [], false, options)
+  },
+
+  /**
+   * DELETE /api/v1/custom-fields/{id}
+   */
+  deleteV1CustomFieldsId(input: { "id": string }, options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "DELETE", "/api/v1/custom-fields/{id}", input ?? {}, [], false, options)
+  },
+
+  /**
+   * PATCH /api/v1/custom-fields/{id}
+   */
+  patchV1CustomFieldsId(input: { "id": string }, options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "PATCH", "/api/v1/custom-fields/{id}", input ?? {}, [], false, options)
+  },
+
+  /**
+   * GET /api/v1/data-requests
+   */
+  getV1DataRequests(options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "GET", "/api/v1/data-requests", {}, [], false, options)
+  },
+
+  /**
+   * POST /api/v1/data-requests
+   */
+  postV1DataRequests(options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "POST", "/api/v1/data-requests", {}, [], false, options)
+  },
+
+  /**
+   * GET /api/v1/data-requests/{id}
+   */
+  getV1DataRequestsId(input: { "id": string }, options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "GET", "/api/v1/data-requests/{id}", input ?? {}, [], false, options)
+  },
+
+  /**
+   * PUT /api/v1/data-requests/{id}
+   */
+  putV1DataRequestsId(input: { "id": string }, options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "PUT", "/api/v1/data-requests/{id}", input ?? {}, [], false, options)
+  },
+
+  /**
+   * PATCH /api/v1/data-requests/{id}
+   */
+  patchV1DataRequestsId(input: { "id": string }, options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "PATCH", "/api/v1/data-requests/{id}", input ?? {}, [], false, options)
+  },
+
+  /**
+   * GET /api/v1/data-retention-policies
+   */
+  getV1DataRetentionPolicies(options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "GET", "/api/v1/data-retention-policies", {}, [], false, options)
+  },
+
+  /**
+   * POST /api/v1/data-retention-policies
+   */
+  postV1DataRetentionPolicies(options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "POST", "/api/v1/data-retention-policies", {}, [], false, options)
+  },
+
+  /**
+   * GET /api/v1/data-retention-policies/{id}
+   */
+  getV1DataRetentionPoliciesId(input: { "id": string }, options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "GET", "/api/v1/data-retention-policies/{id}", input ?? {}, [], false, options)
+  },
+
+  /**
+   * PUT /api/v1/data-retention-policies/{id}
+   */
+  putV1DataRetentionPoliciesId(input: { "id": string }, options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "PUT", "/api/v1/data-retention-policies/{id}", input ?? {}, [], false, options)
+  },
+
+  /**
+   * PATCH /api/v1/data-retention-policies/{id}
+   */
+  patchV1DataRetentionPoliciesId(input: { "id": string }, options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "PATCH", "/api/v1/data-retention-policies/{id}", input ?? {}, [], false, options)
+  },
+
+  /**
+   * GET /api/v1/delivery-attempts
+   */
+  getV1DeliveryAttempts(options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "GET", "/api/v1/delivery-attempts", {}, [], false, options)
+  },
+
+  /**
+   * GET /api/v1/delivery-attempts/{id}
+   */
+  getV1DeliveryAttemptsId(input: { "id": string }, options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "GET", "/api/v1/delivery-attempts/{id}", input ?? {}, [], false, options)
+  },
+
+  /**
+   * GET /api/v1/delivery-events
+   */
+  getV1DeliveryEvents(options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "GET", "/api/v1/delivery-events", {}, [], false, options)
+  },
+
+  /**
+   * GET /api/v1/delivery-events/{id}
+   */
+  getV1DeliveryEventsId(input: { "id": string }, options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "GET", "/api/v1/delivery-events/{id}", input ?? {}, [], false, options)
+  },
+
+  /**
+   * GET /api/v1/earnings
+   */
+  getV1Earnings(options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "GET", "/api/v1/earnings", {}, [], false, options)
+  },
+
+  /**
+   * GET /api/v1/earnings/{id}
+   */
+  getV1EarningsId(input: { "id": string }, options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "GET", "/api/v1/earnings/{id}", input ?? {}, [], false, options)
+  },
+
+  /**
+   * GET /api/v1/email-messages
+   */
+  getV1EmailMessages(options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "GET", "/api/v1/email-messages", {}, [], false, options)
+  },
+
+  /**
+   * POST /api/v1/email-messages
+   */
+  postV1EmailMessages(options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "POST", "/api/v1/email-messages", {}, [], false, options)
+  },
+
+  /**
+   * POST /api/v1/email-messages/bulk-delete
+   */
+  postV1EmailMessagesBulkDelete(options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "POST", "/api/v1/email-messages/bulk-delete", {}, [], false, options)
+  },
+
+  /**
+   * GET /api/v1/email-messages/{id}
+   */
+  getV1EmailMessagesId(input: { "id": string }, options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "GET", "/api/v1/email-messages/{id}", input ?? {}, [], false, options)
+  },
+
+  /**
+   * PUT /api/v1/email-messages/{id}
+   */
+  putV1EmailMessagesId(input: { "id": string }, options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "PUT", "/api/v1/email-messages/{id}", input ?? {}, [], false, options)
+  },
+
+  /**
+   * DELETE /api/v1/email-messages/{id}
+   */
+  deleteV1EmailMessagesId(input: { "id": string }, options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "DELETE", "/api/v1/email-messages/{id}", input ?? {}, [], false, options)
+  },
+
+  /**
+   * PATCH /api/v1/email-messages/{id}
+   */
+  patchV1EmailMessagesId(input: { "id": string }, options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "PATCH", "/api/v1/email-messages/{id}", input ?? {}, [], false, options)
+  },
+
+  /**
+   * GET /api/v1/entitlements
+   */
+  getV1Entitlements(options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "GET", "/api/v1/entitlements", {}, [], false, options)
+  },
+
+  /**
+   * GET /api/v1/entitlements/{id}
+   */
+  getV1EntitlementsId(input: { "id": string }, options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "GET", "/api/v1/entitlements/{id}", input ?? {}, [], false, options)
+  },
+
+  /**
+   * GET /api/v1/episodes
+   */
+  getV1Episodes(options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "GET", "/api/v1/episodes", {}, [], false, options)
+  },
+
+  /**
+   * POST /api/v1/episodes
+   */
+  postV1Episodes(options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "POST", "/api/v1/episodes", {}, [], false, options)
+  },
+
+  /**
+   * POST /api/v1/episodes/bulk-delete
+   */
+  postV1EpisodesBulkDelete(options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "POST", "/api/v1/episodes/bulk-delete", {}, [], false, options)
+  },
+
+  /**
+   * GET /api/v1/episodes/{id}
+   */
+  getV1EpisodesId(input: { "id": string }, options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "GET", "/api/v1/episodes/{id}", input ?? {}, [], false, options)
+  },
+
+  /**
+   * PUT /api/v1/episodes/{id}
+   */
+  putV1EpisodesId(input: { "id": string }, options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "PUT", "/api/v1/episodes/{id}", input ?? {}, [], false, options)
+  },
+
+  /**
+   * DELETE /api/v1/episodes/{id}
+   */
+  deleteV1EpisodesId(input: { "id": string }, options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "DELETE", "/api/v1/episodes/{id}", input ?? {}, [], false, options)
+  },
+
+  /**
+   * PATCH /api/v1/episodes/{id}
+   */
+  patchV1EpisodesId(input: { "id": string }, options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "PATCH", "/api/v1/episodes/{id}", input ?? {}, [], false, options)
+  },
+
+  /**
+   * GET /api/v1/form-submissions
+   */
+  getV1FormSubmissions(options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "GET", "/api/v1/form-submissions", {}, [], false, options)
+  },
+
+  /**
+   * GET /api/v1/form-submissions/{id}
+   */
+  getV1FormSubmissionsId(input: { "id": string }, options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "GET", "/api/v1/form-submissions/{id}", input ?? {}, [], false, options)
+  },
+
+  /**
+   * GET /api/v1/forms
+   */
+  getV1Forms(options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "GET", "/api/v1/forms", {}, [], false, options)
+  },
+
+  /**
+   * POST /api/v1/forms
+   */
+  postV1Forms(options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "POST", "/api/v1/forms", {}, [], false, options)
+  },
+
+  /**
+   * POST /api/v1/forms/bulk-delete
+   */
+  postV1FormsBulkDelete(options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "POST", "/api/v1/forms/bulk-delete", {}, [], false, options)
+  },
+
+  /**
+   * GET /api/v1/forms/{id}
+   */
+  getV1FormsId(input: { "id": string }, options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "GET", "/api/v1/forms/{id}", input ?? {}, [], false, options)
+  },
+
+  /**
+   * PUT /api/v1/forms/{id}
+   */
+  putV1FormsId(input: { "id": string }, options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "PUT", "/api/v1/forms/{id}", input ?? {}, [], false, options)
+  },
+
+  /**
+   * DELETE /api/v1/forms/{id}
+   */
+  deleteV1FormsId(input: { "id": string }, options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "DELETE", "/api/v1/forms/{id}", input ?? {}, [], false, options)
+  },
+
+  /**
+   * PATCH /api/v1/forms/{id}
+   */
+  patchV1FormsId(input: { "id": string }, options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "PATCH", "/api/v1/forms/{id}", input ?? {}, [], false, options)
+  },
+
+  /**
+   * GET /api/v1/gated-resources
+   */
+  getV1GatedResources(options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "GET", "/api/v1/gated-resources", {}, [], false, options)
+  },
+
+  /**
+   * POST /api/v1/gated-resources
+   */
+  postV1GatedResources(options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "POST", "/api/v1/gated-resources", {}, [], false, options)
+  },
+
+  /**
+   * POST /api/v1/gated-resources/bulk-delete
+   */
+  postV1GatedResourcesBulkDelete(options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "POST", "/api/v1/gated-resources/bulk-delete", {}, [], false, options)
+  },
+
+  /**
+   * GET /api/v1/gated-resources/{id}
+   */
+  getV1GatedResourcesId(input: { "id": string }, options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "GET", "/api/v1/gated-resources/{id}", input ?? {}, [], false, options)
+  },
+
+  /**
+   * PUT /api/v1/gated-resources/{id}
+   */
+  putV1GatedResourcesId(input: { "id": string }, options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "PUT", "/api/v1/gated-resources/{id}", input ?? {}, [], false, options)
+  },
+
+  /**
+   * DELETE /api/v1/gated-resources/{id}
+   */
+  deleteV1GatedResourcesId(input: { "id": string }, options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "DELETE", "/api/v1/gated-resources/{id}", input ?? {}, [], false, options)
+  },
+
+  /**
+   * PATCH /api/v1/gated-resources/{id}
+   */
+  patchV1GatedResourcesId(input: { "id": string }, options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "PATCH", "/api/v1/gated-resources/{id}", input ?? {}, [], false, options)
+  },
+
+  /**
+   * GET /api/v1/integration-credentials
+   */
+  getV1IntegrationCredentials(options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "GET", "/api/v1/integration-credentials", {}, [], false, options)
+  },
+
+  /**
+   * POST /api/v1/integration-credentials/bulk-delete
+   */
+  postV1IntegrationCredentialsBulkDelete(options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "POST", "/api/v1/integration-credentials/bulk-delete", {}, [], false, options)
+  },
+
+  /**
+   * GET /api/v1/integration-credentials/{id}
+   */
+  getV1IntegrationCredentialsId(input: { "id": string }, options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "GET", "/api/v1/integration-credentials/{id}", input ?? {}, [], false, options)
+  },
+
+  /**
+   * DELETE /api/v1/integration-credentials/{id}
+   */
+  deleteV1IntegrationCredentialsId(input: { "id": string }, options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "DELETE", "/api/v1/integration-credentials/{id}", input ?? {}, [], false, options)
+  },
+
+  /**
+   * GET /api/v1/landing-pages
+   */
+  getV1LandingPages(options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "GET", "/api/v1/landing-pages", {}, [], false, options)
+  },
+
+  /**
+   * POST /api/v1/landing-pages
+   */
+  postV1LandingPages(options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "POST", "/api/v1/landing-pages", {}, [], false, options)
+  },
+
+  /**
+   * POST /api/v1/landing-pages/bulk-delete
+   */
+  postV1LandingPagesBulkDelete(options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "POST", "/api/v1/landing-pages/bulk-delete", {}, [], false, options)
+  },
+
+  /**
+   * GET /api/v1/landing-pages/{id}
+   */
+  getV1LandingPagesId(input: { "id": string }, options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "GET", "/api/v1/landing-pages/{id}", input ?? {}, [], false, options)
+  },
+
+  /**
+   * PUT /api/v1/landing-pages/{id}
+   */
+  putV1LandingPagesId(input: { "id": string }, options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "PUT", "/api/v1/landing-pages/{id}", input ?? {}, [], false, options)
+  },
+
+  /**
+   * DELETE /api/v1/landing-pages/{id}
+   */
+  deleteV1LandingPagesId(input: { "id": string }, options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "DELETE", "/api/v1/landing-pages/{id}", input ?? {}, [], false, options)
+  },
+
+  /**
+   * PATCH /api/v1/landing-pages/{id}
+   */
+  patchV1LandingPagesId(input: { "id": string }, options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "PATCH", "/api/v1/landing-pages/{id}", input ?? {}, [], false, options)
+  },
+
+  /**
+   * GET /api/v1/link-pages
+   */
+  getV1LinkPages(options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "GET", "/api/v1/link-pages", {}, [], false, options)
+  },
+
+  /**
+   * POST /api/v1/link-pages
+   */
+  postV1LinkPages(options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "POST", "/api/v1/link-pages", {}, [], false, options)
+  },
+
+  /**
+   * POST /api/v1/link-pages/bulk-delete
+   */
+  postV1LinkPagesBulkDelete(options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "POST", "/api/v1/link-pages/bulk-delete", {}, [], false, options)
+  },
+
+  /**
+   * GET /api/v1/link-pages/{id}
+   */
+  getV1LinkPagesId(input: { "id": string }, options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "GET", "/api/v1/link-pages/{id}", input ?? {}, [], false, options)
+  },
+
+  /**
+   * PUT /api/v1/link-pages/{id}
+   */
+  putV1LinkPagesId(input: { "id": string }, options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "PUT", "/api/v1/link-pages/{id}", input ?? {}, [], false, options)
+  },
+
+  /**
+   * DELETE /api/v1/link-pages/{id}
+   */
+  deleteV1LinkPagesId(input: { "id": string }, options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "DELETE", "/api/v1/link-pages/{id}", input ?? {}, [], false, options)
+  },
+
+  /**
+   * PATCH /api/v1/link-pages/{id}
+   */
+  patchV1LinkPagesId(input: { "id": string }, options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "PATCH", "/api/v1/link-pages/{id}", input ?? {}, [], false, options)
+  },
+
+  /**
+   * GET /api/v1/message-blocks
+   */
+  getV1MessageBlocks(options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "GET", "/api/v1/message-blocks", {}, [], false, options)
+  },
+
+  /**
+   * POST /api/v1/message-blocks
+   */
+  postV1MessageBlocks(options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "POST", "/api/v1/message-blocks", {}, [], false, options)
+  },
+
+  /**
+   * POST /api/v1/message-blocks/bulk-delete
+   */
+  postV1MessageBlocksBulkDelete(options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "POST", "/api/v1/message-blocks/bulk-delete", {}, [], false, options)
+  },
+
+  /**
+   * GET /api/v1/message-blocks/{id}
+   */
+  getV1MessageBlocksId(input: { "id": string }, options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "GET", "/api/v1/message-blocks/{id}", input ?? {}, [], false, options)
+  },
+
+  /**
+   * PUT /api/v1/message-blocks/{id}
+   */
+  putV1MessageBlocksId(input: { "id": string }, options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "PUT", "/api/v1/message-blocks/{id}", input ?? {}, [], false, options)
+  },
+
+  /**
+   * DELETE /api/v1/message-blocks/{id}
+   */
+  deleteV1MessageBlocksId(input: { "id": string }, options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "DELETE", "/api/v1/message-blocks/{id}", input ?? {}, [], false, options)
+  },
+
+  /**
+   * PATCH /api/v1/message-blocks/{id}
+   */
+  patchV1MessageBlocksId(input: { "id": string }, options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "PATCH", "/api/v1/message-blocks/{id}", input ?? {}, [], false, options)
+  },
+
+  /**
+   * GET /api/v1/message-templates
+   */
+  getV1MessageTemplates(options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "GET", "/api/v1/message-templates", {}, [], false, options)
+  },
+
+  /**
+   * POST /api/v1/message-templates
+   */
+  postV1MessageTemplates(options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "POST", "/api/v1/message-templates", {}, [], false, options)
+  },
+
+  /**
+   * POST /api/v1/message-templates/bulk-delete
+   */
+  postV1MessageTemplatesBulkDelete(options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "POST", "/api/v1/message-templates/bulk-delete", {}, [], false, options)
+  },
+
+  /**
+   * GET /api/v1/message-templates/{id}
+   */
+  getV1MessageTemplatesId(input: { "id": string }, options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "GET", "/api/v1/message-templates/{id}", input ?? {}, [], false, options)
+  },
+
+  /**
+   * PUT /api/v1/message-templates/{id}
+   */
+  putV1MessageTemplatesId(input: { "id": string }, options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "PUT", "/api/v1/message-templates/{id}", input ?? {}, [], false, options)
+  },
+
+  /**
+   * DELETE /api/v1/message-templates/{id}
+   */
+  deleteV1MessageTemplatesId(input: { "id": string }, options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "DELETE", "/api/v1/message-templates/{id}", input ?? {}, [], false, options)
+  },
+
+  /**
+   * PATCH /api/v1/message-templates/{id}
+   */
+  patchV1MessageTemplatesId(input: { "id": string }, options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "PATCH", "/api/v1/message-templates/{id}", input ?? {}, [], false, options)
+  },
+
+  /**
+   * GET /api/v1/payouts
+   */
+  getV1Payouts(options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "GET", "/api/v1/payouts", {}, [], false, options)
+  },
+
+  /**
+   * GET /api/v1/payouts/{id}
+   */
+  getV1PayoutsId(input: { "id": string }, options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "GET", "/api/v1/payouts/{id}", input ?? {}, [], false, options)
+  },
+
+  /**
+   * GET /api/v1/podcasts
+   */
+  getV1Podcasts(options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "GET", "/api/v1/podcasts", {}, [], false, options)
+  },
+
+  /**
+   * POST /api/v1/podcasts
+   */
+  postV1Podcasts(options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "POST", "/api/v1/podcasts", {}, [], false, options)
+  },
+
+  /**
+   * POST /api/v1/podcasts/bulk-delete
+   */
+  postV1PodcastsBulkDelete(options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "POST", "/api/v1/podcasts/bulk-delete", {}, [], false, options)
+  },
+
+  /**
+   * GET /api/v1/podcasts/{id}
+   */
+  getV1PodcastsId(input: { "id": string }, options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "GET", "/api/v1/podcasts/{id}", input ?? {}, [], false, options)
+  },
+
+  /**
+   * PUT /api/v1/podcasts/{id}
+   */
+  putV1PodcastsId(input: { "id": string }, options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "PUT", "/api/v1/podcasts/{id}", input ?? {}, [], false, options)
+  },
+
+  /**
+   * DELETE /api/v1/podcasts/{id}
+   */
+  deleteV1PodcastsId(input: { "id": string }, options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "DELETE", "/api/v1/podcasts/{id}", input ?? {}, [], false, options)
+  },
+
+  /**
+   * PATCH /api/v1/podcasts/{id}
+   */
+  patchV1PodcastsId(input: { "id": string }, options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "PATCH", "/api/v1/podcasts/{id}", input ?? {}, [], false, options)
+  },
+
+  /**
+   * GET /api/v1/publication-members
+   */
+  getV1PublicationMembers(options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "GET", "/api/v1/publication-members", {}, [], false, options)
+  },
+
+  /**
+   * POST /api/v1/publication-members
+   */
+  postV1PublicationMembers(options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "POST", "/api/v1/publication-members", {}, [], false, options)
+  },
+
+  /**
+   * POST /api/v1/publication-members/bulk-delete
+   */
+  postV1PublicationMembersBulkDelete(options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "POST", "/api/v1/publication-members/bulk-delete", {}, [], false, options)
+  },
+
+  /**
+   * GET /api/v1/publication-members/{id}
+   */
+  getV1PublicationMembersId(input: { "id": string }, options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "GET", "/api/v1/publication-members/{id}", input ?? {}, [], false, options)
+  },
+
+  /**
+   * PUT /api/v1/publication-members/{id}
+   */
+  putV1PublicationMembersId(input: { "id": string }, options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "PUT", "/api/v1/publication-members/{id}", input ?? {}, [], false, options)
+  },
+
+  /**
+   * DELETE /api/v1/publication-members/{id}
+   */
+  deleteV1PublicationMembersId(input: { "id": string }, options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "DELETE", "/api/v1/publication-members/{id}", input ?? {}, [], false, options)
+  },
+
+  /**
+   * PATCH /api/v1/publication-members/{id}
+   */
+  patchV1PublicationMembersId(input: { "id": string }, options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "PATCH", "/api/v1/publication-members/{id}", input ?? {}, [], false, options)
+  },
+
+  /**
+   * GET /api/v1/publications
+   */
+  getV1Publications(options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "GET", "/api/v1/publications", {}, [], false, options)
+  },
+
+  /**
+   * POST /api/v1/publications
+   */
+  postV1Publications(options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "POST", "/api/v1/publications", {}, [], false, options)
+  },
+
+  /**
+   * POST /api/v1/publications/bulk-delete
+   */
+  postV1PublicationsBulkDelete(options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "POST", "/api/v1/publications/bulk-delete", {}, [], false, options)
+  },
+
+  /**
+   * GET /api/v1/publications/{id}
+   */
+  getV1PublicationsId(input: { "id": string }, options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "GET", "/api/v1/publications/{id}", input ?? {}, [], false, options)
+  },
+
+  /**
+   * PUT /api/v1/publications/{id}
+   */
+  putV1PublicationsId(input: { "id": string }, options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "PUT", "/api/v1/publications/{id}", input ?? {}, [], false, options)
+  },
+
+  /**
+   * DELETE /api/v1/publications/{id}
+   */
+  deleteV1PublicationsId(input: { "id": string }, options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "DELETE", "/api/v1/publications/{id}", input ?? {}, [], false, options)
+  },
+
+  /**
+   * PATCH /api/v1/publications/{id}
+   */
+  patchV1PublicationsId(input: { "id": string }, options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "PATCH", "/api/v1/publications/{id}", input ?? {}, [], false, options)
+  },
+
+  /**
+   * GET /api/v1/recommendations
+   */
+  getV1Recommendations(options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "GET", "/api/v1/recommendations", {}, [], false, options)
+  },
+
+  /**
+   * POST /api/v1/recommendations
+   */
+  postV1Recommendations(options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "POST", "/api/v1/recommendations", {}, [], false, options)
+  },
+
+  /**
+   * POST /api/v1/recommendations/bulk-delete
+   */
+  postV1RecommendationsBulkDelete(options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "POST", "/api/v1/recommendations/bulk-delete", {}, [], false, options)
+  },
+
+  /**
+   * GET /api/v1/recommendations/{id}
+   */
+  getV1RecommendationsId(input: { "id": string }, options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "GET", "/api/v1/recommendations/{id}", input ?? {}, [], false, options)
+  },
+
+  /**
+   * PUT /api/v1/recommendations/{id}
+   */
+  putV1RecommendationsId(input: { "id": string }, options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "PUT", "/api/v1/recommendations/{id}", input ?? {}, [], false, options)
+  },
+
+  /**
+   * DELETE /api/v1/recommendations/{id}
+   */
+  deleteV1RecommendationsId(input: { "id": string }, options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "DELETE", "/api/v1/recommendations/{id}", input ?? {}, [], false, options)
+  },
+
+  /**
+   * PATCH /api/v1/recommendations/{id}
+   */
+  patchV1RecommendationsId(input: { "id": string }, options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "PATCH", "/api/v1/recommendations/{id}", input ?? {}, [], false, options)
+  },
+
+  /**
+   * GET /api/v1/referrals
+   */
+  getV1Referrals(options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "GET", "/api/v1/referrals", {}, [], false, options)
+  },
+
+  /**
+   * GET /api/v1/referrals/{id}
+   */
+  getV1ReferralsId(input: { "id": string }, options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "GET", "/api/v1/referrals/{id}", input ?? {}, [], false, options)
+  },
+
+  /**
+   * PUT /api/v1/referrals/{id}
+   */
+  putV1ReferralsId(input: { "id": string }, options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "PUT", "/api/v1/referrals/{id}", input ?? {}, [], false, options)
+  },
+
+  /**
+   * PATCH /api/v1/referrals/{id}
+   */
+  patchV1ReferralsId(input: { "id": string }, options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "PATCH", "/api/v1/referrals/{id}", input ?? {}, [], false, options)
+  },
+
+  /**
+   * GET /api/v1/segment-rules
+   */
+  getV1SegmentRules(options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "GET", "/api/v1/segment-rules", {}, [], false, options)
+  },
+
+  /**
+   * POST /api/v1/segment-rules
+   */
+  postV1SegmentRules(options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "POST", "/api/v1/segment-rules", {}, [], false, options)
+  },
+
+  /**
+   * POST /api/v1/segment-rules/bulk-delete
+   */
+  postV1SegmentRulesBulkDelete(options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "POST", "/api/v1/segment-rules/bulk-delete", {}, [], false, options)
+  },
+
+  /**
+   * GET /api/v1/segment-rules/{id}
+   */
+  getV1SegmentRulesId(input: { "id": string }, options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "GET", "/api/v1/segment-rules/{id}", input ?? {}, [], false, options)
+  },
+
+  /**
+   * PUT /api/v1/segment-rules/{id}
+   */
+  putV1SegmentRulesId(input: { "id": string }, options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "PUT", "/api/v1/segment-rules/{id}", input ?? {}, [], false, options)
+  },
+
+  /**
+   * DELETE /api/v1/segment-rules/{id}
+   */
+  deleteV1SegmentRulesId(input: { "id": string }, options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "DELETE", "/api/v1/segment-rules/{id}", input ?? {}, [], false, options)
+  },
+
+  /**
+   * PATCH /api/v1/segment-rules/{id}
+   */
+  patchV1SegmentRulesId(input: { "id": string }, options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "PATCH", "/api/v1/segment-rules/{id}", input ?? {}, [], false, options)
+  },
+
+  /**
+   * GET /api/v1/segment-snapshots
+   */
+  getV1SegmentSnapshots(options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "GET", "/api/v1/segment-snapshots", {}, [], false, options)
+  },
+
+  /**
+   * GET /api/v1/segment-snapshots/{id}
+   */
+  getV1SegmentSnapshotsId(input: { "id": string }, options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "GET", "/api/v1/segment-snapshots/{id}", input ?? {}, [], false, options)
+  },
+
+  /**
+   * GET /api/v1/segments
+   */
+  getV1Segments(options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "GET", "/api/v1/segments", {}, [], false, options)
+  },
+
+  /**
+   * POST /api/v1/segments
+   */
+  postV1Segments(options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "POST", "/api/v1/segments", {}, [], false, options)
+  },
+
+  /**
+   * POST /api/v1/segments/bulk-delete
+   */
+  postV1SegmentsBulkDelete(options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "POST", "/api/v1/segments/bulk-delete", {}, [], false, options)
+  },
+
+  /**
+   * GET /api/v1/segments/{id}
+   */
+  getV1SegmentsId(input: { "id": string }, options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "GET", "/api/v1/segments/{id}", input ?? {}, [], false, options)
+  },
+
+  /**
+   * PUT /api/v1/segments/{id}
+   */
+  putV1SegmentsId(input: { "id": string }, options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "PUT", "/api/v1/segments/{id}", input ?? {}, [], false, options)
+  },
+
+  /**
+   * DELETE /api/v1/segments/{id}
+   */
+  deleteV1SegmentsId(input: { "id": string }, options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "DELETE", "/api/v1/segments/{id}", input ?? {}, [], false, options)
+  },
+
+  /**
+   * PATCH /api/v1/segments/{id}
+   */
+  patchV1SegmentsId(input: { "id": string }, options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "PATCH", "/api/v1/segments/{id}", input ?? {}, [], false, options)
+  },
+
+  /**
+   * GET /api/v1/sender-identities
+   */
+  getV1SenderIdentities(options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "GET", "/api/v1/sender-identities", {}, [], false, options)
+  },
+
+  /**
+   * POST /api/v1/sender-identities
+   */
+  postV1SenderIdentities(options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "POST", "/api/v1/sender-identities", {}, [], false, options)
+  },
+
+  /**
+   * POST /api/v1/sender-identities/bulk-delete
+   */
+  postV1SenderIdentitiesBulkDelete(options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "POST", "/api/v1/sender-identities/bulk-delete", {}, [], false, options)
+  },
+
+  /**
+   * GET /api/v1/sender-identities/{id}
+   */
+  getV1SenderIdentitiesId(input: { "id": string }, options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "GET", "/api/v1/sender-identities/{id}", input ?? {}, [], false, options)
+  },
+
+  /**
+   * PUT /api/v1/sender-identities/{id}
+   */
+  putV1SenderIdentitiesId(input: { "id": string }, options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "PUT", "/api/v1/sender-identities/{id}", input ?? {}, [], false, options)
+  },
+
+  /**
+   * DELETE /api/v1/sender-identities/{id}
+   */
+  deleteV1SenderIdentitiesId(input: { "id": string }, options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "DELETE", "/api/v1/sender-identities/{id}", input ?? {}, [], false, options)
+  },
+
+  /**
+   * PATCH /api/v1/sender-identities/{id}
+   */
+  patchV1SenderIdentitiesId(input: { "id": string }, options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "PATCH", "/api/v1/sender-identities/{id}", input ?? {}, [], false, options)
+  },
+
+  /**
+   * GET /api/v1/sms-messages
+   */
+  getV1SmsMessages(options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "GET", "/api/v1/sms-messages", {}, [], false, options)
+  },
+
+  /**
+   * POST /api/v1/sms-messages
+   */
+  postV1SmsMessages(options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "POST", "/api/v1/sms-messages", {}, [], false, options)
+  },
+
+  /**
+   * POST /api/v1/sms-messages/bulk-delete
+   */
+  postV1SmsMessagesBulkDelete(options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "POST", "/api/v1/sms-messages/bulk-delete", {}, [], false, options)
+  },
+
+  /**
+   * GET /api/v1/sms-messages/{id}
+   */
+  getV1SmsMessagesId(input: { "id": string }, options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "GET", "/api/v1/sms-messages/{id}", input ?? {}, [], false, options)
+  },
+
+  /**
+   * PUT /api/v1/sms-messages/{id}
+   */
+  putV1SmsMessagesId(input: { "id": string }, options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "PUT", "/api/v1/sms-messages/{id}", input ?? {}, [], false, options)
+  },
+
+  /**
+   * DELETE /api/v1/sms-messages/{id}
+   */
+  deleteV1SmsMessagesId(input: { "id": string }, options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "DELETE", "/api/v1/sms-messages/{id}", input ?? {}, [], false, options)
+  },
+
+  /**
+   * PATCH /api/v1/sms-messages/{id}
+   */
+  patchV1SmsMessagesId(input: { "id": string }, options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "PATCH", "/api/v1/sms-messages/{id}", input ?? {}, [], false, options)
+  },
+
+  /**
+   * GET /api/v1/sponsors
+   */
+  getV1Sponsors(options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "GET", "/api/v1/sponsors", {}, [], false, options)
+  },
+
+  /**
+   * POST /api/v1/sponsors
+   */
+  postV1Sponsors(options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "POST", "/api/v1/sponsors", {}, [], false, options)
+  },
+
+  /**
+   * POST /api/v1/sponsors/bulk-delete
+   */
+  postV1SponsorsBulkDelete(options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "POST", "/api/v1/sponsors/bulk-delete", {}, [], false, options)
+  },
+
+  /**
+   * GET /api/v1/sponsors/{id}
+   */
+  getV1SponsorsId(input: { "id": string }, options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "GET", "/api/v1/sponsors/{id}", input ?? {}, [], false, options)
+  },
+
+  /**
+   * PUT /api/v1/sponsors/{id}
+   */
+  putV1SponsorsId(input: { "id": string }, options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "PUT", "/api/v1/sponsors/{id}", input ?? {}, [], false, options)
+  },
+
+  /**
+   * DELETE /api/v1/sponsors/{id}
+   */
+  deleteV1SponsorsId(input: { "id": string }, options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "DELETE", "/api/v1/sponsors/{id}", input ?? {}, [], false, options)
+  },
+
+  /**
+   * PATCH /api/v1/sponsors/{id}
+   */
+  patchV1SponsorsId(input: { "id": string }, options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "PATCH", "/api/v1/sponsors/{id}", input ?? {}, [], false, options)
+  },
+
+  /**
+   * GET /api/v1/usage-meters
+   */
+  getV1UsageMeters(options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "GET", "/api/v1/usage-meters", {}, [], false, options)
+  },
+
+  /**
+   * GET /api/v1/usage-meters/{id}
+   */
+  getV1UsageMetersId(input: { "id": string }, options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "GET", "/api/v1/usage-meters/{id}", input ?? {}, [], false, options)
+  },
+
+  /**
+   * GET /api/v1/webhook-endpoints
+   */
+  getV1WebhookEndpoints(options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "GET", "/api/v1/webhook-endpoints", {}, [], false, options)
+  },
+
+  /**
+   * POST /api/v1/webhook-endpoints
+   */
+  postV1WebhookEndpoints(options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "POST", "/api/v1/webhook-endpoints", {}, [], false, options)
+  },
+
+  /**
+   * POST /api/v1/webhook-endpoints/bulk-delete
+   */
+  postV1WebhookEndpointsBulkDelete(options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "POST", "/api/v1/webhook-endpoints/bulk-delete", {}, [], false, options)
+  },
+
+  /**
+   * GET /api/v1/webhook-endpoints/{id}
+   */
+  getV1WebhookEndpointsId(input: { "id": string }, options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "GET", "/api/v1/webhook-endpoints/{id}", input ?? {}, [], false, options)
+  },
+
+  /**
+   * PUT /api/v1/webhook-endpoints/{id}
+   */
+  putV1WebhookEndpointsId(input: { "id": string }, options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "PUT", "/api/v1/webhook-endpoints/{id}", input ?? {}, [], false, options)
+  },
+
+  /**
+   * DELETE /api/v1/webhook-endpoints/{id}
+   */
+  deleteV1WebhookEndpointsId(input: { "id": string }, options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "DELETE", "/api/v1/webhook-endpoints/{id}", input ?? {}, [], false, options)
+  },
+
+  /**
+   * PATCH /api/v1/webhook-endpoints/{id}
+   */
+  patchV1WebhookEndpointsId(input: { "id": string }, options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "PATCH", "/api/v1/webhook-endpoints/{id}", input ?? {}, [], false, options)
+  },
+
+  /**
+   * GET /api/v1/webhook-events
+   */
+  getV1WebhookEvents(options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "GET", "/api/v1/webhook-events", {}, [], false, options)
+  },
+
+  /**
+   * GET /api/v1/webhook-events/{id}
+   */
+  getV1WebhookEventsId(input: { "id": string }, options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "GET", "/api/v1/webhook-events/{id}", input ?? {}, [], false, options)
+  },
+
+  /**
+   * GET /api/v1/workspace
+   */
+  getV1Workspace(options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "GET", "/api/v1/workspace", {}, [], false, options)
   },
 
   /**
@@ -6211,6 +8892,13 @@ export function createClient(config: ClientConfig) {
   },
 
   /**
+   * POST /api/webhooks/{provider}/{endpoint}
+   */
+  postWebhooksProviderEndpoint(input: { "provider": string; "endpoint": string }, options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "POST", "/api/webhooks/{provider}/{endpoint}", input ?? {}, [], false, options)
+  },
+
+  /**
    * GET /api/websockets
    */
   getWebsockets(options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
@@ -6236,6 +8924,20 @@ export function createClient(config: ClientConfig) {
    */
   getAuthAbilities(options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
     return request(config, "GET", "/auth/abilities", {}, [], false, options)
+  },
+
+  /**
+   * POST /auth/magic-link
+   */
+  postAuthMagicLink(input?: { body?: { "email"?: string } }, options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "POST", "/auth/magic-link", input ?? {}, [], true, options)
+  },
+
+  /**
+   * POST /auth/magic-link/consume
+   */
+  postAuthMagicLinkConsume(input?: { body?: { "token"?: string } }, options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "POST", "/auth/magic-link/consume", input ?? {}, [], true, options)
   },
 
   /**
@@ -6491,6 +9193,13 @@ export function createClient(config: ClientConfig) {
   },
 
   /**
+   * GET /confirm/{token}
+   */
+  getConfirmToken(input: { "token": string }, options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "GET", "/confirm/{token}", input ?? {}, [], false, options)
+  },
+
+  /**
    * GET /dashboard/activity
    */
   getDashboardActivity2(options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
@@ -6719,6 +9428,13 @@ export function createClient(config: ClientConfig) {
    */
   postEnableTwoFactor(input?: { body?: { "code"?: string } }, options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
     return request(config, "POST", "/enable-two-factor", input ?? {}, [], true, options)
+  },
+
+  /**
+   * POST /forms/{form}/submit
+   */
+  postFormsFormSubmit(input: { "form": string }, options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "POST", "/forms/{form}/submit", input ?? {}, [], false, options)
   },
 
   /**
@@ -7135,6 +9851,20 @@ export function createClient(config: ClientConfig) {
   },
 
   /**
+   * GET /preferences/{token}
+   */
+  getPreferencesToken(input: { "token": string }, options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "GET", "/preferences/{token}", input ?? {}, [], false, options)
+  },
+
+  /**
+   * POST /preferences/{token}
+   */
+  postPreferencesToken(input: { "token": string }, options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "POST", "/preferences/{token}", input ?? {}, [], false, options)
+  },
+
+  /**
    * POST /queue/retry-failed
    */
   postQueueRetryFailed(options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
@@ -7216,6 +9946,13 @@ export function createClient(config: ClientConfig) {
    */
   getTestError(options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
     return request(config, "GET", "/test-error", {}, [], false, options)
+  },
+
+  /**
+   * POST /unsubscribe/{token}
+   */
+  postUnsubscribeToken(input: { "token": string }, options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "POST", "/unsubscribe/{token}", input ?? {}, [], false, options)
   },
 
   /**
