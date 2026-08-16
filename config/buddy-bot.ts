@@ -3,7 +3,7 @@ import type { BuddyBotConfig } from 'buddy-bot'
 export default {
   repository: {
     owner: 'stacksjs',
-    name: 'stacks',
+    name: 'commshq',
     provider: 'github',
     // token: process.env.BUDDY_BOT_TOKEN,
   },
@@ -29,8 +29,7 @@ export default {
       // Example: '@types/node', 'eslint'
     ],
     ignorePaths: [
-      // Add file/directory paths to ignore using glob patterns
-      // Example: 'packages/test-*/**', '**/*test-envs/**', 'apps/legacy/**'
+      'storage/framework/**',
     ],
   },
   verbose: false,
