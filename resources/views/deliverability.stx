@@ -1,0 +1,6 @@
+@extends('layouts/marketing')
+@section('title', 'Email deliverability | CommsHQ')
+@section('description', 'Verify sender domains, monitor reputation, classify delivery feedback, and enforce suppression with CommsHQ.')
+@section('content')
+  <FeatureStory feature="deliverability" />
+@endsection

@@ -21,13 +21,7 @@
   </head>
   <body>
     <a href="#main" class="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-50 focus:rounded-md focus:bg-black focus:px-4 focus:py-3 focus:text-white">Skip to content</a>
-    <header class="paper sticky top-0 z-40 border-b border-tone">
-      <nav class="mx-auto max-w-7xl flex items-center justify-between px-5 py-4 lg:px-8" aria-label="Primary navigation">
-        <a href="/" class="ink inline-flex items-center gap-2 text-lg font-bold tracking-tight"><span class="bg-coral h-3 w-3 rounded-sm" aria-hidden="true"></span>CommsHQ</a>
-        <div class="hidden items-center gap-6 md:flex"><a href="/features" class="muted text-sm font-medium">Features</a><a href="/email" class="muted text-sm font-medium">Email</a><a href="/sms" class="muted text-sm font-medium">SMS</a><a href="/automation" class="muted text-sm font-medium">Automation</a><a href="/pricing" class="muted text-sm font-medium">Pricing</a></div>
-        <a href="/dashboard/register" class="bg-coral rounded-md px-4 py-2.5 text-sm font-semibold text-white focus:outline-none focus:ring-2 focus:ring-offset-2">Start free</a>
-      </nav>
-    </header>
+    <MarketingNavigation />
     <main id="main">@yield('content')</main>
     <footer class="paper border-t border-tone"><div class="mx-auto max-w-7xl flex flex-col gap-6 px-5 py-10 sm:flex-row sm:items-center sm:justify-between lg:px-8"><a href="/" class="ink font-bold">CommsHQ</a><nav class="flex flex-wrap gap-5 text-sm" aria-label="Footer"><a class="muted" href="/integrations">Integrations</a><a class="muted" href="/security">Security</a><a class="muted" href="/privacy">Privacy</a><a class="muted" href="/terms">Terms</a></nav><p class="muted m-0 text-sm">Built with Stacks.</p></div></footer>
     @stack('scripts')

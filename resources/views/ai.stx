@@ -1,0 +1,6 @@
+@extends('layouts/marketing')
+@section('title', 'Responsible AI assistance | CommsHQ')
+@section('description', 'Use Bedrock-assisted writing, segmentation, summaries, and optimization with quotas, provenance, auditing, and human approval.')
+@section('content')
+  <FeatureStory feature="ai" />
+@endsection

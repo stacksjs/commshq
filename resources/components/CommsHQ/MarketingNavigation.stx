@@ -1,0 +1,105 @@
+<script server>
+const featureGroups = [
+  {
+    label: 'Create',
+    items: [
+      { href: '/email', title: 'Email', text: 'Editorial campaigns and reusable message blocks', icon: 'i-hugeicons-mail-02' },
+      { href: '/sms', title: 'SMS', text: 'Consent-aware messages and delivery reporting', icon: 'i-hugeicons-message-02' },
+      { href: '/publishing', title: 'Publishing', text: 'Publications, podcasts, feeds, and domains', icon: 'i-hugeicons-news-01' },
+      { href: '/forms', title: 'Forms and pages', text: 'Landing pages, forms, and gated resources', icon: 'i-hugeicons-note-add' },
+    ],
+  },
+  {
+    label: 'Grow',
+    items: [
+      { href: '/audience', title: 'Audience', text: 'Contacts, segments, consent, and preferences', icon: 'i-hugeicons-user-group' },
+      { href: '/automation', title: 'Automation', text: 'Versioned journeys, branches, and approvals', icon: 'i-hugeicons-flowchart-01' },
+      { href: '/ai', title: 'AI assistance', text: 'Bedrock-powered help with human approval', icon: 'i-hugeicons-ai-innovation-01' },
+      { href: '/deliverability', title: 'Deliverability', text: 'Domain health, suppression, and reputation', icon: 'i-hugeicons-mail-validation-01' },
+    ],
+  },
+  {
+    label: 'Earn and learn',
+    items: [
+      { href: '/commerce', title: 'Commerce', text: 'Store events, recovery, and product journeys', icon: 'i-hugeicons-shopping-bag-02' },
+      { href: '/monetization', title: 'Monetization', text: 'Paid content, referrals, and sponsorships', icon: 'i-hugeicons-money-receive-circle' },
+      { href: '/analytics', title: 'Analytics', text: 'First-party attribution, cohorts, and revenue', icon: 'i-hugeicons-chart-line-data-02' },
+      { href: '/integrations', title: 'Integrations', text: 'Secure connections and webhook diagnostics', icon: 'i-hugeicons-plug-socket' },
+    ],
+  },
+]
+</script>
+
+<header class="paper sticky top-0 z-40 border-b border-tone">
+  <nav class="mx-auto max-w-7xl flex min-h-16 items-center justify-between gap-4 px-5 lg:px-8" aria-label="Primary navigation">
+    <a href="/" class="ink inline-flex shrink-0 items-center gap-2 text-lg font-bold tracking-tight" aria-label="CommsHQ home">
+      <span class="bg-coral h-3 w-3 rounded-sm" aria-hidden="true"></span>
+      CommsHQ
+    </a>
+
+    <div class="hidden items-center gap-7 md:flex">
+      <details class="feature-menu group relative">
+        <summary class="muted feature-summary inline-flex min-h-11 cursor-pointer list-none items-center gap-1.5 text-sm font-semibold hover:text-[var(--ink)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[var(--coral)]">
+          Features
+          <span class="feature-chevron i-hugeicons-arrow-down-01 h-4 w-4 transition-transform" aria-hidden="true"></span>
+        </summary>
+        <div class="panel absolute left-1/2 top-[calc(100%+0.65rem)] w-[min(860px,calc(100vw-3rem))] -translate-x-1/2 overflow-hidden rounded-xl border border-tone shadow-[0_24px_70px_rgba(32,29,26,0.16)]">
+          <div class="grid gap-px bg-[var(--line)] lg:grid-cols-3">
+            @foreach(featureGroups as group)
+              <section class="paper p-5" aria-label="{{ group.label }} features">
+                <p class="coral mb-3 text-[11px] font-bold uppercase tracking-[0.18em]">{{ group.label }}</p>
+                <div class="space-y-1">
+                  @foreach(group.items as item)
+                    <a href="{{ item.href }}" class="group/item grid min-h-16 grid-cols-[auto_1fr] gap-3 rounded-lg p-3 transition-colors hover:bg-[#e95843]/5 focus-visible:outline focus-visible:outline-2 focus-visible:outline-[var(--coral)]">
+                      <span class="coral {{ item.icon }} mt-0.5 h-5 w-5" aria-hidden="true"></span>
+                      <span><strong class="ink block text-sm">{{ item.title }}</strong><span class="muted mt-1 block text-xs leading-5">{{ item.text }}</span></span>
+                    </a>
+                  @endforeach
+                </div>
+              </section>
+            @endforeach
+          </div>
+          <a href="/features" class="ink flex min-h-12 items-center justify-between border-t border-tone px-6 text-sm font-bold focus-visible:outline focus-visible:outline-2 focus-visible:outline-[var(--coral)]">
+            Explore the complete platform
+            <span class="i-hugeicons-arrow-right-02 coral h-4 w-4" aria-hidden="true"></span>
+          </a>
+        </div>
+      </details>
+      <a href="/solutions" class="muted text-sm font-semibold hover:text-[var(--ink)]">Solutions</a>
+      <a href="/pricing" class="muted text-sm font-semibold hover:text-[var(--ink)]">Pricing</a>
+      <a href="/security" class="muted text-sm font-semibold hover:text-[var(--ink)]">Security</a>
+    </div>
+
+    <div class="flex items-center gap-2 sm:gap-3">
+      <a href="/dashboard/login" class="ink hidden text-sm font-semibold lg:block">Sign in</a>
+      <a href="/dashboard/register" class="bg-coral hidden min-h-10 items-center rounded-md px-4 text-sm font-semibold text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--coral)] sm:inline-flex">Start free</a>
+      <details class="feature-menu relative md:hidden">
+        <summary class="feature-summary ink inline-flex h-11 w-11 cursor-pointer list-none items-center justify-center rounded-md border border-tone focus-visible:outline focus-visible:outline-2 focus-visible:outline-[var(--coral)]" aria-label="Open navigation">
+          <span class="i-hugeicons-menu-01 h-5 w-5" aria-hidden="true"></span>
+        </summary>
+        <div class="panel absolute right-0 top-[calc(100%+0.65rem)] max-h-[calc(100vh-6rem)] w-[min(92vw,380px)] overflow-y-auto rounded-xl border border-tone p-4 shadow-[0_24px_70px_rgba(32,29,26,0.18)]">
+          <p class="coral px-3 pb-2 text-[11px] font-bold uppercase tracking-[0.18em]">Features</p>
+          @foreach(featureGroups as group)
+            <section class="border-t border-tone py-3 first:border-0">
+              <p class="muted px-3 pb-1 text-xs font-bold">{{ group.label }}</p>
+              @foreach(group.items as item)
+                <a href="{{ item.href }}" class="ink flex min-h-11 items-center gap-3 rounded-md px-3 text-sm font-semibold hover:bg-black/5"><span class="coral {{ item.icon }} h-4 w-4" aria-hidden="true"></span>{{ item.title }}</a>
+              @endforeach
+            </section>
+          @endforeach
+          <div class="grid grid-cols-2 gap-2 border-t border-tone pt-4">
+            <a href="/solutions" class="ink inline-flex min-h-11 items-center justify-center rounded-md border border-tone text-sm font-semibold">Solutions</a>
+            <a href="/pricing" class="ink inline-flex min-h-11 items-center justify-center rounded-md border border-tone text-sm font-semibold">Pricing</a>
+            <a href="/dashboard/login" class="ink inline-flex min-h-11 items-center justify-center rounded-md border border-tone text-sm font-semibold">Sign in</a>
+            <a href="/dashboard/register" class="bg-coral inline-flex min-h-11 items-center justify-center rounded-md text-sm font-semibold text-white">Start free</a>
+          </div>
+        </div>
+      </details>
+    </div>
+  </nav>
+</header>
+
+<style>
+  .feature-summary::-webkit-details-marker { display: none; }
+  .feature-menu[open] > .feature-summary .feature-chevron { transform: rotate(180deg); }
+</style>

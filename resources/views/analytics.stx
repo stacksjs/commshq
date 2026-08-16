@@ -1,0 +1,6 @@
+@extends('layouts/marketing')
+@section('title', 'First-party analytics | CommsHQ')
+@section('description', 'Measure audience growth, campaign performance, automations, attribution, cohorts, retention, and lifetime value in CommsHQ.')
+@section('content')
+  <FeatureStory feature="analytics" />
+@endsection

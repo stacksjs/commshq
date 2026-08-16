@@ -12,10 +12,10 @@ const workflow = [
 ]
 
 const features = [
-  { eyebrow: 'Email', title: 'Editorial sends that feel made by people', text: 'Compose with reusable blocks, conditional content, plain-text output, responsive previews, and deterministic experiments.', icon: 'i-hugeicons-mail-02' },
-  { eyebrow: 'SMS', title: 'Timely messages with consent built in', text: 'See segment counts, quiet-hour warnings, STOP language, consent status, and live delivery reporting before you send.', icon: 'i-hugeicons-message-02' },
-  { eyebrow: 'Publishing', title: 'Your publication is part of the system', text: 'Launch archives, blogs, landing pages, gated posts, forms, podcasts, feeds, and custom domains from the same workspace.', icon: 'i-hugeicons-news-01' },
-  { eyebrow: 'Commerce', title: 'Turn store signals into useful follow-up', text: 'Normalize purchase and cart events, then run recovery, replenishment, win-back, and product journeys with clear attribution.', icon: 'i-hugeicons-shopping-bag-02' },
+  { href: '/email', eyebrow: 'Email', title: 'Editorial sends that feel made by people', text: 'Compose with reusable blocks, conditional content, plain-text output, responsive previews, and deterministic experiments.', icon: 'i-hugeicons-mail-02' },
+  { href: '/sms', eyebrow: 'SMS', title: 'Timely messages with consent built in', text: 'See segment counts, quiet-hour warnings, STOP language, consent status, and live delivery reporting before you send.', icon: 'i-hugeicons-message-02' },
+  { href: '/publishing', eyebrow: 'Publishing', title: 'Your publication is part of the system', text: 'Launch archives, blogs, landing pages, gated posts, forms, podcasts, feeds, and custom domains from the same workspace.', icon: 'i-hugeicons-news-01' },
+  { href: '/commerce', eyebrow: 'Commerce', title: 'Turn store signals into useful follow-up', text: 'Normalize purchase and cart events, then run recovery, replenishment, win-back, and product journeys with clear attribution.', icon: 'i-hugeicons-shopping-bag-02' },
 ]
 
 const plans = [
@@ -65,24 +65,7 @@ const plans = [
   <body>
     <a href="#main" class="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-50 focus:rounded-md focus:bg-black focus:px-4 focus:py-3 focus:text-white">Skip to content</a>
 
-    <header class="paper sticky top-0 z-40 border-b border-tone">
-      <nav class="mx-auto max-w-7xl flex items-center justify-between px-5 py-4 lg:px-8" aria-label="Primary navigation">
-        <a href="/" class="ink inline-flex items-center gap-2 text-lg font-bold tracking-tight" aria-label="CommsHQ home">
-          <span class="bg-coral h-3 w-3 rounded-sm" aria-hidden="true"></span>
-          CommsHQ
-        </a>
-        <div class="hidden items-center gap-7 md:flex">
-          <a href="#platform" class="muted hover:ink text-sm font-medium">Platform</a>
-          <a href="/publishing" class="muted hover:ink text-sm font-medium">Publishing</a>
-          <a href="/commerce" class="muted hover:ink text-sm font-medium">Commerce</a>
-          <a href="#pricing" class="muted hover:ink text-sm font-medium">Pricing</a>
-        </div>
-        <div class="flex items-center gap-3">
-          <a href="/dashboard/login" class="ink hidden text-sm font-semibold sm:block">Sign in</a>
-          <a href="/dashboard/register" class="bg-coral rounded-md px-4 py-2.5 text-sm font-semibold text-white transition-transform hover:-translate-y-0.5 focus:outline-none focus:ring-2 focus:ring-offset-2">Start free</a>
-        </div>
-      </nav>
-    </header>
+    <MarketingNavigation />
 
     <main id="main">
       <section class="editorial-grid border-b border-tone">
@@ -146,10 +129,11 @@ const plans = [
           </div>
           <div class="mt-14 grid gap-px overflow-hidden rounded-xl border border-tone bg-[var(--line)] md:grid-cols-2">
             @foreach(features as feature)
-              <article class="paper reveal min-h-72 p-8 sm:p-10">
+              <article class="paper reveal flex min-h-72 flex-col p-8 sm:p-10">
                 <div class="flex items-center justify-between"><span class="coral text-xs font-bold uppercase tracking-[0.18em]">{{ feature.eyebrow }}</span><span class="coral {{ feature.icon }} h-6 w-6" aria-hidden="true"></span></div>
                 <h3 class="ink text-balance mt-12 text-3xl leading-tight">{{ feature.title }}</h3>
                 <p class="muted mb-0 mt-4 max-w-lg leading-7">{{ feature.text }}</p>
+                <a href="{{ feature.href }}" class="coral mt-auto inline-flex items-center gap-2 pt-8 font-bold">Explore {{ feature.eyebrow }}<span class="i-hugeicons-arrow-right-02 h-4 w-4" aria-hidden="true"></span></a>
               </article>
             @endforeach
           </div>
