@@ -1,0 +1,36 @@
+@extends('layouts/marketing')
+@section('title', 'Communication preferences | CommsHQ')
+@section('description', 'Choose which email and SMS updates you want to receive.')
+@section('content')
+  <section class="mx-auto max-w-3xl px-5 py-20 sm:py-28 lg:px-8" aria-labelledby="preferences-title">
+    <p class="coral text-xs font-bold uppercase tracking-[0.22em]">Preference center</p>
+    <h1 id="preferences-title" class="ink text-balance mt-4 text-5xl leading-tight tracking-[-0.04em] sm:text-6xl">Choose what reaches you.</h1>
+    <p class="muted mt-5 max-w-2xl text-lg leading-8">A suppression always wins. Turning email back on requires confirmation, and turning SMS back on requires a START reply.</p>
+
+    <form method="post" action="/preferences/{{ token }}" class="panel mt-10 space-y-4 rounded-2xl border border-tone p-5 sm:p-8">
+      @if(channels.email.available)
+        <fieldset class="rounded-xl border border-tone p-5">
+          <legend class="ink px-2 font-bold">Email</legend>
+          <p class="muted mt-1 text-sm">{{ contact.email }}</p>
+          <div class="mt-4 grid gap-3 sm:grid-cols-2">
+            <label class="ink flex min-h-12 cursor-pointer items-center gap-3 rounded-lg border border-tone px-4"><input type="radio" name="email" value="enabled" @if(channels.email.enabled) checked @endif>Receive email</label>
+            <label class="ink flex min-h-12 cursor-pointer items-center gap-3 rounded-lg border border-tone px-4"><input type="radio" name="email" value="disabled" @if(!channels.email.enabled) checked @endif>Stop email</label>
+          </div>
+        </fieldset>
+      @endif
+
+      @if(channels.sms.available)
+        <fieldset class="rounded-xl border border-tone p-5">
+          <legend class="ink px-2 font-bold">SMS</legend>
+          <p class="muted mt-1 text-sm">{{ contact.phone }}</p>
+          <div class="mt-4 grid gap-3 sm:grid-cols-2">
+            <label class="ink flex min-h-12 cursor-pointer items-center gap-3 rounded-lg border border-tone px-4"><input type="radio" name="sms" value="enabled" @if(channels.sms.enabled) checked @endif>Receive SMS</label>
+            <label class="ink flex min-h-12 cursor-pointer items-center gap-3 rounded-lg border border-tone px-4"><input type="radio" name="sms" value="disabled" @if(!channels.sms.enabled) checked @endif>Stop SMS</label>
+          </div>
+        </fieldset>
+      @endif
+
+      <button type="submit" class="bg-coral min-h-12 w-full rounded-md px-6 font-bold text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[var(--coral)] sm:w-auto">Save preferences</button>
+    </form>
+  </section>
+@endsection

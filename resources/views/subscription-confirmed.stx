@@ -1,0 +1,12 @@
+@extends('layouts/marketing')
+@section('title', 'Subscription confirmed | CommsHQ')
+@section('description', 'Your email subscription has been confirmed.')
+@section('content')
+  <section class="mx-auto max-w-4xl px-5 py-24 text-center sm:py-32 lg:px-8" aria-labelledby="confirmation-title">
+    <span class="coral i-hugeicons-mail-validation-01 mx-auto block h-10 w-10" aria-hidden="true"></span>
+    <p class="coral mt-8 text-xs font-bold uppercase tracking-[0.22em]">Subscription confirmed</p>
+    <h1 id="confirmation-title" class="ink text-balance mt-4 text-5xl leading-tight tracking-[-0.04em] sm:text-7xl">You are on the list.</h1>
+    <p class="muted mx-auto mt-6 max-w-2xl text-lg leading-8">Your consent is confirmed. The publication you joined can now send the updates you requested.</p>
+    <a href="/" class="bg-coral mt-9 inline-flex min-h-12 items-center rounded-md px-6 font-bold text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[var(--coral)]">Return to CommsHQ</a>
+  </section>
+@endsection

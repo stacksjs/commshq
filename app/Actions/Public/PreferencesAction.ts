@@ -1,7 +1,9 @@
 import type { RequestInstance } from '@stacksjs/types'
 import { Action } from '@stacksjs/actions'
 import { config } from '@stacksjs/config'
+import { resourcesPath } from '@stacksjs/path'
 import { response } from '@stacksjs/router'
+import { renderTemplate } from '@stacksjs/stx'
 import Contact from '../../Models/Contact'
 import { verifyPublicToken } from './signed-token'
 
@@ -45,9 +47,24 @@ export default new Action({
       channelPreference(payload.teamId, 'sms', sms),
     ])
 
-    return response.json({
+    const preferences = {
       contact: { email, phone: sms },
       channels: { email: emailPreference, sms: smsPreference },
-    })
+    }
+    if (request.headers.get('accept')?.includes('text/html')) {
+      const html = await renderTemplate(resourcesPath('templates/public-preferences.stx'), {
+        context: { token: request.getParam('token'), ...preferences },
+        options: {
+          componentsDir: resourcesPath('components'),
+          layoutsDir: resourcesPath('views/layouts'),
+          partialsDir: resourcesPath('views/partials'),
+        },
+      })
+      return new Response(html, {
+        headers: { 'content-type': 'text/html; charset=utf-8' },
+      })
+    }
+
+    return response.json(preferences)
   },
 })

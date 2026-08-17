@@ -1,0 +1,12 @@
+@extends('layouts/marketing')
+@section('title', 'Preferences saved | CommsHQ')
+@section('description', 'Your communication preferences have been saved.')
+@section('content')
+  <section class="mx-auto max-w-4xl px-5 py-24 text-center sm:py-32 lg:px-8" aria-labelledby="preferences-title">
+    <span class="coral i-hugeicons-checkmark-circle-02 mx-auto block h-10 w-10" aria-hidden="true"></span>
+    <p class="coral mt-8 text-xs font-bold uppercase tracking-[0.22em]">Preferences saved</p>
+    <h1 id="preferences-title" class="ink text-balance mt-4 text-5xl leading-tight tracking-[-0.04em] sm:text-7xl">You are in control.</h1>
+    <p class="muted mx-auto mt-6 max-w-2xl text-lg leading-8">Your choices are recorded. Suppressed channels stay suppressed unless you complete a new consent step.</p>
+    <a href="/" class="panel ink mt-9 inline-flex min-h-12 items-center rounded-md border border-tone px-6 font-bold focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[var(--coral)]">Return to CommsHQ</a>
+  </section>
+@endsection

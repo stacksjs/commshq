@@ -4,6 +4,8 @@ import { config } from '@stacksjs/config'
 import { job } from '@stacksjs/queue'
 import { response } from '@stacksjs/router'
 import Contact from '../../Models/Contact'
+import { buildConfirmationMessage } from '../../Mail/ConfirmSubscription'
+import { parsePreferenceChoice } from './preference-policy'
 import { createPublicToken, verifyPublicToken } from './signed-token'
 
 async function suppress(teamId: number, channel: 'email' | 'sms', recipient: string): Promise<void> {
@@ -51,8 +53,8 @@ export default new Action({
 
     const email = String(contact.email || '').trim().toLowerCase()
     const sms = String(contact.phone || '').trim()
-    const wantsEmail = request.get('email')
-    const wantsSms = request.get('sms')
+    const wantsEmail = parsePreferenceChoice(request.get('email'))
+    const wantsSms = parsePreferenceChoice(request.get('sms'))
     const result = { emailConfirmationRequired: false, smsStartRequired: false }
 
     if (wantsEmail === false) {
@@ -74,13 +76,7 @@ export default new Action({
       const token = createPublicToken({ teamId: payload.teamId, contactId: contact.id, channel: 'email', purpose: 'confirm', expiresAt: Date.now() + 48 * 60 * 60 * 1000 }, String(config.app.key))
       const confirmationUrl = `${String(config.app.url).replace(/\/$/, '')}/confirm/${token}`
       await job('SendEmail', {
-        message: {
-          to: [email],
-          from: config.email.from,
-          subject: 'Confirm your CommsHQ email preference',
-          html: `<p>Confirm that you want to receive email:</p><p><a href="${confirmationUrl}">Confirm email</a></p>`,
-          text: `Confirm that you want to receive email: ${confirmationUrl}`,
-        },
+        message: buildConfirmationMessage(email, confirmationUrl),
         driver: config.email.default,
       }).onQueue('emails').dispatch()
       result.emailConfirmationRequired = true
@@ -88,6 +84,9 @@ export default new Action({
 
     if (wantsSms === false) await suppress(payload.teamId, 'sms', sms)
     else if (wantsSms === true && sms) result.smsStartRequired = true
+
+    if (request.headers.get('accept')?.includes('text/html'))
+      return response.redirect('/preferences-saved')
 
     return response.json({ updated: true, ...result })
   },
