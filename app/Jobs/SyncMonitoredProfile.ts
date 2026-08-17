@@ -70,13 +70,13 @@ export default new Job({
       throw error
     }
 
-    const since = profile.lastMentionAt
-      ? String(profile.lastMentionAt)
+    const since = profile.last_mention_at
+      ? String(profile.last_mention_at)
       : new Date(Date.now() - FIRST_SYNC_LOOKBACK_DAYS * 86_400_000).toISOString()
 
     try {
       const { mentions, cursor } = await provider.fetchMentions({
-        externalId: String(profile.externalId),
+        externalId: String(profile.external_id),
         handle: profile.handle ? String(profile.handle) : null,
         cursor: profile.cursor ? String(profile.cursor) : null,
         since,
@@ -86,7 +86,7 @@ export default new Job({
 
       const fetchedAt = new Date().toISOString()
       let stored = 0
-      let latestPostedAt = profile.lastMentionAt ? String(profile.lastMentionAt) : null
+      let latestPostedAt = profile.last_mention_at ? String(profile.last_mention_at) : null
 
       for (const mention of mentions) {
         const { sentiment, score } = classifyMention({ body: mention.body, rating: mention.rating })
@@ -129,13 +129,13 @@ export default new Job({
         consecutiveFailures: 0,
         lastPolledAt: fetchedAt,
         lastMentionAt: latestPostedAt,
-        nextPollAt: minutesFromNow(Number(profile.pollIntervalMinutes) || 30),
+        nextPollAt: minutesFromNow(Number(profile.poll_interval_minutes) || 30),
       })
 
       return { stored, fetched: mentions.length }
     }
     catch (error) {
-      const failures = Number(profile.consecutiveFailures || 0) + 1
+      const failures = Number(profile.consecutive_failures || 0) + 1
       const message = error instanceof Error ? error.message : String(error)
       const permanent = error instanceof ProviderRequestError && !error.retryable
 
@@ -146,7 +146,7 @@ export default new Job({
         lastPolledAt: new Date().toISOString(),
         nextPollAt: permanent || failures >= FAILURE_LIMIT
           ? null
-          : minutesFromNow(backoffMinutes(Number(profile.pollIntervalMinutes) || 30, failures)),
+          : minutesFromNow(backoffMinutes(Number(profile.poll_interval_minutes) || 30, failures)),
       })
 
       log.error(`[commshq:reputation] profile ${profile.id} sync failed: ${message}`)

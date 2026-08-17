@@ -39,7 +39,7 @@ export interface AlertRecipient {
 export async function alertRecipients(teamId: number): Promise<AlertRecipient[]> {
   const rows = await db
     .selectFrom('team_members' as any)
-    .innerJoin('users' as any, 'users.id' as any, 'team_members.user_id' as any)
+    .innerJoin('users' as any, 'users.id' as any, '=' as any, 'team_members.user_id' as any)
     .select(['team_members.user_id as user_id', 'team_members.role as role', 'users.email as email'] as any)
     .where('team_members.team_id' as any, '=', teamId)
     .where('team_members.status' as any, '=', 'active')

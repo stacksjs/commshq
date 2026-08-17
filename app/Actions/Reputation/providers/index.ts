@@ -40,7 +40,8 @@ export async function credentialFor(teamId: number, provider: ReputationProvider
     .where('provider', provider.credentialProvider)
     .first()
 
-  const secret = String(credential?.encryptedValue || '').trim()
+  // Rows come back keyed by column, so read the column name.
+  const secret = String((credential as any)?.encrypted_value || '').trim()
   if (!secret)
     throw new ProviderNotConfiguredError(provider.platform, provider.credentialHint)
 
