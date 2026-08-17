@@ -61,6 +61,12 @@ const pages: Record<string, WorkspacePage> = {
     records: [{ name: 'Studio Supply Co.', detail: 'Primary newsletter placement', status: 'Approved', value: '$4,800' }, { name: 'Field Guide exchange', detail: 'Recommendation partnership', status: 'Live', value: '$1.80 CPA' }, { name: 'August creator payout', detail: 'ACH account ending 1842', status: 'Scheduled', value: '$18,406' }],
     checklist: [{ label: 'Disclosure copy', detail: 'Present on every sponsored placement', state: 'Ready' }, { label: 'Commission ledger', detail: 'Append-only accounting entries', state: 'Locked' }, { label: 'Payout review', detail: 'Owner approval is required', state: 'On' }],
   },
+  reputation: {
+    eyebrow: 'Reputation monitoring', title: 'Hear every review before your customers do.', description: 'Watch business listings and social handles, score each mention, and page the right people when volume or tone crosses your threshold.', primary: 'Add profile', icon: 'i-hugeicons-star',
+    metrics: [{ label: 'Average rating', value: '4.3', note: 'Across 4 listings' }, { label: 'Negative, 24 hr', value: '6', note: 'Threshold is 5' }, { label: 'Median response', value: '3.2 hr', note: 'Down from 9.1 hr' }],
+    records: [{ name: 'Google Business Profile', detail: 'Riverside location', status: 'Active', value: '2 min ago' }, { name: 'Yelp listing', detail: 'Riverside location', status: 'Active', value: '11 min ago' }, { name: 'Negative review spike', detail: 'Six negative mentions in 24 hours', status: 'Open', value: 'Critical' }],
+    checklist: [{ label: 'Connector credentials', detail: 'Required before a profile is polled', state: 'Connected' }, { label: 'Alert routing', detail: 'Owners and admins, in app and email', state: 'On' }, { label: 'Cooldown', detail: 'One page per rule per window', state: 'Locked' }],
+  },
   analytics: {
     eyebrow: 'First-party analytics', title: 'See the path from attention to revenue.', description: 'Measure acquisition, engagement, automations, referrals, cohorts, retention, attribution, and lifetime value.', primary: 'Create report', icon: 'i-hugeicons-chart-line-data-02',
     metrics: [{ label: 'Known visitors', value: '68.4%', note: '+4.2 points' }, { label: '30-day retention', value: '71.2%', note: '+2.8 points' }, { label: 'Reader LTV', value: '$48.20', note: '+$6.14' }],
