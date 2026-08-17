@@ -51,7 +51,7 @@ const pages: Record<string, FeaturePage> = {
   },
   audience: {
     eyebrow: 'Audience intelligence', title: 'Know the person, not just the address.', intro: 'Bring identities, preferences, behavior, purchases, and consent proof into one workspace-scoped audience record.', promise: 'Every segment stays explainable, every suppression wins, and every team sees only its own people.', icon: 'i-hugeicons-user-group',
-    metrics: [{ value: '1 profile', label: 'across every channel' }, { value: '100%', label: 'suppression precedence' }, { value: '< 2 min', label: 'typical segment refresh' }],
+    metrics: [{ value: 'Unified', label: 'identity across every channel' }, { value: 'First', label: 'suppression precedence' }, { value: 'Explainable', label: 'segment membership and rules' }],
     capabilities: [{ title: 'Unified profiles', text: 'Resolve email, phone, publication, and commerce identities without losing source history.', icon: 'i-hugeicons-contact-01' }, { title: 'Dynamic segments', text: 'Combine consent, engagement, properties, referrals, and purchases in readable rules.', icon: 'i-hugeicons-filter-horizontal' }, { title: 'Consent ledger', text: 'Keep append-only proof of purpose, policy, channel, jurisdiction, source, and time.', icon: 'i-hugeicons-shield-02' }, { title: 'Safe imports', text: 'Map fields, preview changes, deduplicate records, and preserve suppression on every import.', icon: 'i-hugeicons-file-import' }, { title: 'Preference center', text: 'Let people choose topics and channels without forcing an all-or-nothing unsubscribe.', icon: 'i-hugeicons-settings-02' }, { title: 'Portable data', text: 'Run accountable exports, erasure requests, retention rules, and merge history.', icon: 'i-hugeicons-database-export' }],
     steps: [{ number: '01', title: 'Collect with context', text: 'Forms, APIs, imports, and events retain their source and declared purpose.' }, { number: '02', title: 'Resolve and segment', text: 'Identity and rule evaluation build a current, inspectable audience view.' }, { number: '03', title: 'Activate safely', text: 'Channel consent and suppression are checked again at the moment of delivery.' }],
   },
@@ -81,7 +81,7 @@ const pages: Record<string, FeaturePage> = {
   },
   deliverability: {
     eyebrow: 'Deliverability', title: 'Protect the trust behind every send.', intro: 'Verify senders, authenticate domains, classify delivery outcomes, and keep suppression synchronized across campaigns and retries.', promise: 'The owned mail service and channel-neutral delivery ledger make reputation health understandable and enforceable.', icon: 'i-hugeicons-mail-validation-01',
-    metrics: [{ value: 'SPF + DKIM', label: 'verified sender alignment' }, { value: '< 0.1%', label: 'complaint alert target' }, { value: 'Never', label: 'resend after suppression' }],
+    metrics: [{ value: 'SPF + DKIM', label: 'verified sender alignment' }, { value: 'Alerted', label: 'complaint and bounce thresholds' }, { value: 'Never', label: 'resend after suppression' }],
     capabilities: [{ title: 'Sender domains', text: 'Guide customers through SPF and DKIM verification without exposing server administration.', icon: 'i-hugeicons-global' }, { title: 'Reputation view', text: 'Track bounces, complaints, deferrals, blocks, and engagement by sender.', icon: 'i-hugeicons-activity-03' }, { title: 'Suppression first', text: 'Apply complaints, hard bounces, unsubscribes, and policy blocks before every attempt.', icon: 'i-hugeicons-user-block-01' }, { title: 'Delivery events', text: 'Deduplicate provider callbacks into a normalized, searchable event history.', icon: 'i-hugeicons-route-03' }, { title: 'Retry classification', text: 'Separate temporary provider failures from permanent recipient failures.', icon: 'i-hugeicons-refresh' }, { title: 'Health checks', text: 'Validate SMTP, mailboxes, DNS, TLS, queues, webhooks, and feedback processing.', icon: 'i-hugeicons-pulse-01' }],
     steps: [{ number: '01', title: 'Authenticate', text: 'Verify the sending identity and aligned domain records.' }, { number: '02', title: 'Send deliberately', text: 'Respect consent, suppression, rate limits, and reputation thresholds.' }, { number: '03', title: 'Respond to feedback', text: 'Classify events, suppress immediately, and surface actions to the team.' }],
   },
@@ -115,9 +115,9 @@ const page = pages[props.feature || 'audience'] || pages.audience
 
 <section class="mx-auto max-w-7xl px-5 py-24 lg:px-8 lg:py-32">
   <div class="max-w-3xl"><p class="coral text-xs font-bold uppercase tracking-[0.22em]">Built into the platform</p><h2 class="ink text-balance mt-4 text-4xl leading-tight tracking-[-0.035em] sm:text-5xl">The details are part of the product.</h2></div>
-  <div class="mt-14 grid gap-px overflow-hidden rounded-xl border border-tone bg-[var(--line)] md:grid-cols-2 lg:grid-cols-3">
+  <div class="mt-14 grid gap-x-12 md:grid-cols-2">
     @foreach(page.capabilities as capability)
-      <article class="paper min-h-64 p-8"><span class="coral {{ capability.icon }} h-6 w-6" aria-hidden="true"></span><h3 class="ink mt-10 text-2xl">{{ capability.title }}</h3><p class="muted mb-0 mt-3 leading-7">{{ capability.text }}</p></article>
+      <article class="border-t border-tone py-8"><span class="coral {{ capability.icon }} h-6 w-6" aria-hidden="true"></span><h3 class="ink mt-8 text-2xl">{{ capability.title }}</h3><p class="muted mb-0 mt-3 max-w-xl leading-7">{{ capability.text }}</p></article>
     @endforeach
   </div>
 </section>
@@ -127,7 +127,7 @@ const page = pages[props.feature || 'audience'] || pages.audience
     <div><p class="coral text-xs font-bold uppercase tracking-[0.22em]">How it works</p><h2 class="ink text-balance mt-4 text-4xl leading-tight tracking-[-0.035em] sm:text-5xl">A clear path from signal to action.</h2></div>
     <ol class="m-0 space-y-3 p-0">
       @foreach(page.steps as step)
-        <li class="paper grid gap-5 rounded-xl border border-tone p-7 sm:grid-cols-[auto_1fr]"><span class="coral font-bold">{{ step.number }}</span><div><h3 class="ink m-0 text-2xl">{{ step.title }}</h3><p class="muted mb-0 mt-2 leading-7">{{ step.text }}</p></div></li>
+        <li class="paper grid gap-5 border-t border-tone px-1 py-7 sm:grid-cols-[auto_1fr]"><span class="bg-coral mt-2 h-2.5 w-2.5 rounded-full" aria-hidden="true"></span><div><h3 class="ink m-0 text-2xl">{{ step.title }}</h3><p class="muted mb-0 mt-2 leading-7">{{ step.text }}</p></div></li>
       @endforeach
     </ol>
   </div>

@@ -1,8 +1,8 @@
 <script server>
 const channelStats = [
-  { value: '42.8%', label: 'average engaged open rate' },
-  { value: '18 min', label: 'from idea to scheduled send' },
-  { value: '3.4x', label: 'revenue from coordinated journeys' },
+  { value: 'Email + SMS', label: 'coordinated through one delivery history' },
+  { value: 'One ledger', label: 'consent proof across every audience source' },
+  { value: '0%', label: 'CommsHQ fee on connected-store sales' },
 ]
 
 const workflow = [
@@ -33,9 +33,6 @@ const plans = [
     <meta name="description" content="CommsHQ brings email, SMS, publishing, automation, and commerce marketing into one creator-first workspace.">
     <meta name="theme-color" content="#f7f1ea">
     <link rel="canonical" href="https://commshq.org/">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Fraunces:opsz,wght@9..144,600;9..144,700&display=swap" rel="stylesheet">
     <title>CommsHQ - Grow an audience worth knowing</title>
     @appearanceBootstrap({
       storageKey: 'commshq-appearance',
@@ -46,8 +43,8 @@ const plans = [
       :root { --paper: #f7f1ea; --ink: #201d1a; --muted: #6f665e; --coral: #e95843; --line: #d9cec3; --panel: #fffaf5; color-scheme: light; }
       :root.dark { --paper: #191715; --ink: #f8f0e8; --muted: #b9aca1; --coral: #ff745f; --line: #403a35; --panel: #24211e; color-scheme: dark; }
       html { scroll-behavior: smooth; background: var(--paper); }
-      body { margin: 0; background: var(--paper); color: var(--ink); font-family: 'DM Sans', sans-serif; }
-      h1, h2, h3 { font-family: 'Fraunces', serif; }
+      body { margin: 0; background: var(--paper); color: var(--ink); font-family: ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+      h1, h2, h3 { font-family: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, serif; }
       .paper { background: var(--paper); }
       .panel { background: var(--panel); }
       .ink { color: var(--ink); }
