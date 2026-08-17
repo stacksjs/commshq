@@ -5,6 +5,7 @@ CREATE TABLE IF NOT EXISTS "ai_generations" (
   "model" varchar(255) not null,
   "prompt_hash" varchar(128) not null,
   "provenance" jsonb not null,
+  "output" text not null,
   "input_tokens" integer not null default 0,
   "output_tokens" integer not null default 0,
   "cost" integer not null default 0,

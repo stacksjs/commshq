@@ -3,7 +3,7 @@ CREATE TABLE IF NOT EXISTS "usage_meters" (
   "id" BIGSERIAL PRIMARY KEY,
   "key" "usage_meters_key_type" not null,
   "quantity" integer not null default 0,
-  "included_quantity" integer not null default 0,
+  "included_quantity" integer,
   "period_start" timestamp not null,
   "period_end" timestamp not null,
   "team_id" bigint REFERENCES "teams"("id"),

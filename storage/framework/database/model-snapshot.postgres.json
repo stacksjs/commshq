@@ -642,6 +642,14 @@
             "hasDefault": false
           },
           {
+            "name": "output",
+            "type": "text",
+            "isPrimaryKey": false,
+            "isUnique": false,
+            "isNullable": false,
+            "hasDefault": false
+          },
+          {
             "name": "input_tokens",
             "type": "integer",
             "isPrimaryKey": false,
@@ -6214,6 +6222,15 @@
             "isUnique": true,
             "isNullable": true,
             "hasDefault": false
+          },
+          {
+            "name": "idempotency_key",
+            "type": "string",
+            "isPrimaryKey": false,
+            "isUnique": false,
+            "isNullable": true,
+            "hasDefault": false,
+            "maxLength": 255
           }
         ],
         "indexes": [
@@ -6231,6 +6248,14 @@
             "name": "consent_events_uuid_unique",
             "columns": [
               "uuid"
+            ],
+            "type": "unique"
+          },
+          {
+            "name": "consent_events_idempotency_unique",
+            "columns": [
+              "team_id",
+              "idempotency_key"
             ],
             "type": "unique"
           }
@@ -18678,14 +18703,14 @@
             "isUnique": false,
             "isNullable": false,
             "hasDefault": false,
-            "maxLength": 512
+            "maxLength": 120
           },
           {
             "name": "plan",
             "type": "string",
             "isPrimaryKey": false,
             "isUnique": false,
-            "isNullable": true,
+            "isNullable": false,
             "hasDefault": false,
             "maxLength": 100
           },
@@ -18693,7 +18718,7 @@
             "name": "provider_id",
             "type": "string",
             "isPrimaryKey": false,
-            "isUnique": true,
+            "isUnique": false,
             "isNullable": false,
             "hasDefault": false,
             "maxLength": 255
@@ -18704,7 +18729,8 @@
             "isPrimaryKey": false,
             "isUnique": false,
             "isNullable": false,
-            "hasDefault": false
+            "hasDefault": false,
+            "maxLength": 100
           },
           {
             "name": "unit_price",
@@ -18712,7 +18738,8 @@
             "isPrimaryKey": false,
             "isUnique": false,
             "isNullable": false,
-            "hasDefault": false
+            "hasDefault": true,
+            "defaultValue": 0
           },
           {
             "name": "provider_type",
@@ -18721,7 +18748,7 @@
             "isUnique": false,
             "isNullable": false,
             "hasDefault": false,
-            "maxLength": 255
+            "maxLength": 100
           },
           {
             "name": "provider_price_id",
@@ -18729,15 +18756,35 @@
             "isPrimaryKey": false,
             "isUnique": false,
             "isNullable": true,
-            "hasDefault": false
+            "hasDefault": false,
+            "maxLength": 255
+          },
+          {
+            "name": "provider_customer_id",
+            "type": "string",
+            "isPrimaryKey": false,
+            "isUnique": false,
+            "isNullable": true,
+            "hasDefault": false,
+            "maxLength": 255
           },
           {
             "name": "quantity",
             "type": "integer",
             "isPrimaryKey": false,
             "isUnique": false,
-            "isNullable": true,
-            "hasDefault": false
+            "isNullable": false,
+            "hasDefault": true,
+            "defaultValue": 1
+          },
+          {
+            "name": "cancel_at_period_end",
+            "type": "boolean",
+            "isPrimaryKey": false,
+            "isUnique": false,
+            "isNullable": false,
+            "hasDefault": true,
+            "defaultValue": false
           },
           {
             "name": "trial_ends_at",
@@ -18764,6 +18811,18 @@
             "hasDefault": false
           },
           {
+            "name": "team_id",
+            "type": "bigint",
+            "isPrimaryKey": false,
+            "isUnique": false,
+            "isNullable": true,
+            "hasDefault": false,
+            "references": {
+              "table": "teams",
+              "column": "id"
+            }
+          },
+          {
             "name": "user_id",
             "type": "bigint",
             "isPrimaryKey": false,
@@ -18774,6 +18833,23 @@
               "table": "users",
               "column": "id"
             }
+          },
+          {
+            "name": "created_at",
+            "type": "datetime",
+            "isPrimaryKey": false,
+            "isUnique": false,
+            "isNullable": false,
+            "hasDefault": true,
+            "defaultValue": "CURRENT_TIMESTAMP"
+          },
+          {
+            "name": "updated_at",
+            "type": "datetime",
+            "isPrimaryKey": false,
+            "isUnique": false,
+            "isNullable": true,
+            "hasDefault": false
           },
           {
             "name": "uuid",
@@ -18791,6 +18867,14 @@
               "provider_id"
             ],
             "type": "unique"
+          },
+          {
+            "name": "subscriptions_team_status_index",
+            "columns": [
+              "team_id",
+              "provider_status"
+            ],
+            "type": "index"
           },
           {
             "name": "subscriptions_uuid_unique",
@@ -19577,19 +19661,12 @@
           },
           {
             "name": "meter",
-            "type": "enum",
+            "type": "string",
             "isPrimaryKey": false,
             "isUnique": false,
             "isNullable": false,
             "hasDefault": false,
-            "enumValues": [
-              "contacts",
-              "email_sends",
-              "sms_segments",
-              "ai_generations",
-              "storage_bytes"
-            ],
-            "enumTypeName": "usage_events_meter_type"
+            "maxLength": 60
           },
           {
             "name": "quantity",
@@ -19597,8 +19674,25 @@
             "isPrimaryKey": false,
             "isUnique": false,
             "isNullable": false,
-            "hasDefault": true,
-            "defaultValue": 1
+            "hasDefault": false
+          },
+          {
+            "name": "source_type",
+            "type": "string",
+            "isPrimaryKey": false,
+            "isUnique": false,
+            "isNullable": false,
+            "hasDefault": false,
+            "maxLength": 120
+          },
+          {
+            "name": "source_id",
+            "type": "string",
+            "isPrimaryKey": false,
+            "isUnique": false,
+            "isNullable": true,
+            "hasDefault": false,
+            "maxLength": 120
           },
           {
             "name": "idempotency_key",
@@ -19610,11 +19704,20 @@
             "maxLength": 255
           },
           {
+            "name": "provider_cost",
+            "type": "integer",
+            "isPrimaryKey": false,
+            "isUnique": false,
+            "isNullable": false,
+            "hasDefault": true,
+            "defaultValue": 0
+          },
+          {
             "name": "metadata",
             "type": "json",
             "isPrimaryKey": false,
             "isUnique": false,
-            "isNullable": true,
+            "isNullable": false,
             "hasDefault": false
           },
           {
@@ -19634,6 +19737,18 @@
             "hasDefault": false,
             "references": {
               "table": "teams",
+              "column": "id"
+            }
+          },
+          {
+            "name": "user_id",
+            "type": "bigint",
+            "isPrimaryKey": false,
+            "isUnique": false,
+            "isNullable": true,
+            "hasDefault": false,
+            "references": {
+              "table": "users",
               "column": "id"
             }
           },
@@ -19665,14 +19780,15 @@
         ],
         "indexes": [
           {
-            "name": "usage_events_idempotency_unique",
+            "name": "usage_events_team_key_unique",
             "columns": [
+              "team_id",
               "idempotency_key"
             ],
             "type": "unique"
           },
           {
-            "name": "usage_events_meter_period",
+            "name": "usage_events_team_meter_index",
             "columns": [
               "team_id",
               "meter",
@@ -19730,9 +19846,8 @@
             "type": "integer",
             "isPrimaryKey": false,
             "isUnique": false,
-            "isNullable": false,
-            "hasDefault": true,
-            "defaultValue": 0
+            "isNullable": true,
+            "hasDefault": false
           },
           {
             "name": "period_start",
@@ -20786,7 +20901,7 @@
       }
     ]
   },
-  "hash": "0d2f5f3829d6ebc48bfd497609008ecfcf6e2237b0c0fbcc3a6058c5deff53a7",
+  "hash": "dba1dab4c93ac470043016c702e1607df61b923f716c5b0e54cac70f0eda5dbe",
   "dialect": "postgres",
-  "updatedAt": "2026-08-16T22:51:36.084Z"
+  "updatedAt": "2026-08-17T01:03:37.691Z"
 }

@@ -5,7 +5,7 @@ CREATE TABLE IF NOT EXISTS "audiences" (
   "description" TEXT,
   "channel" TEXT CHECK ("channel" IN ('all', 'email', 'sms')) not null default 'all',
   "member_count" INTEGER not null default 0,
-  "team_id" INTEGER,
+  "team_id" INTEGER REFERENCES "teams"("id"),
   "created_at" TEXT not null default CURRENT_TIMESTAMP,
   "updated_at" TEXT,
   "uuid" TEXT
