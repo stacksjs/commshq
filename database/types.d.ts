@@ -75,13 +75,16 @@ declare module '@stacksjs/database' {
       created_at: string
       updated_at: string | null
       purpose: unknown
+      idempotency_key: unknown
       model: unknown
       prompt_hash: unknown
       provenance: unknown
+      output: string
       input_tokens: unknown
       output_tokens: unknown
       cost: unknown
       status: unknown
+      failure_reason: unknown
       approved_by: unknown
       approved_at: unknown
       team_id: number
@@ -695,6 +698,7 @@ declare module '@stacksjs/database' {
       source: unknown
       jurisdiction: unknown
       policy_version: unknown
+      idempotency_key: unknown
       proof: unknown
       ip_address: unknown
       occurred_at: unknown
@@ -1454,6 +1458,30 @@ declare module '@stacksjs/database' {
       revision: unknown
       team_id: number
     }
+    monitored_profiles: {
+      // columns
+      id: number
+      uuid: string
+      created_at: string
+      updated_at: string | null
+      platform: unknown
+      kind: unknown
+      display_name: unknown
+      handle: unknown
+      external_id: unknown
+      location_label: unknown
+      profile_url: unknown
+      status: unknown
+      poll_interval_minutes: unknown
+      next_poll_at: unknown
+      last_polled_at: unknown
+      last_mention_at: unknown
+      cursor: unknown
+      consecutive_failures: unknown
+      last_error: unknown
+      team_id: number
+      integration_credential_id: number
+    }
     notification_deliveries: {
       // columns
       id: number
@@ -1869,6 +1897,77 @@ declare module '@stacksjs/database' {
       downloads: unknown
       author: unknown
     }
+    reputation_alert_rules: {
+      // columns
+      id: number
+      uuid: string
+      created_at: string
+      updated_at: string | null
+      name: unknown
+      metric: unknown
+      comparator: unknown
+      threshold: number
+      window_minutes: unknown
+      minimum_sample_size: unknown
+      platforms: unknown
+      severity: unknown
+      channels: unknown
+      cooldown_minutes: unknown
+      status: unknown
+      next_evaluation_at: unknown
+      last_evaluated_at: unknown
+      last_triggered_at: unknown
+      team_id: number
+    }
+    reputation_alerts: {
+      // columns
+      id: number
+      uuid: string
+      created_at: string
+      updated_at: string | null
+      fingerprint: unknown
+      metric: unknown
+      severity: unknown
+      observed_value: number
+      threshold_value: number
+      sample_size: unknown
+      window_start: unknown
+      window_end: unknown
+      status: unknown
+      context: string
+      notified_channels: unknown
+      acknowledged_by: unknown
+      acknowledged_at: unknown
+      resolved_at: unknown
+      team_id: number
+      reputation_alert_rule_id: number
+    }
+    reputation_mentions: {
+      // columns
+      id: number
+      uuid: string
+      created_at: string
+      updated_at: string | null
+      platform: unknown
+      kind: unknown
+      external_id: unknown
+      author_name: unknown
+      author_handle: unknown
+      body: string
+      rating: unknown
+      sentiment: unknown
+      sentiment_score: unknown
+      language: unknown
+      url: unknown
+      status: unknown
+      responded_at: unknown
+      responded_by: unknown
+      raw: string
+      posted_at: unknown
+      fetched_at: unknown
+      team_id: number
+      monitored_profile_id: number
+    }
     requests: {
       // columns
       id: number
@@ -2135,10 +2234,13 @@ declare module '@stacksjs/database' {
       unit_price: unknown
       provider_type: unknown
       provider_price_id: unknown
+      provider_customer_id: unknown
       quantity: unknown
+      cancel_at_period_end: unknown
       trial_ends_at: unknown
       ends_at: unknown
       last_used_at: unknown
+      team_id: number
       user_id: number
     }
     taggable_models: {
@@ -2242,10 +2344,14 @@ declare module '@stacksjs/database' {
       updated_at: string | null
       meter: unknown
       quantity: unknown
+      source_type: unknown
+      source_id: unknown
       idempotency_key: unknown
+      provider_cost: unknown
       metadata: unknown
       occurred_at: unknown
       team_id: number
+      user_id: number
     }
     usage_meters: {
       // columns

@@ -2,6 +2,7 @@
 CREATE TABLE IF NOT EXISTS "ai_generations" (
   "id" INTEGER PRIMARY KEY AUTOINCREMENT,
   "purpose" TEXT CHECK ("purpose" IN ('writing', 'segmentation', 'summary', 'optimization', 'recommendation')) not null,
+  "idempotency_key" TEXT not null,
   "model" TEXT not null,
   "prompt_hash" TEXT not null,
   "provenance" TEXT not null,
@@ -9,7 +10,8 @@ CREATE TABLE IF NOT EXISTS "ai_generations" (
   "input_tokens" INTEGER not null default 0,
   "output_tokens" INTEGER not null default 0,
   "cost" INTEGER not null default 0,
-  "status" TEXT CHECK ("status" IN ('draft', 'approved', 'rejected', 'published')) not null default 'draft',
+  "status" TEXT CHECK ("status" IN ('generating', 'draft', 'approved', 'rejected', 'published', 'failed')) not null default 'draft',
+  "failure_reason" TEXT,
   "approved_by" INTEGER,
   "approved_at" TEXT,
   "team_id" INTEGER REFERENCES "teams"("id"),
@@ -19,4 +21,5 @@ CREATE TABLE IF NOT EXISTS "ai_generations" (
   "uuid" TEXT
 );
 CREATE INDEX IF NOT EXISTS "ai_generations_team_created_index" ON "ai_generations" ("team_id", "created_at");
+CREATE UNIQUE INDEX IF NOT EXISTS "ai_generations_team_idempotency_unique" ON "ai_generations" ("team_id", "idempotency_key");
 CREATE UNIQUE INDEX IF NOT EXISTS "ai_generations_uuid_unique" ON "ai_generations" ("uuid");

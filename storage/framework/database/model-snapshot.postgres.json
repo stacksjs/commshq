@@ -616,6 +616,15 @@
             "enumTypeName": "ai_generations_purpose_type"
           },
           {
+            "name": "idempotency_key",
+            "type": "string",
+            "isPrimaryKey": false,
+            "isUnique": false,
+            "isNullable": false,
+            "hasDefault": false,
+            "maxLength": 128
+          },
+          {
             "name": "model",
             "type": "string",
             "isPrimaryKey": false,
@@ -685,12 +694,23 @@
             "hasDefault": true,
             "defaultValue": "draft",
             "enumValues": [
+              "generating",
               "draft",
               "approved",
               "rejected",
-              "published"
+              "published",
+              "failed"
             ],
             "enumTypeName": "ai_generations_status_type"
+          },
+          {
+            "name": "failure_reason",
+            "type": "string",
+            "isPrimaryKey": false,
+            "isUnique": false,
+            "isNullable": true,
+            "hasDefault": false,
+            "maxLength": 120
           },
           {
             "name": "approved_by",
@@ -766,6 +786,14 @@
               "created_at"
             ],
             "type": "index"
+          },
+          {
+            "name": "ai_generations_team_idempotency_unique",
+            "columns": [
+              "team_id",
+              "idempotency_key"
+            ],
+            "type": "unique"
           },
           {
             "name": "ai_generations_uuid_unique",
@@ -6162,6 +6190,15 @@
             "maxLength": 40
           },
           {
+            "name": "idempotency_key",
+            "type": "string",
+            "isPrimaryKey": false,
+            "isUnique": false,
+            "isNullable": true,
+            "hasDefault": false,
+            "maxLength": 255
+          },
+          {
             "name": "proof",
             "type": "json",
             "isPrimaryKey": false,
@@ -6222,18 +6259,17 @@
             "isUnique": true,
             "isNullable": true,
             "hasDefault": false
-          },
-          {
-            "name": "idempotency_key",
-            "type": "string",
-            "isPrimaryKey": false,
-            "isUnique": false,
-            "isNullable": true,
-            "hasDefault": false,
-            "maxLength": 255
           }
         ],
         "indexes": [
+          {
+            "name": "consent_events_idempotency_unique",
+            "columns": [
+              "team_id",
+              "idempotency_key"
+            ],
+            "type": "unique"
+          },
           {
             "name": "consent_events_lookup",
             "columns": [
@@ -6248,14 +6284,6 @@
             "name": "consent_events_uuid_unique",
             "columns": [
               "uuid"
-            ],
-            "type": "unique"
-          },
-          {
-            "name": "consent_events_idempotency_unique",
-            "columns": [
-              "team_id",
-              "idempotency_key"
             ],
             "type": "unique"
           }
@@ -10996,6 +11024,8 @@
               "woocommerce",
               "mail",
               "bedrock",
+              "yelp",
+              "google_business",
               "generic"
             ],
             "enumTypeName": "integration_credentials_provider_type"
@@ -12949,6 +12979,249 @@
           },
           {
             "name": "message_templates_uuid_unique",
+            "columns": [
+              "uuid"
+            ],
+            "type": "unique"
+          }
+        ]
+      },
+      {
+        "table": "monitored_profiles",
+        "columns": [
+          {
+            "name": "id",
+            "type": "bigint",
+            "isPrimaryKey": true,
+            "isUnique": false,
+            "isNullable": false,
+            "hasDefault": false
+          },
+          {
+            "name": "platform",
+            "type": "enum",
+            "isPrimaryKey": false,
+            "isUnique": false,
+            "isNullable": false,
+            "hasDefault": false,
+            "enumValues": [
+              "google_business",
+              "yelp",
+              "facebook",
+              "instagram",
+              "x",
+              "tiktok",
+              "linkedin",
+              "youtube",
+              "trustpilot",
+              "reddit"
+            ],
+            "enumTypeName": "monitored_profiles_platform_type"
+          },
+          {
+            "name": "kind",
+            "type": "enum",
+            "isPrimaryKey": false,
+            "isUnique": false,
+            "isNullable": false,
+            "hasDefault": false,
+            "enumValues": [
+              "business_listing",
+              "social_handle"
+            ],
+            "enumTypeName": "monitored_profiles_kind_type"
+          },
+          {
+            "name": "display_name",
+            "type": "string",
+            "isPrimaryKey": false,
+            "isUnique": false,
+            "isNullable": false,
+            "hasDefault": false,
+            "maxLength": 160
+          },
+          {
+            "name": "handle",
+            "type": "string",
+            "isPrimaryKey": false,
+            "isUnique": false,
+            "isNullable": true,
+            "hasDefault": false,
+            "maxLength": 160
+          },
+          {
+            "name": "external_id",
+            "type": "string",
+            "isPrimaryKey": false,
+            "isUnique": false,
+            "isNullable": false,
+            "hasDefault": false,
+            "maxLength": 255
+          },
+          {
+            "name": "location_label",
+            "type": "string",
+            "isPrimaryKey": false,
+            "isUnique": false,
+            "isNullable": true,
+            "hasDefault": false,
+            "maxLength": 200
+          },
+          {
+            "name": "profile_url",
+            "type": "string",
+            "isPrimaryKey": false,
+            "isUnique": false,
+            "isNullable": true,
+            "hasDefault": false,
+            "maxLength": 500
+          },
+          {
+            "name": "status",
+            "type": "enum",
+            "isPrimaryKey": false,
+            "isUnique": false,
+            "isNullable": false,
+            "hasDefault": true,
+            "defaultValue": "unconfigured",
+            "enumValues": [
+              "active",
+              "paused",
+              "unconfigured",
+              "error"
+            ],
+            "enumTypeName": "monitored_profiles_status_type"
+          },
+          {
+            "name": "poll_interval_minutes",
+            "type": "integer",
+            "isPrimaryKey": false,
+            "isUnique": false,
+            "isNullable": false,
+            "hasDefault": true,
+            "defaultValue": 30
+          },
+          {
+            "name": "next_poll_at",
+            "type": "datetime",
+            "isPrimaryKey": false,
+            "isUnique": false,
+            "isNullable": true,
+            "hasDefault": false
+          },
+          {
+            "name": "last_polled_at",
+            "type": "datetime",
+            "isPrimaryKey": false,
+            "isUnique": false,
+            "isNullable": true,
+            "hasDefault": false
+          },
+          {
+            "name": "last_mention_at",
+            "type": "datetime",
+            "isPrimaryKey": false,
+            "isUnique": false,
+            "isNullable": true,
+            "hasDefault": false
+          },
+          {
+            "name": "cursor",
+            "type": "string",
+            "isPrimaryKey": false,
+            "isUnique": false,
+            "isNullable": true,
+            "hasDefault": false,
+            "maxLength": 500
+          },
+          {
+            "name": "consecutive_failures",
+            "type": "integer",
+            "isPrimaryKey": false,
+            "isUnique": false,
+            "isNullable": false,
+            "hasDefault": true,
+            "defaultValue": 0
+          },
+          {
+            "name": "last_error",
+            "type": "string",
+            "isPrimaryKey": false,
+            "isUnique": false,
+            "isNullable": true,
+            "hasDefault": false,
+            "maxLength": 500
+          },
+          {
+            "name": "team_id",
+            "type": "bigint",
+            "isPrimaryKey": false,
+            "isUnique": false,
+            "isNullable": true,
+            "hasDefault": false,
+            "references": {
+              "table": "teams",
+              "column": "id"
+            }
+          },
+          {
+            "name": "integration_credential_id",
+            "type": "bigint",
+            "isPrimaryKey": false,
+            "isUnique": false,
+            "isNullable": true,
+            "hasDefault": false,
+            "references": {
+              "table": "integration_credentials",
+              "column": "id"
+            }
+          },
+          {
+            "name": "created_at",
+            "type": "datetime",
+            "isPrimaryKey": false,
+            "isUnique": false,
+            "isNullable": false,
+            "hasDefault": true,
+            "defaultValue": "CURRENT_TIMESTAMP"
+          },
+          {
+            "name": "updated_at",
+            "type": "datetime",
+            "isPrimaryKey": false,
+            "isUnique": false,
+            "isNullable": true,
+            "hasDefault": false
+          },
+          {
+            "name": "uuid",
+            "type": "string",
+            "isPrimaryKey": false,
+            "isUnique": true,
+            "isNullable": true,
+            "hasDefault": false
+          }
+        ],
+        "indexes": [
+          {
+            "name": "monitored_profiles_team_platform_external_unique",
+            "columns": [
+              "team_id",
+              "platform",
+              "external_id"
+            ],
+            "type": "unique"
+          },
+          {
+            "name": "monitored_profiles_due_index",
+            "columns": [
+              "status",
+              "next_poll_at"
+            ],
+            "type": "index"
+          },
+          {
+            "name": "monitored_profiles_uuid_unique",
             "columns": [
               "uuid"
             ],
@@ -16457,6 +16730,721 @@
         "indexes": [
           {
             "name": "releases_uuid_unique",
+            "columns": [
+              "uuid"
+            ],
+            "type": "unique"
+          }
+        ]
+      },
+      {
+        "table": "reputation_alerts",
+        "columns": [
+          {
+            "name": "id",
+            "type": "bigint",
+            "isPrimaryKey": true,
+            "isUnique": false,
+            "isNullable": false,
+            "hasDefault": false
+          },
+          {
+            "name": "fingerprint",
+            "type": "string",
+            "isPrimaryKey": false,
+            "isUnique": false,
+            "isNullable": false,
+            "hasDefault": false,
+            "maxLength": 128
+          },
+          {
+            "name": "metric",
+            "type": "enum",
+            "isPrimaryKey": false,
+            "isUnique": false,
+            "isNullable": false,
+            "hasDefault": false,
+            "enumValues": [
+              "negative_mention_count",
+              "mention_volume",
+              "average_rating",
+              "average_sentiment",
+              "unanswered_negative_count"
+            ],
+            "enumTypeName": "reputation_alerts_metric_type"
+          },
+          {
+            "name": "severity",
+            "type": "enum",
+            "isPrimaryKey": false,
+            "isUnique": false,
+            "isNullable": false,
+            "hasDefault": true,
+            "defaultValue": "warning",
+            "enumValues": [
+              "info",
+              "warning",
+              "critical"
+            ],
+            "enumTypeName": "reputation_alerts_severity_type"
+          },
+          {
+            "name": "observed_value",
+            "type": "decimal",
+            "isPrimaryKey": false,
+            "isUnique": false,
+            "isNullable": false,
+            "hasDefault": false
+          },
+          {
+            "name": "threshold_value",
+            "type": "decimal",
+            "isPrimaryKey": false,
+            "isUnique": false,
+            "isNullable": false,
+            "hasDefault": false
+          },
+          {
+            "name": "sample_size",
+            "type": "integer",
+            "isPrimaryKey": false,
+            "isUnique": false,
+            "isNullable": false,
+            "hasDefault": true,
+            "defaultValue": 0
+          },
+          {
+            "name": "window_start",
+            "type": "datetime",
+            "isPrimaryKey": false,
+            "isUnique": false,
+            "isNullable": false,
+            "hasDefault": false
+          },
+          {
+            "name": "window_end",
+            "type": "datetime",
+            "isPrimaryKey": false,
+            "isUnique": false,
+            "isNullable": false,
+            "hasDefault": false
+          },
+          {
+            "name": "status",
+            "type": "enum",
+            "isPrimaryKey": false,
+            "isUnique": false,
+            "isNullable": false,
+            "hasDefault": true,
+            "defaultValue": "open",
+            "enumValues": [
+              "open",
+              "acknowledged",
+              "resolved"
+            ],
+            "enumTypeName": "reputation_alerts_status_type"
+          },
+          {
+            "name": "context",
+            "type": "text",
+            "isPrimaryKey": false,
+            "isUnique": false,
+            "isNullable": false,
+            "hasDefault": false
+          },
+          {
+            "name": "notified_channels",
+            "type": "json",
+            "isPrimaryKey": false,
+            "isUnique": false,
+            "isNullable": false,
+            "hasDefault": false
+          },
+          {
+            "name": "acknowledged_by",
+            "type": "integer",
+            "isPrimaryKey": false,
+            "isUnique": false,
+            "isNullable": true,
+            "hasDefault": false
+          },
+          {
+            "name": "acknowledged_at",
+            "type": "datetime",
+            "isPrimaryKey": false,
+            "isUnique": false,
+            "isNullable": true,
+            "hasDefault": false
+          },
+          {
+            "name": "resolved_at",
+            "type": "datetime",
+            "isPrimaryKey": false,
+            "isUnique": false,
+            "isNullable": true,
+            "hasDefault": false
+          },
+          {
+            "name": "team_id",
+            "type": "bigint",
+            "isPrimaryKey": false,
+            "isUnique": false,
+            "isNullable": true,
+            "hasDefault": false,
+            "references": {
+              "table": "teams",
+              "column": "id"
+            }
+          },
+          {
+            "name": "reputation_alert_rule_id",
+            "type": "bigint",
+            "isPrimaryKey": false,
+            "isUnique": false,
+            "isNullable": true,
+            "hasDefault": false,
+            "references": {
+              "table": "reputation_alert_rules",
+              "column": "id"
+            }
+          },
+          {
+            "name": "created_at",
+            "type": "datetime",
+            "isPrimaryKey": false,
+            "isUnique": false,
+            "isNullable": false,
+            "hasDefault": true,
+            "defaultValue": "CURRENT_TIMESTAMP"
+          },
+          {
+            "name": "updated_at",
+            "type": "datetime",
+            "isPrimaryKey": false,
+            "isUnique": false,
+            "isNullable": true,
+            "hasDefault": false
+          },
+          {
+            "name": "uuid",
+            "type": "string",
+            "isPrimaryKey": false,
+            "isUnique": true,
+            "isNullable": true,
+            "hasDefault": false
+          }
+        ],
+        "indexes": [
+          {
+            "name": "reputation_alerts_team_fingerprint_unique",
+            "columns": [
+              "team_id",
+              "fingerprint"
+            ],
+            "type": "unique"
+          },
+          {
+            "name": "reputation_alerts_team_status_index",
+            "columns": [
+              "team_id",
+              "status",
+              "created_at"
+            ],
+            "type": "index"
+          },
+          {
+            "name": "reputation_alerts_uuid_unique",
+            "columns": [
+              "uuid"
+            ],
+            "type": "unique"
+          }
+        ]
+      },
+      {
+        "table": "reputation_alert_rules",
+        "columns": [
+          {
+            "name": "id",
+            "type": "bigint",
+            "isPrimaryKey": true,
+            "isUnique": false,
+            "isNullable": false,
+            "hasDefault": false
+          },
+          {
+            "name": "name",
+            "type": "string",
+            "isPrimaryKey": false,
+            "isUnique": false,
+            "isNullable": false,
+            "hasDefault": false,
+            "maxLength": 120
+          },
+          {
+            "name": "metric",
+            "type": "enum",
+            "isPrimaryKey": false,
+            "isUnique": false,
+            "isNullable": false,
+            "hasDefault": false,
+            "enumValues": [
+              "negative_mention_count",
+              "mention_volume",
+              "average_rating",
+              "average_sentiment",
+              "unanswered_negative_count"
+            ],
+            "enumTypeName": "reputation_alert_rules_metric_type"
+          },
+          {
+            "name": "comparator",
+            "type": "enum",
+            "isPrimaryKey": false,
+            "isUnique": false,
+            "isNullable": false,
+            "hasDefault": false,
+            "enumValues": [
+              "gte",
+              "lte"
+            ],
+            "enumTypeName": "reputation_alert_rules_comparator_type"
+          },
+          {
+            "name": "threshold",
+            "type": "decimal",
+            "isPrimaryKey": false,
+            "isUnique": false,
+            "isNullable": false,
+            "hasDefault": false
+          },
+          {
+            "name": "window_minutes",
+            "type": "integer",
+            "isPrimaryKey": false,
+            "isUnique": false,
+            "isNullable": false,
+            "hasDefault": true,
+            "defaultValue": 1440
+          },
+          {
+            "name": "minimum_sample_size",
+            "type": "integer",
+            "isPrimaryKey": false,
+            "isUnique": false,
+            "isNullable": false,
+            "hasDefault": true,
+            "defaultValue": 1
+          },
+          {
+            "name": "platforms",
+            "type": "json",
+            "isPrimaryKey": false,
+            "isUnique": false,
+            "isNullable": false,
+            "hasDefault": false
+          },
+          {
+            "name": "severity",
+            "type": "enum",
+            "isPrimaryKey": false,
+            "isUnique": false,
+            "isNullable": false,
+            "hasDefault": true,
+            "defaultValue": "warning",
+            "enumValues": [
+              "info",
+              "warning",
+              "critical"
+            ],
+            "enumTypeName": "reputation_alert_rules_severity_type"
+          },
+          {
+            "name": "channels",
+            "type": "json",
+            "isPrimaryKey": false,
+            "isUnique": false,
+            "isNullable": false,
+            "hasDefault": false
+          },
+          {
+            "name": "cooldown_minutes",
+            "type": "integer",
+            "isPrimaryKey": false,
+            "isUnique": false,
+            "isNullable": false,
+            "hasDefault": true,
+            "defaultValue": 360
+          },
+          {
+            "name": "status",
+            "type": "enum",
+            "isPrimaryKey": false,
+            "isUnique": false,
+            "isNullable": false,
+            "hasDefault": true,
+            "defaultValue": "active",
+            "enumValues": [
+              "active",
+              "paused"
+            ],
+            "enumTypeName": "reputation_alert_rules_status_type"
+          },
+          {
+            "name": "next_evaluation_at",
+            "type": "datetime",
+            "isPrimaryKey": false,
+            "isUnique": false,
+            "isNullable": true,
+            "hasDefault": false
+          },
+          {
+            "name": "last_evaluated_at",
+            "type": "datetime",
+            "isPrimaryKey": false,
+            "isUnique": false,
+            "isNullable": true,
+            "hasDefault": false
+          },
+          {
+            "name": "last_triggered_at",
+            "type": "datetime",
+            "isPrimaryKey": false,
+            "isUnique": false,
+            "isNullable": true,
+            "hasDefault": false
+          },
+          {
+            "name": "team_id",
+            "type": "bigint",
+            "isPrimaryKey": false,
+            "isUnique": false,
+            "isNullable": true,
+            "hasDefault": false,
+            "references": {
+              "table": "teams",
+              "column": "id"
+            }
+          },
+          {
+            "name": "created_at",
+            "type": "datetime",
+            "isPrimaryKey": false,
+            "isUnique": false,
+            "isNullable": false,
+            "hasDefault": true,
+            "defaultValue": "CURRENT_TIMESTAMP"
+          },
+          {
+            "name": "updated_at",
+            "type": "datetime",
+            "isPrimaryKey": false,
+            "isUnique": false,
+            "isNullable": true,
+            "hasDefault": false
+          },
+          {
+            "name": "uuid",
+            "type": "string",
+            "isPrimaryKey": false,
+            "isUnique": true,
+            "isNullable": true,
+            "hasDefault": false
+          }
+        ],
+        "indexes": [
+          {
+            "name": "reputation_alert_rules_team_name_unique",
+            "columns": [
+              "team_id",
+              "name"
+            ],
+            "type": "unique"
+          },
+          {
+            "name": "reputation_alert_rules_due_index",
+            "columns": [
+              "status",
+              "next_evaluation_at"
+            ],
+            "type": "index"
+          },
+          {
+            "name": "reputation_alert_rules_uuid_unique",
+            "columns": [
+              "uuid"
+            ],
+            "type": "unique"
+          }
+        ]
+      },
+      {
+        "table": "reputation_mentions",
+        "columns": [
+          {
+            "name": "id",
+            "type": "bigint",
+            "isPrimaryKey": true,
+            "isUnique": false,
+            "isNullable": false,
+            "hasDefault": false
+          },
+          {
+            "name": "platform",
+            "type": "enum",
+            "isPrimaryKey": false,
+            "isUnique": false,
+            "isNullable": false,
+            "hasDefault": false,
+            "enumValues": [
+              "google_business",
+              "yelp",
+              "facebook",
+              "instagram",
+              "x",
+              "tiktok",
+              "linkedin",
+              "youtube",
+              "trustpilot",
+              "reddit"
+            ],
+            "enumTypeName": "reputation_mentions_platform_type"
+          },
+          {
+            "name": "kind",
+            "type": "enum",
+            "isPrimaryKey": false,
+            "isUnique": false,
+            "isNullable": false,
+            "hasDefault": false,
+            "enumValues": [
+              "review",
+              "comment",
+              "mention",
+              "question"
+            ],
+            "enumTypeName": "reputation_mentions_kind_type"
+          },
+          {
+            "name": "external_id",
+            "type": "string",
+            "isPrimaryKey": false,
+            "isUnique": false,
+            "isNullable": false,
+            "hasDefault": false,
+            "maxLength": 255
+          },
+          {
+            "name": "author_name",
+            "type": "string",
+            "isPrimaryKey": false,
+            "isUnique": false,
+            "isNullable": true,
+            "hasDefault": false,
+            "maxLength": 160
+          },
+          {
+            "name": "author_handle",
+            "type": "string",
+            "isPrimaryKey": false,
+            "isUnique": false,
+            "isNullable": true,
+            "hasDefault": false,
+            "maxLength": 160
+          },
+          {
+            "name": "body",
+            "type": "text",
+            "isPrimaryKey": false,
+            "isUnique": false,
+            "isNullable": false,
+            "hasDefault": false
+          },
+          {
+            "name": "rating",
+            "type": "integer",
+            "isPrimaryKey": false,
+            "isUnique": false,
+            "isNullable": true,
+            "hasDefault": false
+          },
+          {
+            "name": "sentiment",
+            "type": "enum",
+            "isPrimaryKey": false,
+            "isUnique": false,
+            "isNullable": false,
+            "hasDefault": true,
+            "defaultValue": "unknown",
+            "enumValues": [
+              "positive",
+              "neutral",
+              "negative",
+              "unknown"
+            ],
+            "enumTypeName": "reputation_mentions_sentiment_type"
+          },
+          {
+            "name": "sentiment_score",
+            "type": "integer",
+            "isPrimaryKey": false,
+            "isUnique": false,
+            "isNullable": false,
+            "hasDefault": true,
+            "defaultValue": 0
+          },
+          {
+            "name": "language",
+            "type": "string",
+            "isPrimaryKey": false,
+            "isUnique": false,
+            "isNullable": true,
+            "hasDefault": false,
+            "maxLength": 12
+          },
+          {
+            "name": "url",
+            "type": "string",
+            "isPrimaryKey": false,
+            "isUnique": false,
+            "isNullable": true,
+            "hasDefault": false,
+            "maxLength": 500
+          },
+          {
+            "name": "status",
+            "type": "enum",
+            "isPrimaryKey": false,
+            "isUnique": false,
+            "isNullable": false,
+            "hasDefault": true,
+            "defaultValue": "new",
+            "enumValues": [
+              "new",
+              "triaged",
+              "responded",
+              "ignored"
+            ],
+            "enumTypeName": "reputation_mentions_status_type"
+          },
+          {
+            "name": "responded_at",
+            "type": "datetime",
+            "isPrimaryKey": false,
+            "isUnique": false,
+            "isNullable": true,
+            "hasDefault": false
+          },
+          {
+            "name": "responded_by",
+            "type": "integer",
+            "isPrimaryKey": false,
+            "isUnique": false,
+            "isNullable": true,
+            "hasDefault": false
+          },
+          {
+            "name": "raw",
+            "type": "text",
+            "isPrimaryKey": false,
+            "isUnique": false,
+            "isNullable": false,
+            "hasDefault": false
+          },
+          {
+            "name": "posted_at",
+            "type": "datetime",
+            "isPrimaryKey": false,
+            "isUnique": false,
+            "isNullable": false,
+            "hasDefault": false
+          },
+          {
+            "name": "fetched_at",
+            "type": "datetime",
+            "isPrimaryKey": false,
+            "isUnique": false,
+            "isNullable": false,
+            "hasDefault": false
+          },
+          {
+            "name": "team_id",
+            "type": "bigint",
+            "isPrimaryKey": false,
+            "isUnique": false,
+            "isNullable": true,
+            "hasDefault": false,
+            "references": {
+              "table": "teams",
+              "column": "id"
+            }
+          },
+          {
+            "name": "monitored_profile_id",
+            "type": "bigint",
+            "isPrimaryKey": false,
+            "isUnique": false,
+            "isNullable": true,
+            "hasDefault": false,
+            "references": {
+              "table": "monitored_profiles",
+              "column": "id"
+            }
+          },
+          {
+            "name": "created_at",
+            "type": "datetime",
+            "isPrimaryKey": false,
+            "isUnique": false,
+            "isNullable": false,
+            "hasDefault": true,
+            "defaultValue": "CURRENT_TIMESTAMP"
+          },
+          {
+            "name": "updated_at",
+            "type": "datetime",
+            "isPrimaryKey": false,
+            "isUnique": false,
+            "isNullable": true,
+            "hasDefault": false
+          },
+          {
+            "name": "uuid",
+            "type": "string",
+            "isPrimaryKey": false,
+            "isUnique": true,
+            "isNullable": true,
+            "hasDefault": false
+          }
+        ],
+        "indexes": [
+          {
+            "name": "reputation_mentions_profile_external_unique",
+            "columns": [
+              "monitored_profile_id",
+              "external_id"
+            ],
+            "type": "unique"
+          },
+          {
+            "name": "reputation_mentions_team_posted_index",
+            "columns": [
+              "team_id",
+              "posted_at"
+            ],
+            "type": "index"
+          },
+          {
+            "name": "reputation_mentions_team_sentiment_index",
+            "columns": [
+              "team_id",
+              "sentiment",
+              "posted_at"
+            ],
+            "type": "index"
+          },
+          {
+            "name": "reputation_mentions_uuid_unique",
             "columns": [
               "uuid"
             ],
@@ -20901,7 +21889,7 @@
       }
     ]
   },
-  "hash": "dba1dab4c93ac470043016c702e1607df61b923f716c5b0e54cac70f0eda5dbe",
+  "hash": "7589f9c310b8549ece622b5af40eb81b6ea8ff4302e0ed05fe62c2c2ce9e4e4c",
   "dialect": "postgres",
-  "updatedAt": "2026-08-17T01:03:37.691Z"
+  "updatedAt": "2026-08-17T02:26:13.391Z"
 }

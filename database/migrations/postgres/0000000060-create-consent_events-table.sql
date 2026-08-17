@@ -8,6 +8,7 @@ CREATE TABLE IF NOT EXISTS "consent_events" (
   "source" varchar(120) not null,
   "jurisdiction" varchar(80),
   "policy_version" varchar(40) not null,
+  "idempotency_key" varchar(255),
   "proof" jsonb,
   "ip_address" varchar(45),
   "occurred_at" timestamp not null,
@@ -16,5 +17,6 @@ CREATE TABLE IF NOT EXISTS "consent_events" (
   "updated_at" timestamp,
   "uuid" varchar(255)
 );
+CREATE UNIQUE INDEX IF NOT EXISTS "consent_events_idempotency_unique" ON "consent_events" ("team_id", "idempotency_key");
 CREATE INDEX IF NOT EXISTS "consent_events_lookup" ON "consent_events" ("team_id", "channel", "recipient", "occurred_at");
 CREATE UNIQUE INDEX IF NOT EXISTS "consent_events_uuid_unique" ON "consent_events" ("uuid");

@@ -2,6 +2,7 @@
 CREATE TABLE IF NOT EXISTS "ai_generations" (
   "id" BIGSERIAL PRIMARY KEY,
   "purpose" "ai_generations_purpose_type" not null,
+  "idempotency_key" varchar(128) not null,
   "model" varchar(255) not null,
   "prompt_hash" varchar(128) not null,
   "provenance" jsonb not null,
@@ -10,6 +11,7 @@ CREATE TABLE IF NOT EXISTS "ai_generations" (
   "output_tokens" integer not null default 0,
   "cost" integer not null default 0,
   "status" "ai_generations_status_type" not null default 'draft',
+  "failure_reason" varchar(120),
   "approved_by" integer,
   "approved_at" timestamp,
   "team_id" bigint REFERENCES "teams"("id"),
@@ -19,4 +21,5 @@ CREATE TABLE IF NOT EXISTS "ai_generations" (
   "uuid" varchar(255)
 );
 CREATE INDEX IF NOT EXISTS "ai_generations_team_created_index" ON "ai_generations" ("team_id", "created_at");
+CREATE UNIQUE INDEX IF NOT EXISTS "ai_generations_team_idempotency_unique" ON "ai_generations" ("team_id", "idempotency_key");
 CREATE UNIQUE INDEX IF NOT EXISTS "ai_generations_uuid_unique" ON "ai_generations" ("uuid");
