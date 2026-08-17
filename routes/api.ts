@@ -24,6 +24,11 @@ route.post('/v1/campaigns/{id}/dispatch', 'Actions/Api/V1/DispatchCampaignAction
 route.post('/v1/ai/generate', 'Actions/Api/V1/GenerateAiDraftAction').middleware('auth').middleware('team').rateLimit(10, 'minute')
 route.post('/v1/ai-generations/{id}/decision', 'Actions/Api/V1/DecideAiDraftAction').middleware('auth').middleware('team').rateLimit(30, 'minute')
 
+route.post('/v1/monitored-profiles', 'Actions/Api/V1/Reputation/CreateMonitoredProfileAction').middleware('auth').middleware('team').rateLimit(20, 'minute')
+route.post('/v1/reputation-alert-rules', 'Actions/Api/V1/Reputation/UpsertAlertRuleAction').middleware('auth').middleware('team').rateLimit(20, 'minute')
+route.post('/v1/reputation-alerts/{id}/decision', 'Actions/Api/V1/Reputation/AcknowledgeAlertAction').middleware('auth').middleware('team').rateLimit(60, 'minute')
+route.post('/v1/reputation-mentions/{id}/triage', 'Actions/Api/V1/Reputation/TriageMentionAction').middleware('auth').middleware('team').rateLimit(120, 'minute')
+
 route.post('/webhooks/{provider}/{endpoint}', 'Actions/Webhooks/IngestWebhookAction').rateLimit(300, 'minute')
 
 // `/coming-soon` is served as an STX view from

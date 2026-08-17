@@ -19,6 +19,16 @@ export default function () {
     .job('RetryFailedWebhooks')
     .everyFiveMinutes()
     .setTimeZone('UTC')
+
+  schedule
+    .job('PollMonitoredProfiles')
+    .everyFiveMinutes()
+    .setTimeZone('UTC')
+
+  schedule
+    .job('EvaluateReputationAlerts')
+    .everyFiveMinutes()
+    .setTimeZone('UTC')
 }
 
 process.on('SIGINT', () => {
