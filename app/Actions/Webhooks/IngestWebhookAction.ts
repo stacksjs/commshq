@@ -6,6 +6,7 @@ import { verifyTwilioWebhook } from '@stacksjs/sms'
 import WebhookEndpoint from '../../Models/WebhookEndpoint'
 import WebhookEvent from '../../Models/WebhookEvent'
 import { providerSignatureHeader, verifyHmac, verifyStripeSignature } from './signatures'
+import { twilioComplianceXml } from './twilio-compliance'
 
 const SUPPORTED_PROVIDERS = new Set(['twilio', 'stripe', 'shopify', 'woocommerce', 'mail', 'generic'])
 
@@ -40,6 +41,16 @@ function signatureIsValid(provider: string, requestUrl: string, raw: string, bod
   return verifyHmac(raw, signature, secret)
 }
 
+function accepted(provider: string, payload: Record<string, any>, duplicate: boolean): Response {
+  if (provider === 'twilio' && !payload.MessageStatus) {
+    return response.xml(twilioComplianceXml(String(payload.Body || '')), 200, {
+      'Cache-Control': 'no-store',
+    })
+  }
+
+  return response.json({ accepted: true, duplicate }, 202)
+}
+
 export default new Action({
   name: 'Ingest Webhook',
   description: 'Verifies, deduplicates, stores, and queues provider events',
@@ -71,7 +82,7 @@ export default new Action({
     if (!providerEventId) return response.json({ error: 'Provider event id is required' }, 422)
 
     const existing = await WebhookEvent.where('provider', provider).where('providerEventId', providerEventId).first()
-    if (existing) return response.json({ accepted: true, duplicate: true }, 202)
+    if (existing) return accepted(provider, payload, true)
 
     const stored = await WebhookEvent.forceCreate({
       team_id: Number(endpoint.team_id),
@@ -89,6 +100,6 @@ export default new Action({
       .onQueue('integrations')
       .dispatch()
 
-    return response.json({ accepted: true, duplicate: false }, 202)
+    return accepted(provider, payload, false)
   },
 })

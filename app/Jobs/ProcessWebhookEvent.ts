@@ -4,6 +4,7 @@ import { Job } from '@stacksjs/queue'
 import CommerceConnection from '../Models/CommerceConnection'
 import CommerceEvent from '../Models/CommerceEvent'
 import WebhookEvent from '../Models/WebhookEvent'
+import { twilioConsentIdempotencyKey } from '../Actions/Webhooks/twilio-compliance'
 
 interface ProcessWebhookPayload {
   eventId: number
@@ -39,15 +40,20 @@ export default new Job({
 
       if (event.provider === 'twilio' && !payload.MessageStatus) {
         const { intent, keyword } = classifySmsIntent(String(payload.Body || ''))
+        const idempotencyKey = twilioConsentIdempotencyKey(String(event.providerEventId))
+        const existingConsent = await ConsentEvent
+          .where('team_id', input.teamId)
+          .where('idempotency_key', idempotencyKey)
+          .first()
         if (intent === 'opt-out') {
           const existing = await CommunicationSuppression.where('team_id', input.teamId).where('channel', 'sms').where('recipient', recipient).first()
           if (!existing) await CommunicationSuppression.create({ team_id: input.teamId, channel: 'sms', recipient, reason: 'unsubscribe', source: `twilio:${keyword}`, suppressedAt: new Date().toISOString() })
-          await ConsentEvent.create({ team_id: input.teamId, recipient, channel: 'sms', action: 'revoked', purpose: 'marketing', source: 'twilio_inbound', policyVersion: '1.0', proof: JSON.stringify({ eventId: event.providerEventId, keyword }), occurredAt: new Date().toISOString() })
+          if (!existingConsent) await ConsentEvent.create({ team_id: input.teamId, recipient, channel: 'sms', action: 'revoked', purpose: 'marketing', source: 'twilio_inbound', policyVersion: '1.0', idempotencyKey, proof: JSON.stringify({ eventId: event.providerEventId, keyword }), occurredAt: new Date().toISOString() })
         }
         else if (intent === 'opt-in') {
           const existing = await CommunicationSuppression.where('team_id', input.teamId).where('channel', 'sms').where('recipient', recipient).first()
           if (existing && !existing.liftedAt) await CommunicationSuppression.forceUpdate(existing.id, { liftedAt: new Date().toISOString() })
-          await ConsentEvent.create({ team_id: input.teamId, recipient, channel: 'sms', action: 'granted', purpose: 'marketing', source: 'twilio_inbound', policyVersion: '1.0', proof: JSON.stringify({ eventId: event.providerEventId, keyword }), occurredAt: new Date().toISOString() })
+          if (!existingConsent) await ConsentEvent.create({ team_id: input.teamId, recipient, channel: 'sms', action: 'granted', purpose: 'marketing', source: 'twilio_inbound', policyVersion: '1.0', idempotencyKey, proof: JSON.stringify({ eventId: event.providerEventId, keyword }), occurredAt: new Date().toISOString() })
         }
       }
 
