@@ -8,7 +8,7 @@ async function files(pattern: string, cwd = import.meta.dir): Promise<string[]> 
 describe('tenant model contracts', () => {
   it('scopes every application model and generated API to Team', async () => {
     const modelFiles = await files('../../app/Models/*.ts')
-    expect(modelFiles.length).toBeGreaterThanOrEqual(57)
+    expect(modelFiles.length).toBeGreaterThanOrEqual(59)
 
     for (const file of modelFiles) {
       const source = await Bun.file(file).text()
@@ -36,6 +36,23 @@ describe('tenant model contracts', () => {
 })
 
 describe('interface contracts', () => {
+  it('publishes a dedicated story for every feature in the navigation', async () => {
+    const features = ['email', 'sms', 'publishing', 'forms', 'audience', 'automation', 'ai', 'deliverability', 'commerce', 'monetization', 'analytics', 'integrations']
+    const navigation = await Bun.file(new URL('../../resources/components/CommsHQ/MarketingNavigation.stx', import.meta.url)).text()
+    const stories = await Bun.file(new URL('../../resources/components/CommsHQ/FeatureStory.stx', import.meta.url)).text()
+
+    expect(navigation).toContain('<details class="feature-menu group relative">')
+    expect(navigation).toContain('aria-label="Primary navigation"')
+    expect(navigation).toContain('Explore the complete platform')
+
+    for (const feature of features) {
+      const page = await Bun.file(new URL(`../../resources/views/${feature}.stx`, import.meta.url)).text()
+      expect(navigation, `${feature} must be linked from the feature menu`).toContain(`href: '/${feature}'`)
+      expect(stories, `${feature} must have a substantive feature story`).toContain(`  ${feature}: {`)
+      expect(page, `${feature} must render its dedicated story`).toContain(`<FeatureStory feature="${feature}" />`)
+    }
+  })
+
   it('ships every primary product page through the shared state-rich surface', async () => {
     const required = ['onboarding', 'segments', 'editor', 'sites', 'forms', 'publications', 'commerce', 'monetization', 'analytics', 'integrations', 'billing', 'domains', 'senders', 'teams', 'settings']
     for (const page of required) {
@@ -45,6 +62,14 @@ describe('interface contracts', () => {
 
     const surface = await Bun.file(new URL('../../resources/components/CommsHQ/WorkspaceSurface.stx', import.meta.url)).text()
     for (const state of ['populated', 'loading', 'empty', 'error']) expect(surface).toContain(`'${state}'`)
+  })
+
+  it('ships the public consent completion destinations', async () => {
+    for (const page of ['subscription-confirmed', 'preferences-saved']) {
+      const source = await Bun.file(new URL(`../../resources/views/${page}.stx`, import.meta.url)).text()
+      expect(source).toContain("@extends('layouts/marketing')")
+      expect(source).toContain('focus-visible:outline')
+    }
   })
 
   it('rejects browser scripting, hand-drawn icons, and forbidden punctuation in product STX', async () => {
