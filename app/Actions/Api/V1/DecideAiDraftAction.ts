@@ -4,7 +4,7 @@ import { response } from '@stacksjs/router'
 import AiGeneration from '../../../Models/AiGeneration'
 import AuditEvent from '../../../Models/AuditEvent'
 import { canGenerateAi } from '../../Ai/generation-policy'
-import { activeTeamId } from './team'
+import { activeTeam } from './team'
 
 export default new Action({
   name: 'Decide AI Draft',
@@ -12,10 +12,11 @@ export default new Action({
   method: 'POST',
 
   async handle(request: RequestInstance) {
-    const teamId = await activeTeamId(request)
+    const membership = await activeTeam(request)
+    const teamId = membership?.teamId ?? null
     const user = await request.user()
     if (!teamId || !user) return response.json({ error: 'Active team required' }, 403)
-    if (!canGenerateAi((user as any).team_role)) return response.json({ error: 'AI review requires an editor, admin, or owner role' }, 403)
+    if (!canGenerateAi(membership?.role)) return response.json({ error: 'AI review requires an editor, admin, or owner role' }, 403)
 
     const id = Number(request.getParam('id'))
     if (!Number.isSafeInteger(id) || id < 1) return response.json({ error: 'AI generation id must be a positive integer' }, 422)

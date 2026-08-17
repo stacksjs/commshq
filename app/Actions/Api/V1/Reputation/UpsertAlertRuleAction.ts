@@ -8,7 +8,7 @@ import { ALERT_CHANNELS } from '../../../Reputation/notify-alert'
 import { parsePlatform } from '../../../Reputation/platforms'
 import { canManageReputation } from '../../../Reputation/policy'
 import { parseComparator, parseMetric } from '../../../Reputation/thresholds'
-import { activeTeamId } from '../team'
+import { activeTeam } from '../team'
 
 const SEVERITIES = ['info', 'warning', 'critical']
 
@@ -25,10 +25,11 @@ export default new Action({
   method: 'POST',
 
   async handle(request: RequestInstance) {
-    const teamId = await activeTeamId(request)
+    const membership = await activeTeam(request)
+    const teamId = membership?.teamId ?? null
     const user = await request.user()
     if (!teamId || !user) return response.json({ error: 'Active team required' }, 403)
-    if (!canManageReputation((user as any).team_role)) return response.json({ error: 'Alert rules require an admin or owner role' }, 403)
+    if (!canManageReputation(membership?.role)) return response.json({ error: 'Alert rules require an admin or owner role' }, 403)
 
     const name = String(request.get('name') || '').trim()
     if (!name || name.length > 120) return response.json({ error: 'name is required and must be 120 characters or fewer' }, 422)

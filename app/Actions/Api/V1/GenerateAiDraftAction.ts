@@ -13,7 +13,7 @@ import AiGeneration from '../../../Models/AiGeneration'
 import UsageMeter from '../../../Models/UsageMeter'
 import { canGenerateAi, estimateTokens, parseAiPurpose, validAiPrompt, validIdempotencyKey } from '../../Ai/generation-policy'
 import { updatedRows, usageMeterStore } from '../../Usage/usage-meter-store'
-import { activeTeamId } from './team'
+import { activeTeam } from './team'
 
 const MODEL_ID = 'amazon.titan-text-express-v1'
 
@@ -56,10 +56,11 @@ export default new Action({
   method: 'POST',
 
   async handle(request: RequestInstance) {
-    const teamId = await activeTeamId(request)
+    const membership = await activeTeam(request)
+    const teamId = membership?.teamId ?? null
     const user = await request.user()
     if (!teamId || !user) return response.json({ error: 'Active team required' }, 403)
-    if (!canGenerateAi((user as any).team_role)) return response.json({ error: 'AI drafting requires an editor, admin, or owner role' }, 403)
+    if (!canGenerateAi(membership?.role)) return response.json({ error: 'AI drafting requires an editor, admin, or owner role' }, 403)
 
     const purpose = parseAiPurpose(request.get('purpose'))
     const prompt = validAiPrompt(request.get('prompt'))

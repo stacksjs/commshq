@@ -4,7 +4,7 @@ import { response } from '@stacksjs/router'
 import AuditEvent from '../../../../Models/AuditEvent'
 import ReputationMention from '../../../../Models/ReputationMention'
 import { canTriageReputation } from '../../../Reputation/policy'
-import { activeTeamId } from '../team'
+import { activeTeam } from '../team'
 
 const STATUSES = ['triaged', 'responded', 'ignored']
 
@@ -14,10 +14,11 @@ export default new Action({
   method: 'POST',
 
   async handle(request: RequestInstance) {
-    const teamId = await activeTeamId(request)
+    const membership = await activeTeam(request)
+    const teamId = membership?.teamId ?? null
     const user = await request.user()
     if (!teamId || !user) return response.json({ error: 'Active team required' }, 403)
-    if (!canTriageReputation((user as any).team_role)) return response.json({ error: 'Mention triage requires a workspace member role' }, 403)
+    if (!canTriageReputation(membership?.role)) return response.json({ error: 'Mention triage requires a workspace member role' }, 403)
 
     const id = Number(request.getParam('id'))
     if (!Number.isSafeInteger(id) || id < 1) return response.json({ error: 'Mention id must be a positive integer' }, 422)
@@ -33,8 +34,8 @@ export default new Action({
     await ReputationMention.forceUpdate(mention.id, {
       status,
       // Only a reply is a response; triaging and ignoring leave the reply fields alone.
-      respondedAt: status === 'responded' ? decidedAt : mention.respondedAt,
-      respondedBy: status === 'responded' ? Number(user.id) : mention.respondedBy,
+      respondedAt: status === 'responded' ? decidedAt : mention.responded_at,
+      respondedBy: status === 'responded' ? Number(user.id) : mention.responded_by,
     })
 
     await AuditEvent.forceCreate({

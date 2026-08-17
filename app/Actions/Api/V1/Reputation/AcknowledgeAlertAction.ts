@@ -4,7 +4,7 @@ import { response } from '@stacksjs/router'
 import AuditEvent from '../../../../Models/AuditEvent'
 import ReputationAlert from '../../../../Models/ReputationAlert'
 import { canTriageReputation } from '../../../Reputation/policy'
-import { activeTeamId } from '../team'
+import { activeTeam } from '../team'
 
 const DECISIONS = ['acknowledged', 'resolved']
 
@@ -14,10 +14,11 @@ export default new Action({
   method: 'POST',
 
   async handle(request: RequestInstance) {
-    const teamId = await activeTeamId(request)
+    const membership = await activeTeam(request)
+    const teamId = membership?.teamId ?? null
     const user = await request.user()
     if (!teamId || !user) return response.json({ error: 'Active team required' }, 403)
-    if (!canTriageReputation((user as any).team_role)) return response.json({ error: 'Alert triage requires a workspace member role' }, 403)
+    if (!canTriageReputation(membership?.role)) return response.json({ error: 'Alert triage requires a workspace member role' }, 403)
 
     const id = Number(request.getParam('id'))
     if (!Number.isSafeInteger(id) || id < 1) return response.json({ error: 'Alert id must be a positive integer' }, 422)
@@ -35,7 +36,7 @@ export default new Action({
       status: decision,
       // An alert resolved without a prior acknowledgement still records who acted.
       acknowledgedBy: Number(user.id),
-      acknowledgedAt: alert.acknowledgedAt ? alert.acknowledgedAt : decidedAt,
+      acknowledgedAt: alert.acknowledged_at ? alert.acknowledged_at : decidedAt,
       resolvedAt: decision === 'resolved' ? decidedAt : null,
     })
 

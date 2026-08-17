@@ -7,7 +7,7 @@ import { isSupported, supportedPlatforms } from '../../../Reputation/providers'
 import AuditEvent from '../../../../Models/AuditEvent'
 import MonitoredProfile from '../../../../Models/MonitoredProfile'
 import { canManageReputation } from '../../../Reputation/policy'
-import { activeTeamId } from '../team'
+import { activeTeam } from '../team'
 
 export default new Action({
   name: 'Create Monitored Profile',
@@ -15,10 +15,11 @@ export default new Action({
   method: 'POST',
 
   async handle(request: RequestInstance) {
-    const teamId = await activeTeamId(request)
+    const membership = await activeTeam(request)
+    const teamId = membership?.teamId ?? null
     const user = await request.user()
     if (!teamId || !user) return response.json({ error: 'Active team required' }, 403)
-    if (!canManageReputation((user as any).team_role)) return response.json({ error: 'Monitoring setup requires an admin or owner role' }, 403)
+    if (!canManageReputation(membership?.role)) return response.json({ error: 'Monitoring setup requires an admin or owner role' }, 403)
 
     const platform = parsePlatform(request.get('platform'))
     if (!platform) return response.json({ error: 'Unsupported platform' }, 422)
