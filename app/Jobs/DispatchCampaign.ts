@@ -27,7 +27,8 @@ async function consentAllows(teamId: number, channel: 'email' | 'sms', recipient
 async function assertCampaignQuota(teamId: number, channel: 'email' | 'sms', requested: number): Promise<void> {
   const meterKey = channel === 'sms' ? 'sms_segments' : 'emails'
   const meter = await UsageMeter.where('team_id', teamId).where('key', meterKey).orderByDesc('periodStart').first()
-  assertUsageAvailable([{ meter: meterKey, used: Number(meter?.quantity || 0), limit: meter ? Number(meter.includedQuantity) : 0, requested }])
+  const limit = !meter ? 0 : meter.includedQuantity == null ? null : Number(meter.includedQuantity)
+  assertUsageAvailable([{ meter: meterKey, used: Number(meter?.quantity || 0), limit, requested }])
 }
 
 export default new Job({

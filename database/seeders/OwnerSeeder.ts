@@ -10,6 +10,14 @@ interface IdentifiedRow {
   id: number
 }
 
+const BUSINESS_METERS = {
+  contacts: 25_000,
+  emails: 250_000,
+  sms_segments: null,
+  ai_generations: 5_000,
+  custom_domains: 10,
+} as const
+
 async function findId(table: 'users' | 'teams', column: 'email' | 'name', value: string): Promise<number | undefined> {
   const row = await db.selectFrom(table as any)
     .select(['id'] as any)
@@ -17,6 +25,35 @@ async function findId(table: 'users' | 'teams', column: 'email' | 'name', value:
     .executeTakeFirst() as IdentifiedRow | undefined
 
   return row?.id
+}
+
+async function ensureOwnerUsageMeters(teamId: number): Promise<void> {
+  const now = new Date()
+  const periodStart = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1)).toISOString()
+  const periodEnd = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() + 1, 1)).toISOString()
+
+  for (const [key, includedQuantity] of Object.entries(BUSINESS_METERS)) {
+    const existing = await db.selectFrom('usage_meters' as any)
+      .select(['id'] as any)
+      .where('team_id' as any, '=', teamId)
+      .where('key' as any, '=', key)
+      .where('period_start' as any, '=', periodStart)
+      .executeTakeFirst() as IdentifiedRow | undefined
+    if (existing) continue
+
+    const createdAt = new Date().toISOString()
+    await db.insertInto('usage_meters' as any).values({
+      team_id: teamId,
+      key,
+      quantity: 0,
+      included_quantity: includedQuantity,
+      period_start: periodStart,
+      period_end: periodEnd,
+      uuid: crypto.randomUUID(),
+      created_at: createdAt,
+      updated_at: createdAt,
+    } as any).execute()
+  }
 }
 
 export default class OwnerSeeder extends Seeder {
@@ -90,6 +127,7 @@ export default class OwnerSeeder extends Seeder {
     }
 
     await assignRole(userId, 'admin')
+    await ensureOwnerUsageMeters(teamId)
     log.info(`[OwnerSeeder] Owner workspace is ready for ${email}.`)
   }
 }

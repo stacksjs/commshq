@@ -8,7 +8,7 @@ export default defineModel({
   attributes: {
     key: { required: true, fillable: false, validation: { rule: schema.enum(['contacts', 'emails', 'sms_segments', 'ai_generations', 'custom_domains']) } },
     quantity: { required: true, fillable: false, default: 0, validation: { rule: schema.number().min(0) } },
-    includedQuantity: { required: true, fillable: false, default: 0, validation: { rule: schema.number().min(0) } },
+    includedQuantity: { required: false, fillable: false, validation: { rule: schema.number().min(0) }, factory: () => null },
     periodStart: { required: true, fillable: false, validation: { rule: schema.timestamp() } },
     periodEnd: { required: true, fillable: false, validation: { rule: schema.timestamp() } },
   },
