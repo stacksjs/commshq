@@ -1,0 +1,407 @@
+<script server>
+interface CompetitorComparisonProps { competitor?: string }
+interface ComparisonRow { dimension: string, commshq: string, rival: string }
+interface ComparisonPage {
+  name: string
+  category: string
+  intro: string
+  /** Stated plainly and first, because a comparison that never concedes anything is not worth reading. */
+  strengths: Array<{ title: string, text: string }>
+  differences: Array<{ title: string, text: string }>
+  rows: ComparisonRow[]
+  chooseRival: string
+  chooseCommsHQ: string
+  verify: string
+}
+
+const props = defineProps<CompetitorComparisonProps>()
+
+/**
+ * Every page states what the other product is genuinely good at before it states
+ * where CommsHQ differs, and describes rivals structurally rather than by price
+ * or plan limits, which change without notice. Anything a reader would act on
+ * should be confirmed against the vendor's own site, which every page links to.
+ */
+const REVIEWED = 'August 2026'
+
+const pages: Record<string, ComparisonPage> = {
+  mailchimp: {
+    name: 'Mailchimp',
+    category: 'All-in-one small business marketing',
+    intro: 'Mailchimp is the most widely recognized email marketing product, now part of Intuit, and it has grown from a newsletter tool into a broad small business marketing suite.',
+    strengths: [
+      { title: 'Reach and familiarity', text: 'A very large template library, an enormous integration directory, and a workflow most marketers and contractors already know how to use.' },
+      { title: 'Low starting friction', text: 'Getting a first campaign out is about as easy as this category gets, which matters when nobody on the team is a specialist.' },
+      { title: 'Breadth of surface', text: 'Landing pages, ads, and a light CRM sit alongside email, so a small business can run a lot from one login.' },
+    ],
+    differences: [
+      { title: 'Automation depth', text: 'Reviewers consistently find complex multi-step automations harder to build in Mailchimp than in tools built around a visual flow editor. CommsHQ versions each automation and keeps approvals, step runs, and dead letters inspectable.' },
+      { title: 'Creator monetization', text: 'Paid tiers, sponsorships, referrals, and payouts are not what Mailchimp is built around. They are first-class records in CommsHQ.' },
+      { title: 'Reputation monitoring', text: 'Mailchimp does not watch your Google Business Profile or Yelp listing. CommsHQ polls them and raises threshold alerts.' },
+    ],
+    rows: [
+      { dimension: 'Primary audience', commshq: 'Creators and businesses publishing to an owned audience', rival: 'Small businesses and ecommerce brands' },
+      { dimension: 'Email and SMS', commshq: 'Both, sharing one consent ledger and delivery history', rival: 'Both, with SMS availability varying by region and plan' },
+      { dimension: 'Automation', commshq: 'Versioned journeys with approvals, step runs, and dead letters', rival: 'Customer journey builder' },
+      { dimension: 'Publishing', commshq: 'Publications, podcasts, feeds, and custom domains', rival: 'Landing pages and websites' },
+      { dimension: 'Review monitoring', commshq: 'Google Business Profile and Yelp, with threshold alerts', rival: 'Not offered' },
+      { dimension: 'AI assistance', commshq: 'Drafts that cannot ship without an explicit human decision', rival: 'AI content and design assistance' },
+      { dimension: 'Licensing', commshq: 'MIT licensed and source available', rival: 'Proprietary' },
+    ],
+    chooseRival: 'You want the most familiar tool in the category, a very large template and integration ecosystem, and the shortest path to a first send.',
+    chooseCommsHQ: 'You publish to an owned audience, need approvals and provenance on the way to a send, and want reviews and social mentions watched in the same workspace.',
+    verify: 'https://mailchimp.com/pricing/',
+  },
+
+  klaviyo: {
+    name: 'Klaviyo',
+    category: 'Ecommerce marketing automation',
+    intro: 'Klaviyo is built for online stores. It pulls deeply from Shopify, WooCommerce, and similar platforms and turns store behavior into segments, flows, and revenue reporting.',
+    strengths: [
+      { title: 'Store data depth', text: 'Its integrations go well beyond order webhooks, and the segmentation built on that data is the strongest reason teams pick it.' },
+      { title: 'Revenue attribution', text: 'Attributing revenue back to specific flows and campaigns is mature and is what most ecommerce teams are buying.' },
+      { title: 'Proven ecommerce flows', text: 'Abandoned cart, browse abandonment, win-back, and post-purchase flows are well trodden and well documented.' },
+    ],
+    differences: [
+      { title: 'Publishing', text: 'Klaviyo is not a publishing platform. CommsHQ carries publications, podcasts, episodes, feeds, and custom domains as first-class records.' },
+      { title: 'Creator revenue', text: 'Paid subscriptions, sponsorships, referrals, commissions, and payouts are outside Klaviyo. CommsHQ models them and charges no CommsHQ fee on connected-store sales.' },
+      { title: 'Reputation monitoring', text: 'Klaviyo does not monitor review sites. CommsHQ polls Google Business Profile and Yelp and alerts on volume and sentiment thresholds.' },
+    ],
+    rows: [
+      { dimension: 'Primary audience', commshq: 'Creators and businesses publishing to an owned audience', rival: 'Ecommerce brands, especially Shopify' },
+      { dimension: 'Commerce', commshq: 'Store connections, normalized events, and recovery journeys', rival: 'Deep native store integrations and revenue reporting' },
+      { dimension: 'Publishing', commshq: 'Publications, podcasts, feeds, and custom domains', rival: 'Not offered' },
+      { dimension: 'Monetization', commshq: 'Paid tiers, sponsors, referrals, commissions, and payouts', rival: 'Not the focus' },
+      { dimension: 'Review monitoring', commshq: 'Google Business Profile and Yelp, with threshold alerts', rival: 'Reviews product focused on collecting product reviews' },
+      { dimension: 'Consent record', commshq: 'Append-only ledger with purpose, policy, and jurisdiction', rival: 'Consent and subscription status tracking' },
+      { dimension: 'Licensing', commshq: 'MIT licensed and source available', rival: 'Proprietary' },
+    ],
+    chooseRival: 'Your business is a store first, email is a primary revenue channel, and deep native commerce data plus revenue attribution is what you are optimizing.',
+    chooseCommsHQ: 'You are building an audience as well as a store, and you want publishing, monetization, and reputation in the same workspace as the sending.',
+    verify: 'https://www.klaviyo.com/pricing',
+  },
+
+  kit: {
+    name: 'Kit',
+    category: 'Creator email marketing',
+    intro: 'Kit, known as ConvertKit until its 2024 rebrand, is the best established creator-first email tool. It keeps the surface small on purpose and has a creator app ecosystem around it.',
+    strengths: [
+      { title: 'Creator focus', text: 'Kit understood the creator audience earlier than most, and the product still reflects that clarity.' },
+      { title: 'Simplicity', text: 'Broadcasts and sequences are easy to reason about, which is exactly right for a writer who does not want a marketing suite.' },
+      { title: 'Ecosystem and reputation', text: 'A well regarded creator app ecosystem, a generous free tier, and a strong deliverability reputation.' },
+    ],
+    differences: [
+      { title: 'Channel breadth', text: 'Kit is email centered. CommsHQ runs email and SMS through one consent ledger, suppression list, and delivery history.' },
+      { title: 'Operational controls', text: 'CommsHQ versions automations, records approvals, and keeps an append-only audit and consent trail, which matters once more than one person can press send.' },
+      { title: 'Reputation monitoring', text: 'Kit does not watch business listings or social handles. CommsHQ does, with configurable thresholds.' },
+    ],
+    rows: [
+      { dimension: 'Primary audience', commshq: 'Creators and businesses publishing to an owned audience', rival: 'Creators, writers, and podcasters' },
+      { dimension: 'Email and SMS', commshq: 'Both, sharing one consent ledger and delivery history', rival: 'Email focused' },
+      { dimension: 'Automation', commshq: 'Versioned journeys with approvals, step runs, and dead letters', rival: 'Visual automations and sequences' },
+      { dimension: 'Monetization', commshq: 'Paid tiers, sponsors, referrals, commissions, and payouts', rival: 'Paid newsletters, digital products, and tips' },
+      { dimension: 'Review monitoring', commshq: 'Google Business Profile and Yelp, with threshold alerts', rival: 'Not offered' },
+      { dimension: 'Team controls', commshq: 'Roles, approvals, and an append-only audit trail per workspace', rival: 'Team accounts on higher plans' },
+      { dimension: 'Licensing', commshq: 'MIT licensed and source available', rival: 'Proprietary' },
+    ],
+    chooseRival: 'You want the least software you can get away with, you write for a living, and a well established creator ecosystem with a generous free tier matters more than breadth.',
+    chooseCommsHQ: 'You have outgrown one person pressing send, or you need SMS, commerce, and reputation monitoring alongside the newsletter.',
+    verify: 'https://kit.com/pricing',
+  },
+
+  beehiiv: {
+    name: 'beehiiv',
+    category: 'Newsletter growth and monetization',
+    intro: 'beehiiv is a newsletter platform built around growth and revenue, with a referral program, an ad network, and recommendation Boosts included in the product.',
+    strengths: [
+      { title: 'Monetization variety', text: 'Paid subscriptions with no beehiiv platform fee, an ad network for free subscribers, Boosts, and a built-in referral program.' },
+      { title: 'Growth tooling', text: 'Acquisition and recommendation mechanics are part of the product rather than something you assemble yourself.' },
+      { title: 'Newsletter analytics', text: 'Reporting is tuned specifically to how newsletters grow and earn.' },
+    ],
+    differences: [
+      { title: 'Beyond the newsletter', text: 'beehiiv is newsletter shaped. CommsHQ adds SMS, forms and gated resources, store connections, and reputation monitoring in the same workspace.' },
+      { title: 'Compliance record', text: 'CommsHQ keeps an append-only consent ledger recording purpose, policy version, jurisdiction, and source, and applies suppression before every attempt.' },
+      { title: 'Ownership', text: 'CommsHQ is MIT licensed and source available, and deploys to infrastructure you control.' },
+    ],
+    rows: [
+      { dimension: 'Primary audience', commshq: 'Creators and businesses publishing to an owned audience', rival: 'Newsletter operators focused on growth' },
+      { dimension: 'Publishing', commshq: 'Publications, podcasts, feeds, and custom domains', rival: 'Newsletter and website publishing' },
+      { dimension: 'Ad and sponsor revenue', commshq: 'Sponsors, ad placements, and advertiser offers you manage', rival: 'Built-in ad network and Boosts marketplace' },
+      { dimension: 'Platform fee on paid subscriptions', commshq: 'No CommsHQ fee', rival: 'No beehiiv platform fee on paid subscriptions' },
+      { dimension: 'SMS', commshq: 'Consent-aware SMS with inbound compliance handling', rival: 'Not the focus' },
+      { dimension: 'Review monitoring', commshq: 'Google Business Profile and Yelp, with threshold alerts', rival: 'Not offered' },
+      { dimension: 'Licensing', commshq: 'MIT licensed and source available', rival: 'Proprietary' },
+    ],
+    chooseRival: 'The newsletter is the business, and a built-in ad network plus a recommendation marketplace is worth more to you than breadth of channel.',
+    chooseCommsHQ: 'The newsletter is one of several channels, and you want SMS, commerce, compliance records, and reputation monitoring in the same place.',
+    verify: 'https://www.beehiiv.com/pricing',
+  },
+
+  substack: {
+    name: 'Substack',
+    category: 'Writing and paid subscriptions',
+    intro: 'Substack is the simplest way to publish and charge for writing. It handles the mechanics and puts your work in front of a built-in discovery network.',
+    strengths: [
+      { title: 'Almost no setup', text: 'You can be publishing and taking payments the same afternoon, with nothing to configure.' },
+      { title: 'Discovery network', text: 'Recommendations and the Substack app expose your work to readers already on the platform, which no self-managed tool can replicate.' },
+      { title: 'A clean writing surface', text: 'The editor stays out of the way, which is the whole point for many writers.' },
+    ],
+    differences: [
+      { title: 'Revenue model', text: 'Substack takes a 10 percent platform fee on paid subscriptions, on top of Stripe fees, and paid subscriptions are the single built-in revenue stream. CommsHQ charges no CommsHQ fee and also models sponsors, referrals, and commissions.' },
+      { title: 'Control', text: 'Substack deliberately limits customization and data control. CommsHQ is your workspace on your infrastructure, MIT licensed and source available.' },
+      { title: 'Channel and operations breadth', text: 'SMS, automations, forms, store connections, and reputation monitoring are outside what Substack does.' },
+    ],
+    rows: [
+      { dimension: 'Primary audience', commshq: 'Creators and businesses publishing to an owned audience', rival: 'Writers who want to publish and charge with minimal setup' },
+      { dimension: 'Platform fee on paid subscriptions', commshq: 'No CommsHQ fee', rival: '10 percent, plus payment processing' },
+      { dimension: 'Discovery', commshq: 'Your own channels, referrals, and recommendations', rival: 'Built-in network, app, and recommendations' },
+      { dimension: 'Customization', commshq: 'Full control of templates, domains, and data', rival: 'Intentionally limited' },
+      { dimension: 'Automation', commshq: 'Versioned journeys with approvals and retries', rival: 'Basic welcome and drip sequences' },
+      { dimension: 'Review monitoring', commshq: 'Google Business Profile and Yelp, with threshold alerts', rival: 'Not offered' },
+      { dimension: 'Licensing', commshq: 'MIT licensed and source available', rival: 'Proprietary' },
+    ],
+    chooseRival: 'You want to write, you want readers found for you, and you would rather pay a revenue share than run any infrastructure.',
+    chooseCommsHQ: 'You want to keep the full subscription revenue, own the reader relationship and the data, and run more than one channel.',
+    verify: 'https://substack.com/pricing',
+  },
+
+  birdeye: {
+    name: 'Birdeye',
+    category: 'Reputation and local presence',
+    intro: 'Birdeye is a reputation platform for multi-location businesses. It generates reviews, keeps listings accurate across directories, and reports on sentiment and local presence.',
+    strengths: [
+      { title: 'Multi-location depth', text: 'Location-level workflows, roll-up reporting, and listings accuracy across a wide set of directories. This is the mature choice for a chain or franchise.' },
+      { title: 'Review generation', text: 'Actively soliciting reviews, not just watching for them, is a core part of the product.' },
+      { title: 'Directory coverage', text: 'Far more review sources than the two CommsHQ currently connects, plus listings management CommsHQ does not attempt.' },
+    ],
+    differences: [
+      { title: 'It is not a marketing platform', text: 'Birdeye does not publish newsletters, run versioned automations, or manage paid subscriptions and sponsorships. CommsHQ does, and treats reputation as one signal inside that workspace.' },
+      { title: 'Scope of monitoring', text: 'CommsHQ monitors Google Business Profile and Yelp today, behind a provider interface built for more. Birdeye covers many more sources now.' },
+      { title: 'Cost and commitment', text: 'Birdeye is priced and sold as an enterprise local marketing suite. CommsHQ includes monitoring in the workspace you already use to reach people.' },
+    ],
+    rows: [
+      { dimension: 'Primary audience', commshq: 'Creators and businesses publishing to an owned audience', rival: 'Multi-location and franchise businesses' },
+      { dimension: 'Review sources', commshq: 'Google Business Profile and Yelp, extensible by connector', rival: 'A broad set of review sites and directories' },
+      { dimension: 'Review generation', commshq: 'Not offered; monitoring and alerting only', rival: 'Core capability' },
+      { dimension: 'Listings management', commshq: 'Not offered', rival: 'Core capability' },
+      { dimension: 'Threshold alerting', commshq: 'Rules on volume, sentiment, rating, and unanswered mentions', rival: 'Alerting and reporting included' },
+      { dimension: 'Email, SMS, and publishing', commshq: 'Core capability', rival: 'Messaging focused, not a publishing platform' },
+      { dimension: 'Licensing', commshq: 'MIT licensed and source available', rival: 'Proprietary' },
+    ],
+    chooseRival: 'Reputation is the problem you are solving, you run many locations, and you need review generation and listings management across a wide set of directories.',
+    chooseCommsHQ: 'You want reviews watched and escalated next to the audience you already email, without buying a second platform for it.',
+    verify: 'https://birdeye.com/pricing/',
+  },
+
+  podium: {
+    name: 'Podium',
+    category: 'Local business messaging',
+    intro: 'Podium is a messaging-first platform for local businesses. Review collection is built into text conversations with customers, alongside lead capture and payments.',
+    strengths: [
+      { title: 'Conversation first', text: 'If your team already runs on text messaging with customers, review requests land inside a workflow they are actually using.' },
+      { title: 'Lead conversion', text: 'Webchat to text, lead routing, and follow up are a genuine strength for local service businesses.' },
+      { title: 'Review collection', text: 'Getting more reviews, not just reading them, is central to the product.' },
+    ],
+    differences: [
+      { title: 'Publishing and audience', text: 'Podium does not publish newsletters or manage an owned audience with segments, consent proof, and preferences. That is the center of CommsHQ.' },
+      { title: 'Monitoring model', text: 'CommsHQ polls listings on a schedule, scores each mention, and raises alerts against thresholds you set, with a cooldown so one incident pages once.' },
+      { title: 'Monetization', text: 'Paid tiers, sponsorships, referrals, and payouts are outside Podium and modeled in CommsHQ.' },
+    ],
+    rows: [
+      { dimension: 'Primary audience', commshq: 'Creators and businesses publishing to an owned audience', rival: 'Local service businesses' },
+      { dimension: 'Core motion', commshq: 'Publish, automate, and measure to an owned audience', rival: 'Text conversations that convert leads' },
+      { dimension: 'Review generation', commshq: 'Not offered; monitoring and alerting only', rival: 'Core capability' },
+      { dimension: 'Review monitoring', commshq: 'Google Business Profile and Yelp, with threshold alerts', rival: 'Included alongside collection' },
+      { dimension: 'Newsletters and publishing', commshq: 'Core capability', rival: 'Not offered' },
+      { dimension: 'Automation', commshq: 'Versioned journeys with approvals and retries', rival: 'Messaging automations' },
+      { dimension: 'Licensing', commshq: 'MIT licensed and source available', rival: 'Proprietary' },
+    ],
+    chooseRival: 'Your customers reach you by text, and turning those conversations into leads, payments, and reviews is the job.',
+    chooseCommsHQ: 'Your audience relationship is the asset, and you want reputation signals feeding the same workspace that runs your campaigns.',
+    verify: 'https://www.podium.com/pricing/',
+  },
+
+  hubspot: {
+    name: 'HubSpot',
+    category: 'CRM and inbound marketing suite',
+    intro: 'HubSpot is an all-in-one CRM with marketing, sales, and service built around it. It is the default for B2B teams that want one system of record across the funnel.',
+    strengths: [
+      { title: 'One system of record', text: 'Marketing, sales, and service share the same CRM, which removes an entire category of integration work.' },
+      { title: 'Sales alignment', text: 'Deals, pipelines, and sequences alongside marketing automation is a real advantage for a team that sells.' },
+      { title: 'Ecosystem and support', text: 'A very large partner network, app marketplace, and body of documentation and training.' },
+    ],
+    differences: [
+      { title: 'Weight and cost', text: 'HubSpot is a large platform priced up-market, and cost grows quickly with contacts and seats. CommsHQ is a focused workspace you run yourself.' },
+      { title: 'Creator and publishing model', text: 'Publications, podcasts, paid tiers, sponsorships, and referral payouts are not what HubSpot models.' },
+      { title: 'Reputation monitoring', text: 'HubSpot does not poll Google Business Profile or Yelp for new reviews.' },
+    ],
+    rows: [
+      { dimension: 'Primary audience', commshq: 'Creators and businesses publishing to an owned audience', rival: 'B2B teams needing CRM, marketing, sales, and service' },
+      { dimension: 'CRM', commshq: 'Contacts, identities, segments, and consent, without a sales pipeline', rival: 'Full CRM with deals and pipelines' },
+      { dimension: 'Publishing', commshq: 'Publications, podcasts, feeds, and custom domains', rival: 'Blog, landing pages, and CMS' },
+      { dimension: 'Monetization', commshq: 'Paid tiers, sponsors, referrals, commissions, and payouts', rival: 'Not the focus' },
+      { dimension: 'Review monitoring', commshq: 'Google Business Profile and Yelp, with threshold alerts', rival: 'Not offered' },
+      { dimension: 'AI assistance', commshq: 'Drafts that cannot ship without an explicit human decision', rival: 'AI assistants across the suite' },
+      { dimension: 'Licensing', commshq: 'MIT licensed and source available', rival: 'Proprietary' },
+    ],
+    chooseRival: 'You sell to businesses, you need one CRM behind marketing and sales, and the budget for a platform of that size is available.',
+    chooseCommsHQ: 'You are publishing to an audience rather than working a sales pipeline, and you want to own the stack and the data.',
+    verify: 'https://www.hubspot.com/pricing',
+  },
+
+  activecampaign: {
+    name: 'ActiveCampaign',
+    category: 'Email and customer experience automation',
+    intro: 'ActiveCampaign pairs email marketing with one of the more capable visual automation builders in the category, plus a light CRM. It is a common mid-market default.',
+    strengths: [
+      { title: 'Automation builder', text: 'The visual flow editor is genuinely strong, and reviewers regularly rate it above the broad small business suites for complex branching.' },
+      { title: 'CRM alongside email', text: 'Enough sales capability for a team that nurtures and closes without needing a separate CRM.' },
+      { title: 'Maturity', text: 'A long track record, deep documentation, and a large integration catalog.' },
+    ],
+    differences: [
+      { title: 'Change control', text: 'CommsHQ versions each automation and records approvals, step runs, and dead letters, so a change to a live journey is reviewable and reversible.' },
+      { title: 'Publishing and monetization', text: 'Publications, podcasts, paid tiers, sponsorships, and payouts are outside ActiveCampaign.' },
+      { title: 'Reputation monitoring', text: 'ActiveCampaign does not watch review sites. CommsHQ polls them and alerts on thresholds.' },
+    ],
+    rows: [
+      { dimension: 'Primary audience', commshq: 'Creators and businesses publishing to an owned audience', rival: 'Mid-market B2B and hybrid businesses' },
+      { dimension: 'Automation', commshq: 'Versioned journeys with approvals, step runs, and dead letters', rival: 'Strong visual automation builder' },
+      { dimension: 'CRM', commshq: 'Contacts, identities, segments, and consent, without a sales pipeline', rival: 'Light CRM with deals' },
+      { dimension: 'Publishing', commshq: 'Publications, podcasts, feeds, and custom domains', rival: 'Not offered' },
+      { dimension: 'Monetization', commshq: 'Paid tiers, sponsors, referrals, commissions, and payouts', rival: 'Not the focus' },
+      { dimension: 'Review monitoring', commshq: 'Google Business Profile and Yelp, with threshold alerts', rival: 'Not offered' },
+      { dimension: 'Licensing', commshq: 'MIT licensed and source available', rival: 'Proprietary' },
+    ],
+    chooseRival: 'Branching automation and light sales CRM are the core of the job, and you want a mature product with a large integration catalog.',
+    chooseCommsHQ: 'You need the same automation depth plus publishing, monetization, and reputation, with approvals and an audit trail around changes.',
+    verify: 'https://www.activecampaign.com/pricing',
+  },
+
+  brevo: {
+    name: 'Brevo',
+    category: 'Multichannel marketing and transactional messaging',
+    intro: 'Brevo, headquartered in Paris, bundles email, SMS, WhatsApp, transactional sending, chat, and a light CRM, and is often the value pick in the European mid-market.',
+    strengths: [
+      { title: 'Channel bundle for the price', text: 'Email, SMS, WhatsApp, and transactional sending together is a strong package at its price point.' },
+      { title: 'European posture', text: 'A French company with EU data handling and a GDPR-forward stance, which matters to a lot of European buyers.' },
+      { title: 'Transactional sending', text: 'A capable transactional email and SMS service alongside the marketing side.' },
+    ],
+    differences: [
+      { title: 'Publishing and creator revenue', text: 'Brevo is not a publishing platform and does not model paid tiers, sponsorships, referrals, or payouts.' },
+      { title: 'Consent evidence', text: 'CommsHQ keeps an append-only consent ledger recording purpose, policy version, jurisdiction, source, and time for every record.' },
+      { title: 'Reputation monitoring', text: 'Brevo does not poll review sites. CommsHQ does, with configurable thresholds and cooldowns.' },
+    ],
+    rows: [
+      { dimension: 'Primary audience', commshq: 'Creators and businesses publishing to an owned audience', rival: 'Small and mid-market businesses, strong in Europe' },
+      { dimension: 'Channels', commshq: 'Email and SMS through one consent ledger', rival: 'Email, SMS, WhatsApp, and chat' },
+      { dimension: 'Transactional sending', commshq: 'Owned mail service with a delivery event ledger', rival: 'Dedicated transactional email and SMS' },
+      { dimension: 'Publishing', commshq: 'Publications, podcasts, feeds, and custom domains', rival: 'Landing pages and forms' },
+      { dimension: 'Monetization', commshq: 'Paid tiers, sponsors, referrals, commissions, and payouts', rival: 'Not the focus' },
+      { dimension: 'Review monitoring', commshq: 'Google Business Profile and Yelp, with threshold alerts', rival: 'Not offered' },
+      { dimension: 'Licensing', commshq: 'MIT licensed and source available', rival: 'Proprietary' },
+    ],
+    chooseRival: 'You want WhatsApp and chat in the bundle, you are sending transactional volume, and price per channel is the deciding factor.',
+    chooseCommsHQ: 'Publishing and monetization matter as much as sending, and you want consent evidence and reputation monitoring built in.',
+    verify: 'https://www.brevo.com/pricing/',
+  },
+
+  'customer-io': {
+    name: 'Customer.io',
+    category: 'Product-led lifecycle messaging',
+    intro: 'Customer.io is built for software products. Engineers instrument events, marketers orchestrate against them, and pricing follows product usage rather than list size.',
+    strengths: [
+      { title: 'Event-driven orchestration', text: 'An expressive workflow engine over your own event stream, which is the right model when behavior in the product drives the message.' },
+      { title: 'Engineering fit', text: 'A first-class API and data pipeline posture, designed for teams who will instrument properly.' },
+      { title: 'Lifecycle depth', text: 'Onboarding, activation, and retention messaging for SaaS is well served.' },
+    ],
+    differences: [
+      { title: 'Setup cost', text: 'Customer.io expects an engineering investment in event instrumentation before it is useful. CommsHQ is useful from a contact import and a verified sending domain.' },
+      { title: 'Publishing and monetization', text: 'Publications, podcasts, paid tiers, sponsorships, and payouts are outside its model.' },
+      { title: 'Reputation monitoring', text: 'Customer.io does not watch business listings or social handles.' },
+    ],
+    rows: [
+      { dimension: 'Primary audience', commshq: 'Creators and businesses publishing to an owned audience', rival: 'SaaS and product-led growth teams' },
+      { dimension: 'Data model', commshq: 'Contacts, identities, consent, commerce events, and segments', rival: 'Your own event stream and attributes' },
+      { dimension: 'Time to first send', commshq: 'Import contacts and verify a sending domain', rival: 'Instrument events first' },
+      { dimension: 'Publishing', commshq: 'Publications, podcasts, feeds, and custom domains', rival: 'Not offered' },
+      { dimension: 'Monetization', commshq: 'Paid tiers, sponsors, referrals, commissions, and payouts', rival: 'Not the focus' },
+      { dimension: 'Review monitoring', commshq: 'Google Business Profile and Yelp, with threshold alerts', rival: 'Not offered' },
+      { dimension: 'Licensing', commshq: 'MIT licensed and source available', rival: 'Proprietary' },
+    ],
+    chooseRival: 'You are messaging users of a software product, engineers will own the event instrumentation, and behavior in the product drives every send.',
+    chooseCommsHQ: 'Your audience is readers and customers rather than product users, and publishing and monetization are part of the job.',
+    verify: 'https://customer.io/pricing',
+  },
+}
+
+const page = pages[props.competitor || 'mailchimp'] || pages.mailchimp
+</script>
+
+<section class="mx-auto max-w-7xl px-5 py-20 lg:px-8 lg:py-28">
+  <p class="coral text-xs font-bold uppercase tracking-[0.22em]">{{ page.category }}</p>
+  <h1 class="ink text-balance mt-5 max-w-5xl text-5xl leading-[1.02] tracking-[-0.04em] sm:text-6xl">CommsHQ compared with {{ page.name }}</h1>
+  <p class="muted mt-7 max-w-3xl text-lg leading-8">{{ page.intro }}</p>
+  <p class="muted mt-4 max-w-3xl text-sm leading-7">Reviewed {{ REVIEWED }}. Products change often, so confirm anything you plan to act on against <a class="coral underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--coral)]" href="{{ page.verify }}" rel="nofollow noopener">the {{ page.name }} site</a>.</p>
+</section>
+
+<section class="panel border-y border-tone py-20 lg:py-28">
+  <div class="mx-auto max-w-7xl px-5 lg:px-8">
+    <div class="max-w-3xl"><p class="coral text-xs font-bold uppercase tracking-[0.22em]">Credit where it is due</p><h2 class="ink text-balance mt-4 text-4xl leading-tight tracking-[-0.035em] sm:text-5xl">What {{ page.name }} does well.</h2></div>
+    <div class="mt-12 grid gap-x-12 md:grid-cols-3">
+      @foreach(page.strengths as strength)
+        <article class="border-t border-tone py-8"><h3 class="ink mt-0 text-2xl">{{ strength.title }}</h3><p class="muted mb-0 mt-3 leading-7">{{ strength.text }}</p></article>
+      @endforeach
+    </div>
+  </div>
+</section>
+
+<section class="mx-auto max-w-7xl px-5 py-20 lg:px-8 lg:py-28">
+  <div class="max-w-3xl"><p class="coral text-xs font-bold uppercase tracking-[0.22em]">Where we differ</p><h2 class="ink text-balance mt-4 text-4xl leading-tight tracking-[-0.035em] sm:text-5xl">What CommsHQ does differently.</h2></div>
+  <div class="mt-12 grid gap-x-12 md:grid-cols-3">
+    @foreach(page.differences as difference)
+      <article class="border-t border-tone py-8"><h3 class="ink mt-0 text-2xl">{{ difference.title }}</h3><p class="muted mb-0 mt-3 leading-7">{{ difference.text }}</p></article>
+    @endforeach
+  </div>
+</section>
+
+<section class="panel border-y border-tone py-20 lg:py-28">
+  <div class="mx-auto max-w-7xl px-5 lg:px-8">
+    <div class="max-w-3xl"><p class="coral text-xs font-bold uppercase tracking-[0.22em]">Side by side</p><h2 class="ink text-balance mt-4 text-4xl leading-tight tracking-[-0.035em] sm:text-5xl">The comparison in one table.</h2></div>
+    <div class="mt-12 overflow-x-auto">
+      <table class="w-full min-w-[46rem] border-collapse text-left">
+        <caption class="sr-only">CommsHQ compared with {{ page.name }} across product dimensions</caption>
+        <thead>
+          <tr class="border-b border-tone">
+            <th scope="col" class="muted py-4 pr-6 text-xs font-bold uppercase tracking-[0.18em]">Dimension</th>
+            <th scope="col" class="ink py-4 pr-6 text-xs font-bold uppercase tracking-[0.18em]">CommsHQ</th>
+            <th scope="col" class="muted py-4 text-xs font-bold uppercase tracking-[0.18em]">{{ page.name }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          @foreach(page.rows as row)
+            <tr class="border-b border-tone align-top">
+              <th scope="row" class="ink py-5 pr-6 text-base font-semibold">{{ row.dimension }}</th>
+              <td class="ink py-5 pr-6 leading-7">{{ row.commshq }}</td>
+              <td class="muted py-5 leading-7">{{ row.rival }}</td>
+            </tr>
+          @endforeach
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<section class="mx-auto max-w-7xl px-5 py-20 lg:px-8 lg:py-28">
+  <div class="grid gap-5 md:grid-cols-2">
+    <article class="panel rounded-xl border border-tone p-8">
+      <h2 class="ink mt-0 text-2xl">Choose {{ page.name }} if</h2>
+      <p class="muted mb-0 mt-3 leading-7">{{ page.chooseRival }}</p>
+    </article>
+    <article class="panel rounded-xl border border-tone p-8">
+      <h2 class="ink mt-0 text-2xl">Choose CommsHQ if</h2>
+      <p class="muted mb-0 mt-3 leading-7">{{ page.chooseCommsHQ }}</p>
+    </article>
+  </div>
+</section>
+
+<section class="mx-auto max-w-7xl px-5 pb-20 lg:px-8"><div class="bg-coral rounded-xl p-8 text-white sm:p-12"><p class="mb-3 text-xs font-bold uppercase tracking-[0.2em] text-white/75">No pressure either way</p><h2 class="text-balance m-0 max-w-3xl text-4xl leading-tight sm:text-5xl">Try it against your own audience.</h2><a href="/dashboard/register" class="mt-7 inline-flex min-h-12 items-center rounded-md bg-white px-6 font-bold text-[#c73e2c] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white">Start free</a></div></section>

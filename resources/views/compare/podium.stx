@@ -1,0 +1,6 @@
+@extends('layouts/marketing')
+@section('title', 'CommsHQ vs Podium | CommsHQ')
+@section('description', 'An honest comparison of CommsHQ and Podium for local businesses weighing messaging-first review collection against owned-audience marketing.')
+@section('content')
+  <CompetitorComparison competitor="podium" />
+@endsection

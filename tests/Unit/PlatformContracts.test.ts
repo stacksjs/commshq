@@ -64,6 +64,35 @@ describe('interface contracts', () => {
     for (const state of ['populated', 'loading', 'empty', 'error']) expect(surface).toContain(`'${state}'`)
   })
 
+  it('publishes a footer-linked comparison page for every competitor', async () => {
+    const competitors = ['mailchimp', 'klaviyo', 'kit', 'beehiiv', 'substack', 'birdeye', 'podium', 'hubspot', 'activecampaign', 'brevo', 'customer-io']
+    const layout = await Bun.file(new URL('../../resources/views/layouts/marketing.stx', import.meta.url)).text()
+    const comparisons = await Bun.file(new URL('../../resources/components/CommsHQ/CompetitorComparison.stx', import.meta.url)).text()
+    const index = await Bun.file(new URL('../../resources/views/compare.stx', import.meta.url)).text()
+
+    expect(layout, 'the footer must carry a Compare section').toContain('>Compare<')
+    expect(layout).toContain('href="/compare"')
+
+    for (const competitor of competitors) {
+      const page = await Bun.file(new URL(`../../resources/views/compare/${competitor}.stx`, import.meta.url)).text()
+      expect(page).toContain(`<CompetitorComparison competitor="${competitor}" />`)
+      expect(page).toContain("@extends('layouts/marketing')")
+      expect(layout, `${competitor} must be reachable from the footer`).toContain(`href="/compare/${competitor}"`)
+      expect(index, `${competitor} must be listed on the compare index`).toContain(`href: '/compare/${competitor}'`)
+      expect(comparisons, `${competitor} must have comparison content`).toContain(`  ${competitor.includes('-') ? `'${competitor}'` : competitor}: {`)
+    }
+  })
+
+  it('keeps every comparison fair and checkable', async () => {
+    const source = await Bun.file(new URL('../../resources/components/CommsHQ/CompetitorComparison.stx', import.meta.url)).text()
+    // Each entry concedes strengths, says when to pick the other product, and
+    // links out so a reader can verify the claims for themselves.
+    expect(source.match(/strengths: \[/g) ?? []).toHaveLength(11)
+    expect(source.match(/chooseRival: '/g) ?? []).toHaveLength(11)
+    expect(source.match(/verify: 'https:\/\//g) ?? []).toHaveLength(11)
+    expect(source).toContain('Reviewed {{ REVIEWED }}')
+  })
+
   it('ships the public consent completion destinations', async () => {
     for (const page of ['subscription-confirmed', 'preferences-saved']) {
       const source = await Bun.file(new URL(`../../resources/views/${page}.stx`, import.meta.url)).text()

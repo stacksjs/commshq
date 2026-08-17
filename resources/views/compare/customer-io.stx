@@ -1,0 +1,6 @@
+@extends('layouts/marketing')
+@section('title', 'CommsHQ vs Customer.io | CommsHQ')
+@section('description', 'An honest comparison of CommsHQ and Customer.io for teams weighing event-driven lifecycle messaging against owned-audience publishing.')
+@section('content')
+  <CompetitorComparison competitor="customer-io" />
+@endsection

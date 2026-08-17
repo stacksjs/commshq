@@ -1,0 +1,6 @@
+@extends('layouts/marketing')
+@section('title', 'CommsHQ vs Brevo | CommsHQ')
+@section('description', 'An honest comparison of CommsHQ and Brevo across channel bundles, consent evidence, publishing, and monetization.')
+@section('content')
+  <CompetitorComparison competitor="brevo" />
+@endsection

@@ -20,7 +20,56 @@
     <a href="#main" class="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-50 focus:rounded-md focus:bg-black focus:px-4 focus:py-3 focus:text-white">Skip to content</a>
     <MarketingNavigation />
     <main id="main">@yield('content')</main>
-    <footer class="paper border-t border-tone"><div class="mx-auto max-w-7xl flex flex-col gap-6 px-5 py-10 sm:flex-row sm:items-center sm:justify-between lg:px-8"><a href="/" class="ink font-bold">CommsHQ</a><nav class="flex flex-wrap gap-5 text-sm" aria-label="Footer"><a class="muted" href="/integrations">Integrations</a><a class="muted" href="/security">Security</a><a class="muted" href="/privacy">Privacy</a><a class="muted" href="/terms">Terms</a></nav><p class="muted m-0 text-sm">Built with Stacks.</p></div></footer>
+    <footer class="paper border-t border-tone">
+      <div class="mx-auto max-w-7xl px-5 py-14 lg:px-8">
+        <nav class="grid gap-10 sm:grid-cols-2 lg:grid-cols-4" aria-label="Footer">
+          <section>
+            <h2 class="coral m-0 text-[11px] font-bold uppercase tracking-[0.18em]">Compare</h2>
+            <ul class="m-0 mt-4 list-none space-y-2 p-0 text-sm">
+              <li><a class="muted hover:text-[var(--ink)]" href="/compare/mailchimp">vs Mailchimp</a></li>
+              <li><a class="muted hover:text-[var(--ink)]" href="/compare/klaviyo">vs Klaviyo</a></li>
+              <li><a class="muted hover:text-[var(--ink)]" href="/compare/kit">vs Kit</a></li>
+              <li><a class="muted hover:text-[var(--ink)]" href="/compare/beehiiv">vs beehiiv</a></li>
+              <li><a class="muted hover:text-[var(--ink)]" href="/compare/substack">vs Substack</a></li>
+              <li><a class="ink font-semibold" href="/compare">All comparisons</a></li>
+            </ul>
+          </section>
+          <section>
+            <h2 class="coral m-0 text-[11px] font-bold uppercase tracking-[0.18em]">Compare more</h2>
+            <ul class="m-0 mt-4 list-none space-y-2 p-0 text-sm">
+              <li><a class="muted hover:text-[var(--ink)]" href="/compare/hubspot">vs HubSpot</a></li>
+              <li><a class="muted hover:text-[var(--ink)]" href="/compare/activecampaign">vs ActiveCampaign</a></li>
+              <li><a class="muted hover:text-[var(--ink)]" href="/compare/brevo">vs Brevo</a></li>
+              <li><a class="muted hover:text-[var(--ink)]" href="/compare/customer-io">vs Customer.io</a></li>
+              <li><a class="muted hover:text-[var(--ink)]" href="/compare/birdeye">vs Birdeye</a></li>
+              <li><a class="muted hover:text-[var(--ink)]" href="/compare/podium">vs Podium</a></li>
+            </ul>
+          </section>
+          <section>
+            <h2 class="coral m-0 text-[11px] font-bold uppercase tracking-[0.18em]">Product</h2>
+            <ul class="m-0 mt-4 list-none space-y-2 p-0 text-sm">
+              <li><a class="muted hover:text-[var(--ink)]" href="/features">Features</a></li>
+              <li><a class="muted hover:text-[var(--ink)]" href="/solutions">Solutions</a></li>
+              <li><a class="muted hover:text-[var(--ink)]" href="/pricing">Pricing</a></li>
+              <li><a class="muted hover:text-[var(--ink)]" href="/integrations">Integrations</a></li>
+            </ul>
+          </section>
+          <section>
+            <h2 class="coral m-0 text-[11px] font-bold uppercase tracking-[0.18em]">Company</h2>
+            <ul class="m-0 mt-4 list-none space-y-2 p-0 text-sm">
+              <li><a class="muted hover:text-[var(--ink)]" href="/security">Security</a></li>
+              <li><a class="muted hover:text-[var(--ink)]" href="/privacy">Privacy</a></li>
+              <li><a class="muted hover:text-[var(--ink)]" href="/terms">Terms</a></li>
+            </ul>
+          </section>
+        </nav>
+        <div class="mt-12 flex flex-col gap-3 border-t border-tone pt-6 sm:flex-row sm:items-center sm:justify-between">
+          <a href="/" class="ink font-bold">CommsHQ</a>
+          <p class="muted m-0 text-sm">Comparisons name other companies only to describe their products. All trademarks belong to their owners.</p>
+          <p class="muted m-0 text-sm">Built with Stacks.</p>
+        </div>
+      </div>
+    </footer>
     @stack('scripts')
   </body>
 </html>
