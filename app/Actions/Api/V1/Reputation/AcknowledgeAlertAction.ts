@@ -36,7 +36,7 @@ export default new Action({
       status: decision,
       // An alert resolved without a prior acknowledgement still records who acted.
       acknowledgedBy: Number(user.id),
-      acknowledgedAt: alert.acknowledged_at ? alert.acknowledged_at : decidedAt,
+      acknowledgedAt: alert.acknowledgedAt ? alert.acknowledgedAt : decidedAt,
       resolvedAt: decision === 'resolved' ? decidedAt : null,
     })
 

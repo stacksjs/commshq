@@ -34,8 +34,8 @@ export default new Action({
     await ReputationMention.forceUpdate(mention.id, {
       status,
       // Only a reply is a response; triaging and ignoring leave the reply fields alone.
-      respondedAt: status === 'responded' ? decidedAt : mention.responded_at,
-      respondedBy: status === 'responded' ? Number(user.id) : mention.responded_by,
+      respondedAt: status === 'responded' ? decidedAt : mention.respondedAt,
+      respondedBy: status === 'responded' ? Number(user.id) : mention.respondedBy,
     })
 
     await AuditEvent.forceCreate({

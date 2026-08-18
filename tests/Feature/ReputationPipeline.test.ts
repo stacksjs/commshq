@@ -104,6 +104,9 @@ describe('credential storage', () => {
 
     // The lookup the sync job actually performs: by team and provider, not id.
     const found = await IntegrationCredential.where('team_id', teamId).where('provider', 'yelp').first()
+    // Both spellings must resolve: the declared name is what the app reads,
+    // the column name is what the row is keyed by.
+    expect(found?.encryptedValue).toBe('yelp-secret-token')
     expect((found as any)?.encrypted_value).toBe('yelp-secret-token')
   })
 })
@@ -130,8 +133,10 @@ describe('syncing a profile', () => {
   it('leaves the profile active and rescheduled', async () => {
     const profile = await MonitoredProfile.where('id', profileId).first()
     expect(profile?.status).toBe('active')
+    expect(Number(profile?.consecutiveFailures)).toBe(0)
+    expect(profile?.nextPollAt).toBeTruthy()
+    // Declared name and column name agree.
     expect(Number((profile as any)?.consecutive_failures)).toBe(0)
-    expect((profile as any)?.next_poll_at).toBeTruthy()
   })
 
   it('stores nothing new when the same reviews come back', async () => {
@@ -151,7 +156,7 @@ describe('provider failures', () => {
     expect(threw).toBe(true)
 
     const profile = await MonitoredProfile.where('id', profileId).first()
-    expect(Number((profile as any)?.consecutive_failures)).toBe(1)
+    expect(Number(profile?.consecutiveFailures)).toBe(1)
     expect(profile?.status).toBe('active')
   })
 
@@ -190,8 +195,8 @@ describe('threshold alerting', () => {
 
     const alerts = await ReputationAlert.where('team_id', teamId).get()
     expect(alerts).toHaveLength(1)
-    expect(Number((alerts[0] as any).observed_value)).toBe(3)
-    expect(Number((alerts[0] as any).threshold_value)).toBe(3)
+    expect(Number(alerts[0].observedValue)).toBe(3)
+    expect(Number(alerts[0].thresholdValue)).toBe(3)
     expect(alerts[0].severity).toBe('critical')
     expect(alerts[0].status).toBe('open')
     // Guarded column: it silently vanished before the ORM fix.
@@ -200,7 +205,7 @@ describe('threshold alerting', () => {
 
   it('delivers the alert in-app', async () => {
     const alerts = await ReputationAlert.where('team_id', teamId).get()
-    expect(JSON.parse(String((alerts[0] as any).notified_channels))).toContain('database')
+    expect(JSON.parse(String(alerts[0].notifiedChannels))).toContain('database')
     expect((await db.selectFrom('notifications' as any).select(['id'] as any).execute()).length).toBeGreaterThanOrEqual(1)
   })
 

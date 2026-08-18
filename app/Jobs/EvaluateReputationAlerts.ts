@@ -52,7 +52,7 @@ export default new Job({
 
     for (const rule of rules) {
       const teamId = Number(rule.team_id)
-      const windowMinutes = Number(rule.window_minutes) || 1_440
+      const windowMinutes = Number(rule.windowMinutes) || 1_440
       const windowStart = new Date(now.getTime() - windowMinutes * 60_000).toISOString()
 
       try {
@@ -65,10 +65,10 @@ export default new Job({
         const mentions: EvaluableMention[] = rows.map(row => ({
           platform: String(row.platform),
           sentiment: String(row.sentiment),
-          sentimentScore: Number(row.sentiment_score) || 0,
+          sentimentScore: Number(row.sentimentScore) || 0,
           rating: row.rating === null || row.rating === undefined ? null : Number(row.rating),
           status: String(row.status),
-          postedAt: String(row.posted_at),
+          postedAt: String(row.postedAt),
         }))
 
         const result = evaluateRule({
@@ -77,10 +77,10 @@ export default new Job({
           comparator: String(rule.comparator) as Comparator,
           threshold: Number(rule.threshold),
           windowMinutes,
-          minimumSampleSize: Number(rule.minimum_sample_size) || 1,
+          minimumSampleSize: Number(rule.minimumSampleSize) || 1,
           platforms: parsePlatforms(rule.platforms),
-          cooldownMinutes: Number(rule.cooldown_minutes) || 360,
-          lastTriggeredAt: rule.last_triggered_at ? String(rule.last_triggered_at) : null,
+          cooldownMinutes: Number(rule.cooldownMinutes) || 360,
+          lastTriggeredAt: rule.lastTriggeredAt ? String(rule.lastTriggeredAt) : null,
         }, mentions, now)
 
         if (!result.breached) {
