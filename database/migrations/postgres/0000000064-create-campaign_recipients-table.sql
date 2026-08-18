@@ -6,7 +6,7 @@ CREATE TABLE IF NOT EXISTS "campaign_recipients" (
   "status" "campaign_recipients_status_type" not null default 'queued',
   "idempotency_key" varchar(128) not null,
   "snapshot" jsonb not null,
-  "scheduled_at" timestamp,
+  "scheduled_at" varchar(255),
   "team_id" bigint REFERENCES "teams"("id"),
   "campaign_id" bigint REFERENCES "campaigns"("id"),
   "contact_id" bigint REFERENCES "contacts"("id"),
