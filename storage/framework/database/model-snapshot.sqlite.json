@@ -4159,7 +4159,7 @@
           },
           {
             "name": "scheduled_at",
-            "type": "datetime",
+            "type": "string",
             "isPrimaryKey": false,
             "isUnique": false,
             "isNullable": true,
@@ -21889,7 +21889,7 @@
       }
     ]
   },
-  "hash": "c79ff951937d51c782ce35003ad9da003cc2446e177e6326473db01c60283c77",
+  "hash": "173561d7dc0369941b2cd09bb2c3ff041340c6cee3db66fc8be7b140bea539bf",
   "dialect": "sqlite",
-  "updatedAt": "2026-08-17T02:26:12.935Z"
+  "updatedAt": "2026-08-18T00:08:50.455Z"
 }

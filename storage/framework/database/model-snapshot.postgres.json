@@ -4159,7 +4159,7 @@
           },
           {
             "name": "scheduled_at",
-            "type": "datetime",
+            "type": "string",
             "isPrimaryKey": false,
             "isUnique": false,
             "isNullable": true,
@@ -21889,7 +21889,7 @@
       }
     ]
   },
-  "hash": "7589f9c310b8549ece622b5af40eb81b6ea8ff4302e0ed05fe62c2c2ce9e4e4c",
+  "hash": "3d948ba2228e196bf201ad6ec920603b93fc7c68317ee77ae656728c0c3c38da",
   "dialect": "postgres",
-  "updatedAt": "2026-08-17T02:26:13.391Z"
+  "updatedAt": "2026-08-18T00:08:50.963Z"
 }
