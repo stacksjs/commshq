@@ -11,7 +11,9 @@ export default defineModel({
     status: { required: true, fillable: false, default: 'queued', validation: { rule: schema.enum(['queued', 'sent', 'delivered', 'failed', 'suppressed', 'cancelled']) } },
     idempotencyKey: { required: true, fillable: false, hidden: true, validation: { rule: schema.string().max(128) } },
     snapshot: { required: true, fillable: false, validation: { rule: schema.json() } },
-    scheduledAt: { required: false, fillable: false, validation: { rule: schema.timestamp() } },
+    // Explicit `type`: the timestamp validator infers a numeric column while
+    // the generator emits TEXT and every write here is an ISO string.
+    scheduledAt: { type: 'string', required: false, fillable: false, validation: { rule: schema.timestamp() } },
   },
   dashboard: { section: 'marketing', icon: 'i-hugeicons-mail-send-02' },
 } as const)
