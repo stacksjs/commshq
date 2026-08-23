@@ -1,6 +1,10 @@
 name: Deploy
 
 on:
+  # Push to deploy: main is production. Manual runs stay available for a plan.
+  push:
+    branches: [main]
+
   workflow_dispatch:
     inputs:
       dry_run:
@@ -66,10 +70,14 @@ jobs:
 
       - name: Deploy production
         run: |
-          if [ "${{ inputs.dry_run }}" = "true" ]; then
-            ./buddy deploy --dry-run --env production
+          # A dry run only when a human asked for one. `inputs.dry_run` is empty
+          # on a push event, and comparing an empty string is a silent way to
+          # decide whether production gets deployed - so the event is checked
+          # explicitly rather than inferred from a blank input.
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ] && [ "${{ inputs.dry_run }}" = "true" ]; then
+            ./buddy deploy --prod --dry-run --yes
           else
-            ./buddy deploy --env production
+            ./buddy deploy --prod --yes
           fi
         env:
           DOTENV_PRIVATE_KEY_PRODUCTION: ${{ secrets.DOTENV_PRIVATE_KEY_PRODUCTION }}
