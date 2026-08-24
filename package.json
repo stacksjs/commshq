@@ -74,11 +74,11 @@
     "stx": "./buddy"
   },
   "dependencies": {
-    "@stacksjs/mail": "^0.3.1",
-    "@stacksjs/stx": "^0.2.188",
-    "@stacksjs/ts-cloud": "^0.11.6",
-    "stacks": "^0.72.18",
-    "ts-pantry": "^0.11.29"
+    "@stacksjs/mail": "^0.3.5",
+    "@stacksjs/stx": "^0.2.226",
+    "@stacksjs/ts-cloud": "^0.11.7",
+    "stacks": "^0.72.57",
+    "ts-pantry": "^0.11.41"
   },
   "workspaces": [
     "storage/framework",
@@ -94,7 +94,7 @@
     "commit-msg": "bun x gitlint --edit \"$1\""
   },
   "devDependencies": {
-    "better-dx": "^0.2.23",
-    "buddy-bot": "^0.10.3"
+    "better-dx": "^0.2.25",
+    "buddy-bot": "^0.10.5"
   }
 }
