@@ -1,5 +1,5 @@
 <script server>
-export const contacts = [
+const contacts = [
   { name: 'Maya Alvarez', address: 'maya@example.com', source: 'Referral', state: 'Subscribed', value: '$428' },
   { name: 'Elliot Chen', address: '+1 415 555 0184', source: 'Checkout', state: 'SMS consented', value: '$186' },
   { name: 'Priya Shah', address: 'priya@example.com', source: 'Field Notes', state: 'Subscribed', value: '$96' },

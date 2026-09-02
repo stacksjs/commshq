@@ -1,12 +1,12 @@
 <script server>
-export const performance = [
+const performance = [
   { label: 'New contacts', value: '1,284', change: '+18.4%', icon: 'i-hugeicons-user-add-02' },
   { label: 'Messages delivered', value: '84,219', change: '99.1%', icon: 'i-hugeicons-mail-open-02' },
   { label: 'Attributed revenue', value: '$18,460', change: '+12.7%', icon: 'i-hugeicons-money-receive-circle' },
   { label: 'Active journeys', value: '12', change: '3 need review', icon: 'i-hugeicons-workflow-square-06' },
 ]
 
-export const activity = [
+const activity = [
   { icon: 'i-hugeicons-mail-send-02', title: 'Sunday Dispatch completed', detail: '38,402 delivered, 51.8% unique opens', time: '18 min ago' },
   { icon: 'i-hugeicons-shopping-bag-02', title: 'Cart recovery converted', detail: 'Order #4821, $186 attributed revenue', time: '42 min ago' },
   { icon: 'i-hugeicons-user-add-02', title: 'Field Notes gained 84 readers', detail: 'Referral loop supplied 31%', time: '2 hr ago' },

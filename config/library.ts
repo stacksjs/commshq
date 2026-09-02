@@ -26,9 +26,15 @@ export default {
 
   functions: {
     name: 'commshq-fx',
-    description: 'CommsHQ browser functions.',
-    keywords: ['communications', 'publishing', 'marketing', 'typescript'],
+    description: 'The browser client for a CommsHQ workspace: signup forms, preference centres and unsubscribe links.',
+    keywords: ['communications', 'publishing', 'marketing', 'newsletter', 'consent', 'typescript'],
     shouldGenerateSourcemap: false,
-    files: ['index'],
+    /*
+     * The modules, not the barrel. The build generates its own `index` from
+     * this list and refuses to start when an entry claims that name -
+     * `files: ['index']` collided with it, so the package could not be built
+     * at all.
+     */
+    files: ['client', 'forms'],
   },
 } satisfies LibraryConfig
