@@ -36,6 +36,18 @@ jobs:
       - name: Install Dependencies
         run: bun install
 
+      - name: Build Library Packages
+        run: ./buddy build:libs
+
+      # Publishing goes through pantry, which the step above already put on
+      # PATH. `libs:publish` refuses a package with no build output rather
+      # than shipping an empty tarball, so the build above is a precondition
+      # and not a convenience.
+      - name: Publish Library Packages
+        run: ./buddy libs:publish
+        env:
+          PANTRY_REGISTRY_TOKEN: ${{ secrets.PANTRY_REGISTRY_TOKEN }}
+
       - name: Create GitHub Release
         uses: stacksjs/action-releaser@v1.2.9
         env:
