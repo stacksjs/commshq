@@ -349,7 +349,32 @@ export default class QueryController extends Controller {
         .limit(10)
         .execute()
 
-      return results
+      /*
+       * Annotated rather than inferred.
+       *
+       * `results` comes back from an aggregate select, whose rows are named by
+       * their aliases rather than by the table, so each row is
+       * `Record<string, unknown>` - and returning it directly does not satisfy
+       * the shape this method promises. Naming the element type is what makes
+       * the compiler check the mapping against the signature instead of
+       * widening past it. `count` really can be a string, a number or a bigint
+       * depending on the driver, which is why the return type says so.
+       *
+       * Backported from stacks 0.74.5, which carries this fix; this app is
+       * pinned to 0.74.2. It will be overwritten when the vendored tree is
+       * regenerated on a bump, by which point it is already upstream.
+       */
+      return results.map((row): {
+        normalized_query: string
+        count: string | number | bigint
+        avg_duration: string | number
+        max_duration: number | undefined
+      } => ({
+        normalized_query: String(row.normalized_query ?? ''),
+        count: (typeof row.count === 'number' || typeof row.count === 'bigint' ? row.count : String(row.count ?? '0')),
+        avg_duration: (typeof row.avg_duration === 'number' ? row.avg_duration : String(row.avg_duration ?? '0')),
+        max_duration: typeof row.max_duration === 'number' ? row.max_duration : undefined,
+      }))
     }
     catch (error: unknown) {
       const err = error as Error

@@ -45,11 +45,26 @@ async function rawColumn(table: string, column: string, id: number): Promise<unk
   return row?.[column]
 }
 
+/**
+ * Yelp Fusion's shape: "YYYY-MM-DD HH:MM:SS", business-local with no offset,
+ * which the provider reads as UTC.
+ *
+ * Relative to now, not a literal date. These were pinned to 2026-08-17 and the
+ * suite rotted the moment that fell out of a rule's window: the alerting tests
+ * evaluate `negative_mention_count` over `windowMinutes: 1_440`, so once the
+ * fixture aged past a day the evaluator matched nothing and raised nothing. The
+ * sentiment tests kept passing throughout, because they only count rows and
+ * never look at the clock, which is what made it read as an alerting bug.
+ */
+function fusionHoursAgo(hours: number): string {
+  return new Date(Date.now() - hours * 3_600_000).toISOString().replace('T', ' ').slice(0, 19)
+}
+
 const REVIEWS = [
-  { id: `neg-1-${stamp}`, rating: 1, text: 'Rude staff and a cold meal.', time_created: '2026-08-17 09:00:00', url: 'https://yelp.com/r1', user: { id: 'u1', name: 'Dana' } },
-  { id: `neg-2-${stamp}`, rating: 2, text: 'Waited an hour. Terrible.', time_created: '2026-08-17 09:30:00', url: 'https://yelp.com/r2', user: { id: 'u2', name: 'Rae' } },
-  { id: `neg-3-${stamp}`, rating: 2, text: 'Order was completely wrong.', time_created: '2026-08-17 10:00:00', url: 'https://yelp.com/r3', user: { id: 'u3', name: 'Sam' } },
-  { id: `pos-1-${stamp}`, rating: 5, text: 'Excellent service, spotless room.', time_created: '2026-08-17 10:30:00', url: 'https://yelp.com/r4', user: { id: 'u4', name: 'Kim' } },
+  { id: `neg-1-${stamp}`, rating: 1, text: 'Rude staff and a cold meal.', time_created: fusionHoursAgo(4), url: 'https://yelp.com/r1', user: { id: 'u1', name: 'Dana' } },
+  { id: `neg-2-${stamp}`, rating: 2, text: 'Waited an hour. Terrible.', time_created: fusionHoursAgo(3.5), url: 'https://yelp.com/r2', user: { id: 'u2', name: 'Rae' } },
+  { id: `neg-3-${stamp}`, rating: 2, text: 'Order was completely wrong.', time_created: fusionHoursAgo(3), url: 'https://yelp.com/r3', user: { id: 'u3', name: 'Sam' } },
+  { id: `pos-1-${stamp}`, rating: 5, text: 'Excellent service, spotless room.', time_created: fusionHoursAgo(2.5), url: 'https://yelp.com/r4', user: { id: 'u4', name: 'Kim' } },
 ]
 
 beforeAll(async () => {
