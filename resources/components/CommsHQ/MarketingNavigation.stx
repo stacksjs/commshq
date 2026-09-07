@@ -30,68 +30,68 @@ const featureGroups = [
 ]
 </script>
 
-<header class="paper sticky top-0 z-40 border-b border-tone">
-  <nav class="mx-auto max-w-7xl flex min-h-16 items-center justify-between gap-4 px-5 lg:px-8" aria-label="Primary navigation">
-    <a href="/" class="ink inline-flex shrink-0 items-center gap-2 text-lg font-bold tracking-tight" aria-label="CommsHQ home">
-      <span class="bg-coral h-3 w-3 rounded-sm" aria-hidden="true"></span>
+<header class="sticky top-0 z-40 border-b border-tone paper">
+  <nav class="flex gap-4 items-center justify-between mx-auto px-5 lg:px-8 max-w-7xl min-h-16" aria-label="Primary navigation">
+    <a href="/" class="inline-flex gap-2 items-center shrink-0 font-bold text-lg tracking-tight ink" aria-label="CommsHQ home">
+      <span class="h-3 w-3 bg-coral rounded-sm" aria-hidden="true"></span>
       CommsHQ
     </a>
 
-    <div class="hidden items-center gap-7 md:flex">
-      <details class="feature-menu group relative">
-        <summary class="muted feature-summary inline-flex min-h-11 cursor-pointer list-none items-center gap-1.5 text-sm font-semibold hover:text-[var(--ink)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[var(--coral)]">
+    <div class="hidden md:flex gap-7 items-center">
+      <details class="relative feature-menu group">
+        <summary class="inline-flex gap-1.5 items-center min-h-11 font-semibold list-none text-sm hover:text-[var(--ink)] focus-visible:outline focus-visible:outline-[var(--coral)] focus-visible:outline-2 focus-visible:outline-offset-4 cursor-pointer feature-summary muted">
           Features
-          <span class="feature-chevron i-hugeicons-arrow-down-01 h-4 w-4 transition-transform" aria-hidden="true"></span>
+          <span class="h-4 w-4 transition-transform feature-chevron i-hugeicons-arrow-down-01" aria-hidden="true"></span>
         </summary>
-        <div class="panel absolute left-1/2 top-[calc(100%+0.65rem)] w-[min(860px,calc(100vw-3rem))] -translate-x-1/2 overflow-hidden rounded-xl border border-tone shadow-[0_24px_70px_rgba(32,29,26,0.16)]">
-          <div class="grid gap-px bg-[var(--line)] lg:grid-cols-3">
+        <div class="absolute left-1/2 overflow-hidden top-[calc(100%+0.65rem)] w-[min(860px,calc(100vw-3rem))] border border-tone rounded-xl shadow-[0_24px_70px_rgba(32,29,26,0.16)] -translate-x-1/2 panel">
+          <div class="grid gap-px lg:grid-cols-3 bg-[var(--line)]">
             @foreach(featureGroups as group)
-              <section class="paper p-5" aria-label="{{ group.label }} features">
-                <p class="coral mb-3 text-[11px] font-bold uppercase tracking-[0.18em]">{{ group.label }}</p>
+              <section class="p-5 paper" aria-label="{{ group.label }} features">
+                <p class="mb-3 font-bold text-[11px] tracking-[0.18em] uppercase coral">{{ group.label }}</p>
                 <div class="space-y-1">
                   @foreach(group.items as item)
-                    <a href="{{ item.href }}" class="group/item grid min-h-16 grid-cols-[auto_1fr] gap-3 rounded-lg p-3 transition-colors hover:bg-[#e95843]/5 focus-visible:outline focus-visible:outline-2 focus-visible:outline-[var(--coral)]">
+                    <a href="{{ item.href }}" class="grid gap-3 grid-cols-[auto_1fr] p-3 min-h-16 hover:bg-[#e95843]/5 rounded-lg focus-visible:outline focus-visible:outline-[var(--coral)] focus-visible:outline-2 transition-colors group/item">
                       <span class="coral {{ item.icon }} mt-0.5 h-5 w-5" aria-hidden="true"></span>
-                      <span><strong class="ink block text-sm">{{ item.title }}</strong><span class="muted mt-1 block text-xs leading-5">{{ item.text }}</span></span>
+                      <span><strong class="block text-sm ink">{{ item.title }}</strong><span class="block mt-1 leading-5 text-xs muted">{{ item.text }}</span></span>
                     </a>
                   @endforeach
                 </div>
               </section>
             @endforeach
           </div>
-          <a href="/features" class="ink flex min-h-12 items-center justify-between border-t border-tone px-6 text-sm font-bold focus-visible:outline focus-visible:outline-2 focus-visible:outline-[var(--coral)]">
+          <a href="/features" class="flex items-center justify-between px-6 min-h-12 font-bold text-sm border-t border-tone focus-visible:outline focus-visible:outline-[var(--coral)] focus-visible:outline-2 ink">
             Explore the complete platform
-            <span class="i-hugeicons-arrow-right-02 coral h-4 w-4" aria-hidden="true"></span>
+            <span class="h-4 w-4 coral i-hugeicons-arrow-right-02" aria-hidden="true"></span>
           </a>
         </div>
       </details>
-      <a href="/solutions" class="muted text-sm font-semibold hover:text-[var(--ink)]">Solutions</a>
-      <a href="/pricing" class="muted text-sm font-semibold hover:text-[var(--ink)]">Pricing</a>
-      <a href="/security" class="muted text-sm font-semibold hover:text-[var(--ink)]">Security</a>
+      <a href="/solutions" class="font-semibold text-sm hover:text-[var(--ink)] muted">Solutions</a>
+      <a href="/pricing" class="font-semibold text-sm hover:text-[var(--ink)] muted">Pricing</a>
+      <a href="/security" class="font-semibold text-sm hover:text-[var(--ink)] muted">Security</a>
     </div>
 
-    <div class="flex items-center gap-2 sm:gap-3">
-      <a href="/dashboard/login" class="ink hidden text-sm font-semibold lg:block">Sign in</a>
-      <a href="/dashboard/register" class="bg-coral hidden min-h-10 items-center rounded-md px-4 text-sm font-semibold text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--coral)] sm:inline-flex">Start free</a>
-      <details class="feature-menu relative md:hidden">
-        <summary class="feature-summary ink inline-flex h-11 w-11 cursor-pointer list-none items-center justify-center rounded-md border border-tone focus-visible:outline focus-visible:outline-2 focus-visible:outline-[var(--coral)]" aria-label="Open navigation">
-          <span class="i-hugeicons-menu-01 h-5 w-5" aria-hidden="true"></span>
+    <div class="flex gap-2 items-center sm:gap-3">
+      <a href="/dashboard/login" class="hidden lg:block font-semibold text-sm ink">Sign in</a>
+      <a href="/dashboard/register" class="hidden sm:inline-flex items-center px-4 min-h-10 font-semibold text-sm text-white bg-coral rounded-md focus-visible:outline focus-visible:outline-[var(--coral)] focus-visible:outline-2 focus-visible:outline-offset-2">Start free</a>
+      <details class="md:hidden relative feature-menu">
+        <summary class="inline-flex items-center justify-center h-11 w-11 list-none border border-tone rounded-md focus-visible:outline focus-visible:outline-[var(--coral)] focus-visible:outline-2 cursor-pointer feature-summary ink" aria-label="Open navigation">
+          <span class="h-5 w-5 i-hugeicons-menu-01" aria-hidden="true"></span>
         </summary>
-        <div class="panel absolute right-0 top-[calc(100%+0.65rem)] max-h-[calc(100vh-6rem)] w-[min(92vw,380px)] overflow-y-auto rounded-xl border border-tone p-4 shadow-[0_24px_70px_rgba(32,29,26,0.18)]">
-          <p class="coral px-3 pb-2 text-[11px] font-bold uppercase tracking-[0.18em]">Features</p>
+        <div class="absolute overflow-y-auto right-0 top-[calc(100%+0.65rem)] p-4 max-h-[calc(100vh-6rem)] w-[min(92vw,380px)] border border-tone rounded-xl shadow-[0_24px_70px_rgba(32,29,26,0.18)] panel">
+          <p class="pb-2 px-3 font-bold text-[11px] tracking-[0.18em] uppercase coral">Features</p>
           @foreach(featureGroups as group)
-            <section class="border-t border-tone py-3 first:border-0">
-              <p class="muted px-3 pb-1 text-xs font-bold">{{ group.label }}</p>
+            <section class="py-3 border-t border-tone first:border-0">
+              <p class="pb-1 px-3 font-bold text-xs muted">{{ group.label }}</p>
               @foreach(group.items as item)
-                <a href="{{ item.href }}" class="ink flex min-h-11 items-center gap-3 rounded-md px-3 text-sm font-semibold hover:bg-black/5"><span class="coral {{ item.icon }} h-4 w-4" aria-hidden="true"></span>{{ item.title }}</a>
+                <a href="{{ item.href }}" class="flex gap-3 items-center px-3 min-h-11 font-semibold text-sm hover:bg-black/5 rounded-md ink"><span class="coral {{ item.icon }} h-4 w-4" aria-hidden="true"></span>{{ item.title }}</a>
               @endforeach
             </section>
           @endforeach
-          <div class="grid grid-cols-2 gap-2 border-t border-tone pt-4">
-            <a href="/solutions" class="ink inline-flex min-h-11 items-center justify-center rounded-md border border-tone text-sm font-semibold">Solutions</a>
-            <a href="/pricing" class="ink inline-flex min-h-11 items-center justify-center rounded-md border border-tone text-sm font-semibold">Pricing</a>
-            <a href="/dashboard/login" class="ink inline-flex min-h-11 items-center justify-center rounded-md border border-tone text-sm font-semibold">Sign in</a>
-            <a href="/dashboard/register" class="bg-coral inline-flex min-h-11 items-center justify-center rounded-md text-sm font-semibold text-white">Start free</a>
+          <div class="grid gap-2 grid-cols-2 pt-4 border-t border-tone">
+            <a href="/solutions" class="inline-flex items-center justify-center min-h-11 font-semibold text-sm border border-tone rounded-md ink">Solutions</a>
+            <a href="/pricing" class="inline-flex items-center justify-center min-h-11 font-semibold text-sm border border-tone rounded-md ink">Pricing</a>
+            <a href="/dashboard/login" class="inline-flex items-center justify-center min-h-11 font-semibold text-sm border border-tone rounded-md ink">Sign in</a>
+            <a href="/dashboard/register" class="inline-flex items-center justify-center min-h-11 font-semibold text-sm text-white bg-coral rounded-md">Start free</a>
           </div>
         </div>
       </details>

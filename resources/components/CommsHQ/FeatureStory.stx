@@ -89,48 +89,48 @@ const pages: Record<string, FeaturePage> = {
 const page = pages[props.feature || 'audience'] || pages.audience
 </script>
 
-<section class="editorial-grid border-b border-tone">
-  <div class="mx-auto max-w-7xl grid min-h-[620px] items-center gap-12 px-5 py-20 lg:grid-cols-[1fr_0.8fr] lg:px-8 lg:py-28">
+<section class="border-b border-tone editorial-grid">
+  <div class="grid gap-12 items-center lg:grid-cols-[1fr_0.8fr] mx-auto px-5 py-20 lg:px-8 lg:py-28 max-w-7xl min-h-[620px]">
     <div>
-      <p class="coral mb-5 text-xs font-bold uppercase tracking-[0.22em]">{{ page.eyebrow }}</p>
-      <h1 class="ink text-balance m-0 max-w-4xl text-5xl leading-[0.98] tracking-[-0.045em] sm:text-7xl">{{ page.title }}</h1>
-      <p class="muted mt-7 max-w-2xl text-lg leading-8">{{ page.intro }}</p>
-      <div class="mt-9 flex flex-col gap-3 sm:flex-row"><a href="/dashboard/register" class="bg-coral inline-flex min-h-12 items-center justify-center rounded-md px-6 font-bold text-white">Start free</a><a href="/features" class="ink panel inline-flex min-h-12 items-center justify-center gap-2 rounded-md border border-tone px-6 font-bold">All features<span class="i-hugeicons-arrow-right-02 h-4 w-4" aria-hidden="true"></span></a></div>
+      <p class="mb-5 font-bold text-xs tracking-[0.22em] uppercase coral">{{ page.eyebrow }}</p>
+      <h1 class="m-0 max-w-4xl leading-[0.98] text-5xl text-balance tracking-[-0.045em] sm:text-7xl ink">{{ page.title }}</h1>
+      <p class="mt-7 max-w-2xl leading-8 text-lg muted">{{ page.intro }}</p>
+      <div class="flex flex-col gap-3 sm:flex-row mt-9"><a href="/dashboard/register" class="inline-flex items-center justify-center px-6 min-h-12 font-bold text-white bg-coral rounded-md">Start free</a><a href="/features" class="inline-flex gap-2 items-center justify-center px-6 min-h-12 font-bold border border-tone rounded-md ink panel">All features<span class="h-4 w-4 i-hugeicons-arrow-right-02" aria-hidden="true"></span></a></div>
     </div>
-    <aside class="panel relative overflow-hidden rounded-[2rem] border border-tone p-8 shadow-[0_28px_80px_rgba(32,29,26,0.12)] sm:p-10">
+    <aside class="overflow-hidden relative p-8 sm:p-10 border border-tone rounded-[2rem] shadow-[0_28px_80px_rgba(32,29,26,0.12)] panel">
       <span class="coral {{ page.icon }} h-10 w-10" aria-hidden="true"></span>
-      <p class="ink mt-20 text-balance text-2xl font-semibold leading-9">{{ page.promise }}</p>
-      <div class="mt-10 h-1 w-20 rounded-full bg-coral" aria-hidden="true"></div>
+      <p class="mt-20 font-semibold leading-9 text-2xl text-balance ink">{{ page.promise }}</p>
+      <div class="mt-10 h-1 w-20 bg-coral rounded-full" aria-hidden="true"></div>
     </aside>
   </div>
 </section>
 
 <section aria-label="Feature outcomes" class="border-b border-tone">
-  <div class="mx-auto max-w-7xl grid divide-y divide-tone px-5 md:grid-cols-3 md:divide-x md:divide-y-0 lg:px-8">
+  <div class="grid md:grid-cols-3 mx-auto px-5 lg:px-8 max-w-7xl divide-tone divide-y md:divide-x md:divide-y-0">
     @foreach(page.metrics as metric)
-      <div class="py-8 md:px-8 md:first:pl-0"><p class="ink m-0 text-3xl font-bold">{{ metric.value }}</p><p class="muted mb-0 mt-1 text-sm">{{ metric.label }}</p></div>
+      <div class="py-8 md:px-8 md:first:pl-0"><p class="m-0 font-bold text-3xl ink">{{ metric.value }}</p><p class="mb-0 mt-1 text-sm muted">{{ metric.label }}</p></div>
     @endforeach
   </div>
 </section>
 
-<section class="mx-auto max-w-7xl px-5 py-24 lg:px-8 lg:py-32">
-  <div class="max-w-3xl"><p class="coral text-xs font-bold uppercase tracking-[0.22em]">Built into the platform</p><h2 class="ink text-balance mt-4 text-4xl leading-tight tracking-[-0.035em] sm:text-5xl">The details are part of the product.</h2></div>
-  <div class="mt-14 grid gap-x-12 md:grid-cols-2">
+<section class="mx-auto px-5 py-24 lg:px-8 lg:py-32 max-w-7xl">
+  <div class="max-w-3xl"><p class="font-bold text-xs tracking-[0.22em] uppercase coral">Built into the platform</p><h2 class="mt-4 leading-tight text-4xl text-balance tracking-[-0.035em] sm:text-5xl ink">The details are part of the product.</h2></div>
+  <div class="grid gap-x-12 md:grid-cols-2 mt-14">
     @foreach(page.capabilities as capability)
-      <article class="border-t border-tone py-8"><span class="coral {{ capability.icon }} h-6 w-6" aria-hidden="true"></span><h3 class="ink mt-8 text-2xl">{{ capability.title }}</h3><p class="muted mb-0 mt-3 max-w-xl leading-7">{{ capability.text }}</p></article>
+      <article class="py-8 border-t border-tone"><span class="coral {{ capability.icon }} h-6 w-6" aria-hidden="true"></span><h3 class="mt-8 text-2xl ink">{{ capability.title }}</h3><p class="mb-0 mt-3 max-w-xl leading-7 muted">{{ capability.text }}</p></article>
     @endforeach
   </div>
 </section>
 
-<section class="panel border-y border-tone py-24 lg:py-32">
-  <div class="mx-auto max-w-7xl grid gap-12 px-5 lg:grid-cols-[0.65fr_1.35fr] lg:px-8">
-    <div><p class="coral text-xs font-bold uppercase tracking-[0.22em]">How it works</p><h2 class="ink text-balance mt-4 text-4xl leading-tight tracking-[-0.035em] sm:text-5xl">A clear path from signal to action.</h2></div>
-    <ol class="m-0 space-y-3 p-0">
+<section class="py-24 lg:py-32 border-tone border-y panel">
+  <div class="grid gap-12 lg:grid-cols-[0.65fr_1.35fr] mx-auto px-5 lg:px-8 max-w-7xl">
+    <div><p class="font-bold text-xs tracking-[0.22em] uppercase coral">How it works</p><h2 class="mt-4 leading-tight text-4xl text-balance tracking-[-0.035em] sm:text-5xl ink">A clear path from signal to action.</h2></div>
+    <ol class="m-0 p-0 space-y-3">
       @foreach(page.steps as step)
-        <li class="paper grid gap-5 border-t border-tone px-1 py-7 sm:grid-cols-[auto_1fr]"><span class="bg-coral mt-2 h-2.5 w-2.5 rounded-full" aria-hidden="true"></span><div><h3 class="ink m-0 text-2xl">{{ step.title }}</h3><p class="muted mb-0 mt-2 leading-7">{{ step.text }}</p></div></li>
+        <li class="grid gap-5 sm:grid-cols-[auto_1fr] px-1 py-7 border-t border-tone paper"><span class="mt-2 h-2.5 w-2.5 bg-coral rounded-full" aria-hidden="true"></span><div><h3 class="m-0 text-2xl ink">{{ step.title }}</h3><p class="mb-0 mt-2 leading-7 muted">{{ step.text }}</p></div></li>
       @endforeach
     </ol>
   </div>
 </section>
 
-<section class="mx-auto max-w-7xl px-5 py-20 lg:px-8"><div class="bg-coral rounded-xl p-8 text-white sm:p-12"><p class="mb-3 text-xs font-bold uppercase tracking-[0.2em] text-white/75">Make the next move useful</p><h2 class="text-balance m-0 max-w-3xl text-4xl leading-tight sm:text-5xl">Bring this work into one communications home.</h2><a href="/dashboard/register" class="mt-7 inline-flex min-h-12 items-center rounded-md bg-white px-6 font-bold text-[#c73e2c]">Start with CommsHQ</a></div></section>
+<section class="mx-auto px-5 py-20 lg:px-8 max-w-7xl"><div class="p-8 sm:p-12 text-white bg-coral rounded-xl"><p class="mb-3 font-bold text-white/75 text-xs tracking-[0.2em] uppercase">Make the next move useful</p><h2 class="m-0 max-w-3xl leading-tight text-4xl text-balance sm:text-5xl">Bring this work into one communications home.</h2><a href="/dashboard/register" class="inline-flex items-center mt-7 px-6 min-h-12 font-bold text-[#c73e2c] bg-white rounded-md">Start with CommsHQ</a></div></section>

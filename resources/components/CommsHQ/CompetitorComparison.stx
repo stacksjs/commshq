@@ -337,52 +337,52 @@ const pages: Record<string, ComparisonPage> = {
 const page = pages[props.competitor || 'mailchimp'] || pages.mailchimp
 </script>
 
-<section class="mx-auto max-w-7xl px-5 py-20 lg:px-8 lg:py-28">
-  <p class="coral text-xs font-bold uppercase tracking-[0.22em]">{{ page.category }}</p>
-  <h1 class="ink text-balance mt-5 max-w-5xl text-5xl leading-[1.02] tracking-[-0.04em] sm:text-6xl">CommsHQ compared with {{ page.name }}</h1>
-  <p class="muted mt-7 max-w-3xl text-lg leading-8">{{ page.intro }}</p>
-  <p class="muted mt-4 max-w-3xl text-sm leading-7">Reviewed {{ REVIEWED }}. Products change often, so confirm anything you plan to act on against <a class="coral underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--coral)]" href="{{ page.verify }}" rel="nofollow noopener">the {{ page.name }} site</a>.</p>
+<section class="mx-auto px-5 py-20 lg:px-8 lg:py-28 max-w-7xl">
+  <p class="font-bold text-xs tracking-[0.22em] uppercase coral">{{ page.category }}</p>
+  <h1 class="mt-5 max-w-5xl leading-[1.02] text-5xl text-balance tracking-[-0.04em] sm:text-6xl ink">CommsHQ compared with {{ page.name }}</h1>
+  <p class="mt-7 max-w-3xl leading-8 text-lg muted">{{ page.intro }}</p>
+  <p class="mt-4 max-w-3xl leading-7 text-sm muted">Reviewed {{ REVIEWED }}. Products change often, so confirm anything you plan to act on against <a class="underline focus-visible:outline focus-visible:outline-[var(--coral)] focus-visible:outline-2 focus-visible:outline-offset-2 coral" href="{{ page.verify }}" rel="nofollow noopener">the {{ page.name }} site</a>.</p>
 </section>
 
-<section class="panel border-y border-tone py-20 lg:py-28">
-  <div class="mx-auto max-w-7xl px-5 lg:px-8">
-    <div class="max-w-3xl"><p class="coral text-xs font-bold uppercase tracking-[0.22em]">Credit where it is due</p><h2 class="ink text-balance mt-4 text-4xl leading-tight tracking-[-0.035em] sm:text-5xl">What {{ page.name }} does well.</h2></div>
-    <div class="mt-12 grid gap-x-12 md:grid-cols-3">
+<section class="py-20 lg:py-28 border-tone border-y panel">
+  <div class="mx-auto px-5 lg:px-8 max-w-7xl">
+    <div class="max-w-3xl"><p class="font-bold text-xs tracking-[0.22em] uppercase coral">Credit where it is due</p><h2 class="mt-4 leading-tight text-4xl text-balance tracking-[-0.035em] sm:text-5xl ink">What {{ page.name }} does well.</h2></div>
+    <div class="grid gap-x-12 md:grid-cols-3 mt-12">
       @foreach(page.strengths as strength)
-        <article class="border-t border-tone py-8"><h3 class="ink mt-0 text-2xl">{{ strength.title }}</h3><p class="muted mb-0 mt-3 leading-7">{{ strength.text }}</p></article>
+        <article class="py-8 border-t border-tone"><h3 class="mt-0 text-2xl ink">{{ strength.title }}</h3><p class="mb-0 mt-3 leading-7 muted">{{ strength.text }}</p></article>
       @endforeach
     </div>
   </div>
 </section>
 
-<section class="mx-auto max-w-7xl px-5 py-20 lg:px-8 lg:py-28">
-  <div class="max-w-3xl"><p class="coral text-xs font-bold uppercase tracking-[0.22em]">Where we differ</p><h2 class="ink text-balance mt-4 text-4xl leading-tight tracking-[-0.035em] sm:text-5xl">What CommsHQ does differently.</h2></div>
-  <div class="mt-12 grid gap-x-12 md:grid-cols-3">
+<section class="mx-auto px-5 py-20 lg:px-8 lg:py-28 max-w-7xl">
+  <div class="max-w-3xl"><p class="font-bold text-xs tracking-[0.22em] uppercase coral">Where we differ</p><h2 class="mt-4 leading-tight text-4xl text-balance tracking-[-0.035em] sm:text-5xl ink">What CommsHQ does differently.</h2></div>
+  <div class="grid gap-x-12 md:grid-cols-3 mt-12">
     @foreach(page.differences as difference)
-      <article class="border-t border-tone py-8"><h3 class="ink mt-0 text-2xl">{{ difference.title }}</h3><p class="muted mb-0 mt-3 leading-7">{{ difference.text }}</p></article>
+      <article class="py-8 border-t border-tone"><h3 class="mt-0 text-2xl ink">{{ difference.title }}</h3><p class="mb-0 mt-3 leading-7 muted">{{ difference.text }}</p></article>
     @endforeach
   </div>
 </section>
 
-<section class="panel border-y border-tone py-20 lg:py-28">
-  <div class="mx-auto max-w-7xl px-5 lg:px-8">
-    <div class="max-w-3xl"><p class="coral text-xs font-bold uppercase tracking-[0.22em]">Side by side</p><h2 class="ink text-balance mt-4 text-4xl leading-tight tracking-[-0.035em] sm:text-5xl">The comparison in one table.</h2></div>
-    <div class="mt-12 overflow-x-auto">
-      <table class="w-full min-w-[46rem] border-collapse text-left">
+<section class="py-20 lg:py-28 border-tone border-y panel">
+  <div class="mx-auto px-5 lg:px-8 max-w-7xl">
+    <div class="max-w-3xl"><p class="font-bold text-xs tracking-[0.22em] uppercase coral">Side by side</p><h2 class="mt-4 leading-tight text-4xl text-balance tracking-[-0.035em] sm:text-5xl ink">The comparison in one table.</h2></div>
+    <div class="overflow-x-auto mt-12">
+      <table class="min-w-[46rem] w-full text-left border-collapse">
         <caption class="sr-only">CommsHQ compared with {{ page.name }} across product dimensions</caption>
         <thead>
           <tr class="border-b border-tone">
-            <th scope="col" class="muted py-4 pr-6 text-xs font-bold uppercase tracking-[0.18em]">Dimension</th>
-            <th scope="col" class="ink py-4 pr-6 text-xs font-bold uppercase tracking-[0.18em]">CommsHQ</th>
-            <th scope="col" class="muted py-4 text-xs font-bold uppercase tracking-[0.18em]">{{ page.name }}</th>
+            <th scope="col" class="pr-6 py-4 font-bold text-xs tracking-[0.18em] uppercase muted">Dimension</th>
+            <th scope="col" class="pr-6 py-4 font-bold text-xs tracking-[0.18em] uppercase ink">CommsHQ</th>
+            <th scope="col" class="py-4 font-bold text-xs tracking-[0.18em] uppercase muted">{{ page.name }}</th>
           </tr>
         </thead>
         <tbody>
           @foreach(page.rows as row)
             <tr class="border-b border-tone align-top">
-              <th scope="row" class="ink py-5 pr-6 text-base font-semibold">{{ row.dimension }}</th>
-              <td class="ink py-5 pr-6 leading-7">{{ row.commshq }}</td>
-              <td class="muted py-5 leading-7">{{ row.rival }}</td>
+              <th scope="row" class="pr-6 py-5 font-semibold text-base ink">{{ row.dimension }}</th>
+              <td class="pr-6 py-5 leading-7 ink">{{ row.commshq }}</td>
+              <td class="py-5 leading-7 muted">{{ row.rival }}</td>
             </tr>
           @endforeach
         </tbody>
@@ -391,17 +391,17 @@ const page = pages[props.competitor || 'mailchimp'] || pages.mailchimp
   </div>
 </section>
 
-<section class="mx-auto max-w-7xl px-5 py-20 lg:px-8 lg:py-28">
+<section class="mx-auto px-5 py-20 lg:px-8 lg:py-28 max-w-7xl">
   <div class="grid gap-5 md:grid-cols-2">
-    <article class="panel rounded-xl border border-tone p-8">
-      <h2 class="ink mt-0 text-2xl">Choose {{ page.name }} if</h2>
-      <p class="muted mb-0 mt-3 leading-7">{{ page.chooseRival }}</p>
+    <article class="p-8 border border-tone rounded-xl panel">
+      <h2 class="mt-0 text-2xl ink">Choose {{ page.name }} if</h2>
+      <p class="mb-0 mt-3 leading-7 muted">{{ page.chooseRival }}</p>
     </article>
-    <article class="panel rounded-xl border border-tone p-8">
-      <h2 class="ink mt-0 text-2xl">Choose CommsHQ if</h2>
-      <p class="muted mb-0 mt-3 leading-7">{{ page.chooseCommsHQ }}</p>
+    <article class="p-8 border border-tone rounded-xl panel">
+      <h2 class="mt-0 text-2xl ink">Choose CommsHQ if</h2>
+      <p class="mb-0 mt-3 leading-7 muted">{{ page.chooseCommsHQ }}</p>
     </article>
   </div>
 </section>
 
-<section class="mx-auto max-w-7xl px-5 pb-20 lg:px-8"><div class="bg-coral rounded-xl p-8 text-white sm:p-12"><p class="mb-3 text-xs font-bold uppercase tracking-[0.2em] text-white/75">No pressure either way</p><h2 class="text-balance m-0 max-w-3xl text-4xl leading-tight sm:text-5xl">Try it against your own audience.</h2><a href="/dashboard/register" class="mt-7 inline-flex min-h-12 items-center rounded-md bg-white px-6 font-bold text-[#c73e2c] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white">Start free</a></div></section>
+<section class="mx-auto pb-20 px-5 lg:px-8 max-w-7xl"><div class="p-8 sm:p-12 text-white bg-coral rounded-xl"><p class="mb-3 font-bold text-white/75 text-xs tracking-[0.2em] uppercase">No pressure either way</p><h2 class="m-0 max-w-3xl leading-tight text-4xl text-balance sm:text-5xl">Try it against your own audience.</h2><a href="/dashboard/register" class="inline-flex items-center mt-7 px-6 min-h-12 font-bold text-[#c73e2c] bg-white rounded-md focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white">Start free</a></div></section>

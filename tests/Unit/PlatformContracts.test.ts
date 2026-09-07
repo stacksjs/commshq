@@ -41,7 +41,12 @@ describe('interface contracts', () => {
     const navigation = await Bun.file(new URL('../../resources/components/CommsHQ/MarketingNavigation.stx', import.meta.url)).text()
     const stories = await Bun.file(new URL('../../resources/components/CommsHQ/FeatureStory.stx', import.meta.url)).text()
 
-    expect(navigation).toContain('<details class="feature-menu group relative">')
+    // Assert the class is present, not the byte order of the attribute. This was a
+    // literal match on `class="feature-menu group relative"` and it broke the day
+    // pickier's sort-tailwind-classes rule was actually run on .stx files: the
+    // linter and the test were pinning opposite orders of the same three classes.
+    // A contract test should not care how a formatter arranges an attribute.
+    expect(navigation).toMatch(/<details class="[^"]*\bfeature-menu\b[^"]*">/)
     expect(navigation).toContain('aria-label="Primary navigation"')
     expect(navigation).toContain('Explore the complete platform')
 

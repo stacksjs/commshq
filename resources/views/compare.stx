@@ -32,22 +32,22 @@ const groups = [
 ]
 </script>
 @section('content')
-  <section class="mx-auto max-w-7xl px-5 py-20 lg:px-8 lg:py-28">
-    <p class="coral text-xs font-bold uppercase tracking-[0.22em]">Compare</p>
-    <h1 class="ink text-balance mt-5 max-w-5xl text-5xl leading-[1.02] tracking-[-0.04em] sm:text-7xl">An honest look at the alternatives.</h1>
-    <p class="muted mt-7 max-w-2xl text-lg leading-8">Every comparison says what the other product does well before it says where CommsHQ differs. Several of these tools are the right answer for the right team, and each page says plainly when that is the case.</p>
-    <p class="muted mt-4 max-w-2xl text-sm leading-7">We describe competitors by what they are built around rather than by prices and plan limits, because those change without notice. Each page carries the date it was last reviewed and links to the vendor so you can check current details yourself.</p>
+  <section class="mx-auto px-5 py-20 lg:px-8 lg:py-28 max-w-7xl">
+    <p class="font-bold text-xs tracking-[0.22em] uppercase coral">Compare</p>
+    <h1 class="mt-5 max-w-5xl leading-[1.02] text-5xl text-balance tracking-[-0.04em] sm:text-7xl ink">An honest look at the alternatives.</h1>
+    <p class="mt-7 max-w-2xl leading-8 text-lg muted">Every comparison says what the other product does well before it says where CommsHQ differs. Several of these tools are the right answer for the right team, and each page says plainly when that is the case.</p>
+    <p class="mt-4 max-w-2xl leading-7 text-sm muted">We describe competitors by what they are built around rather than by prices and plan limits, because those change without notice. Each page carries the date it was last reviewed and links to the vendor so you can check current details yourself.</p>
   </section>
 
-  <section class="mx-auto max-w-7xl px-5 pb-24 lg:px-8 lg:pb-32">
+  <section class="mx-auto pb-24 px-5 lg:pb-32 lg:px-8 max-w-7xl">
     @foreach(groups as group)
       <div class="mb-14">
-        <h2 class="coral m-0 text-xs font-bold uppercase tracking-[0.18em]">{{ group.label }}</h2>
-        <div class="mt-6 grid gap-x-12 md:grid-cols-2 lg:grid-cols-3">
+        <h2 class="m-0 font-bold text-xs tracking-[0.18em] uppercase coral">{{ group.label }}</h2>
+        <div class="grid gap-x-12 md:grid-cols-2 lg:grid-cols-3 mt-6">
           @foreach(group.items as item)
-            <a href="{{ item.href }}" class="group border-t border-tone py-7 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[var(--coral)]">
-              <h3 class="ink m-0 text-2xl">CommsHQ vs {{ item.name }}</h3>
-              <p class="muted mb-0 mt-2 leading-7">{{ item.text }}</p>
+            <a href="{{ item.href }}" class="py-7 border-t border-tone focus-visible:outline focus-visible:outline-[var(--coral)] focus-visible:outline-2 focus-visible:outline-offset-4 group">
+              <h3 class="m-0 text-2xl ink">CommsHQ vs {{ item.name }}</h3>
+              <p class="mb-0 mt-2 leading-7 muted">{{ item.text }}</p>
             </a>
           @endforeach
         </div>
