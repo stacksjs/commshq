@@ -1,0 +1,103 @@
+<script server>
+useSeoMeta({
+  title: 'Create your workspace - CommsHQ',
+  robots: 'noindex, nofollow',
+})
+</script>
+
+<script client>
+// RegisterAction signs the new account in as part of the same response: it
+// returns the token pack AND sets the httpOnly cookie, so there is no second
+// round trip and nothing here to persist.
+const error: StxSignal<string> = state('')
+const loading: StxSignal<boolean> = state(false)
+
+/** Matches the framework's own policy, so the form refuses what the server would. */
+const PASSWORD_MIN_LENGTH = 8
+
+async function handleSubmit(e: SubmitEvent): Promise<void> {
+  e.preventDefault()
+  if (loading())
+    return
+  const form = e.target as HTMLFormElement
+  const name = (form.elements.namedItem('name') as HTMLInputElement).value.trim()
+  const email = (form.elements.namedItem('email') as HTMLInputElement).value.trim()
+  const password = (form.elements.namedItem('password') as HTMLInputElement).value
+
+  // Checked here as well as on the server, because a 422 that comes back after
+  // the round trip reads as a failure rather than as a rule.
+  if (name.length < 2) {
+    error.set('Please enter your name.')
+    return
+  }
+  if (password.length < PASSWORD_MIN_LENGTH) {
+    error.set(`Your password needs at least ${PASSWORD_MIN_LENGTH} characters.`)
+    return
+  }
+
+  loading.set(true)
+  error.set('')
+  try {
+    const res = await fetch('/register', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name, email, password }),
+    })
+    const data = await res.json().catch(() => ({})) as Record<string, unknown>
+    if (!res.ok) {
+      // The server's own message is worth showing here, unlike on sign-in:
+      // these are rule violations the person can act on, and none of them
+      // reveal whether somebody else holds an account.
+      error.set(String(data.message ?? 'Could not create your account.'))
+      return
+    }
+    navigate('/dashboard/commshq')
+  }
+  catch {
+    error.set('Could not reach the server. Please try again.')
+  }
+  finally {
+    loading.set(false)
+  }
+}
+</script>
+
+@extends('layouts/auth')
+
+@section('title', 'Create your workspace - CommsHQ')
+
+@section('content')
+<div class="max-w-sm w-full">
+  <div class="mb-8 text-center">
+    <StxLink to="/" class="font-bold text-2xl ink" style="text-decoration: none">CommsHQ</StxLink>
+    <p class="mt-2 text-sm muted">Create your workspace</p>
+  </div>
+
+  <div class="px-6 py-7 border rounded-2xl border-tone panel">
+    <form @submit="handleSubmit" class="space-y-4">
+      <div>
+        <label for="name" class="block mb-1.5 font-medium text-xs ink">Your name</label>
+        <input id="name" name="name" type="text" required autocomplete="name" class="field" placeholder="Ada Lovelace">
+      </div>
+      <div>
+        <label for="email" class="block mb-1.5 font-medium text-xs ink">Email</label>
+        <input id="email" name="email" type="email" required autocomplete="email" class="field" placeholder="you@example.com">
+      </div>
+      <div>
+        <label for="password" class="block mb-1.5 font-medium text-xs ink">Password</label>
+        <input id="password" name="password" type="password" required autocomplete="new-password" class="field">
+        <p class="mt-1 text-xs muted">At least 8 characters.</p>
+      </div>
+
+      <button type="submit" :disabled="loading()" class="px-4 py-2.5 w-full font-semibold text-sm text-white rounded-xl border-0 bg-coral" style="cursor: pointer">Create workspace</button>
+      <p class="text-center text-xs muted" :show="loading()" style="display:none">Creating your workspace...</p>
+      <p class="px-3 py-2 text-sm text-center rounded-lg coral" :show="error()" style="display:none">{{ error() }}</p>
+    </form>
+  </div>
+
+  <p class="mt-6 text-center text-sm muted">
+    Already have a workspace?
+    <StxLink to="/login" class="font-semibold ink">Sign in</StxLink>
+  </p>
+</div>
+@endsection

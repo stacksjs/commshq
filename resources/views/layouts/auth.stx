@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#f7f1ea">
+    <title>@yield('title')</title>
+    @appearanceBootstrap({ storageKey: 'commshq-appearance', appearance: { key: 'theme', attribute: 'appearance', allowed: ['editorial'], default: 'editorial' }, colorMode: { key: 'colorMode', attribute: 'color-mode', default: 'system' } })
+    {{-- The same tokens the marketing layout declares, and deliberately a copy
+        rather than a shared partial: these two layouts are the only places the
+        palette is spelled out, and the sign-in pages are the one surface a
+        visitor sees between the marketing site and the dashboard. If the two
+        ever diverge it should be a decision, not an inheritance. --}}
+    <style>
+      :root { --paper: #f7f1ea; --ink: #201d1a; --muted: #6f665e; --coral: #e95843; --line: #d9cec3; --panel: #fffaf5; color-scheme: light; }
+      :root.dark { --paper: #191715; --ink: #f8f0e8; --muted: #b9aca1; --coral: #ff745f; --line: #403a35; --panel: #24211e; color-scheme: dark; }
+      html { background: var(--paper); } body { margin: 0; background: var(--paper); color: var(--ink); font-family: ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; } h1 { font-family: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, serif; }
+      .paper { background: var(--paper); } .panel { background: var(--panel); } .ink { color: var(--ink); } .muted { color: var(--muted); } .coral { color: var(--coral); } .bg-coral { background: var(--coral); } .border-tone { border-color: var(--line); }
+      .field { width: 100%; box-sizing: border-box; padding: 0.65rem 0.8rem; border: 1px solid var(--line); border-radius: 10px; background: var(--paper); color: var(--ink); font: 400 14px/1.4 ui-sans-serif, -apple-system, sans-serif; }
+      .field:focus { outline: 2px solid var(--coral); outline-offset: 1px; }
+    </style>
+    @stack('head')
+  </head>
+  <body>
+    <main class="flex justify-center items-center px-5 py-12 min-h-screen">
+      @yield('content')
+    </main>
+    @stack('scripts')
+  </body>
+</html>

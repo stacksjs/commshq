@@ -10,6 +10,11 @@ Object.assign(globalThis, autoImports)
 
 // TypeScript declarations
 declare global {
+  const createClient: typeof autoImports.createClient
+  const CommsHqError: typeof autoImports.CommsHqError
+  const readFormFields: typeof autoImports.readFormFields
+  const bindForm: typeof autoImports.bindForm
+  const bindForms: typeof autoImports.bindForms
 }
 
 export {}
