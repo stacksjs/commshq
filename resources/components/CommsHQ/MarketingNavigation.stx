@@ -71,8 +71,8 @@ const featureGroups = [
     </div>
 
     <div class="flex gap-2 items-center sm:gap-3">
-      <a href="/dashboard/login" class="hidden lg:block font-semibold text-sm ink">Sign in</a>
-      <a href="/dashboard/register" class="hidden sm:inline-flex items-center px-4 min-h-10 font-semibold text-sm text-white bg-coral rounded-md focus-visible:outline focus-visible:outline-[var(--coral)] focus-visible:outline-2 focus-visible:outline-offset-2">Start free</a>
+      <a href="/login" class="hidden lg:block font-semibold text-sm ink">Sign in</a>
+      <a href="/register" class="hidden sm:inline-flex items-center px-4 min-h-10 font-semibold text-sm text-white bg-coral rounded-md focus-visible:outline focus-visible:outline-[var(--coral)] focus-visible:outline-2 focus-visible:outline-offset-2">Start free</a>
       <details class="md:hidden relative feature-menu">
         <summary class="inline-flex items-center justify-center h-11 w-11 list-none border border-tone rounded-md focus-visible:outline focus-visible:outline-[var(--coral)] focus-visible:outline-2 cursor-pointer feature-summary ink" aria-label="Open navigation">
           <span class="h-5 w-5 i-hugeicons-menu-01" aria-hidden="true"></span>
@@ -90,8 +90,8 @@ const featureGroups = [
           <div class="grid gap-2 grid-cols-2 pt-4 border-t border-tone">
             <a href="/solutions" class="inline-flex items-center justify-center min-h-11 font-semibold text-sm border border-tone rounded-md ink">Solutions</a>
             <a href="/pricing" class="inline-flex items-center justify-center min-h-11 font-semibold text-sm border border-tone rounded-md ink">Pricing</a>
-            <a href="/dashboard/login" class="inline-flex items-center justify-center min-h-11 font-semibold text-sm border border-tone rounded-md ink">Sign in</a>
-            <a href="/dashboard/register" class="inline-flex items-center justify-center min-h-11 font-semibold text-sm text-white bg-coral rounded-md">Start free</a>
+            <a href="/login" class="inline-flex items-center justify-center min-h-11 font-semibold text-sm border border-tone rounded-md ink">Sign in</a>
+            <a href="/register" class="inline-flex items-center justify-center min-h-11 font-semibold text-sm text-white bg-coral rounded-md">Start free</a>
           </div>
         </div>
       </details>

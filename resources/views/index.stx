@@ -72,7 +72,7 @@ const plans = [
             <h1 class="m-0 max-w-3xl font-semibold leading-[0.96] text-5xl text-balance tracking-[-0.045em] sm:text-6xl lg:text-7xl ink">Grow an audience worth knowing.</h1>
             <p class="mt-7 max-w-xl leading-8 text-lg muted">CommsHQ brings email, SMS, publishing, automation, and commerce signals into one thoughtful workspace. Create less noise. Build more momentum.</p>
             <div class="flex flex-col gap-3 sm:flex-row mt-9">
-              <a href="/dashboard/register" class="inline-flex items-center justify-center px-6 min-h-12 font-semibold text-base text-white bg-coral rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 transition-transform hover:-translate-y-0.5">Build your first audience</a>
+              <a href="/register" class="inline-flex items-center justify-center px-6 min-h-12 font-semibold text-base text-white bg-coral rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 transition-transform hover:-translate-y-0.5">Build your first audience</a>
               <a href="#platform" class="inline-flex gap-2 items-center justify-center px-6 min-h-12 font-semibold text-base border border-tone rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 ink panel">
                 See the platform
                 <span class="h-5 w-5 i-hugeicons-arrow-down-02" aria-hidden="true"></span>
@@ -153,7 +153,7 @@ const plans = [
                   <li class="flex gap-3 items-center text-sm ink"><span class="h-4 w-4 coral i-hugeicons-tick-02" aria-hidden="true"></span>{{ item }}</li>
                 @endforeach
               </ul>
-              <a href="/dashboard/register" class="inline-flex items-center justify-center mt-auto px-5 min-h-11 font-semibold border border-tone rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 ink">Choose {{ plan.name }}</a>
+              <a href="/register" class="inline-flex items-center justify-center mt-auto px-5 min-h-11 font-semibold border border-tone rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 ink">Choose {{ plan.name }}</a>
             </article>
           @endforeach
         </div>
@@ -162,7 +162,7 @@ const plans = [
       <section class="py-20 text-white bg-coral">
         <div class="flex flex-col gap-8 items-start justify-between md:flex-row md:items-center mx-auto px-5 lg:px-8 max-w-7xl">
           <div><p class="mb-3 font-bold text-white/75 text-xs tracking-[0.22em] uppercase">Your next send starts here</p><h2 class="m-0 max-w-3xl leading-tight text-4xl text-balance sm:text-5xl">Build a communications home your audience can feel.</h2></div>
-          <a href="/dashboard/register" class="inline-flex items-center justify-center shrink-0 px-6 min-h-12 font-bold text-[#c73e2c] bg-white rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-white">Start with CommsHQ</a>
+          <a href="/register" class="inline-flex items-center justify-center shrink-0 px-6 min-h-12 font-bold text-[#c73e2c] bg-white rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-white">Start with CommsHQ</a>
         </div>
       </section>
     </main>

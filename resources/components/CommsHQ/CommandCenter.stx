@@ -22,8 +22,8 @@ const activity = [
         <h1 class="max-w-3xl font-semibold text-3xl tracking-[-0.04em] sm:text-4xl">Your audience is growing. Three moments need your attention.</h1>
       </div>
       <div class="flex flex-wrap gap-2">
-        <a href="/commshq/campaigns" class="inline-flex gap-2 items-center px-5 min-h-11 font-bold text-sm text-white bg-[#e65743] hover:bg-[#cb4432] rounded-full focus-visible:outline focus-visible:outline-[#e65743] focus-visible:outline-2 focus-visible:outline-offset-2 shadow-[0_8px_24px_rgba(230,87,67,0.2)] transition"><span class="h-4 w-4 i-hugeicons-add-01"></span>Create campaign</a>
-        <a href="/commshq/automations" class="inline-flex gap-2 items-center px-5 min-h-11 font-bold text-sm bg-white/60 dark:bg-white/5 hover:bg-white dark:hover:bg-white/10 border border-[#171916]/15 rounded-full dark:border-white/15 transition"><span class="h-4 w-4 i-hugeicons-workflow-square-06"></span>Build journey</a>
+        <a href="/dashboard/commshq/campaigns" class="inline-flex gap-2 items-center px-5 min-h-11 font-bold text-sm text-white bg-[#e65743] hover:bg-[#cb4432] rounded-full focus-visible:outline focus-visible:outline-[#e65743] focus-visible:outline-2 focus-visible:outline-offset-2 shadow-[0_8px_24px_rgba(230,87,67,0.2)] transition"><span class="h-4 w-4 i-hugeicons-add-01"></span>Create campaign</a>
+        <a href="/dashboard/commshq/automations" class="inline-flex gap-2 items-center px-5 min-h-11 font-bold text-sm bg-white/60 dark:bg-white/5 hover:bg-white dark:hover:bg-white/10 border border-[#171916]/15 rounded-full dark:border-white/15 transition"><span class="h-4 w-4 i-hugeicons-workflow-square-06"></span>Build journey</a>
       </div>
     </header>
 
@@ -51,7 +51,7 @@ const activity = [
       </section>
 
       <section aria-labelledby="activity-title" class="p-6 sm:p-7 bg-white/75 dark:bg-white/[0.04] border border-[#171916]/10 rounded-[1.6rem] dark:border-white/10">
-        <div class="flex items-center justify-between mb-5"><h2 id="activity-title" class="font-semibold text-lg">Live activity</h2><a href="/analytics/marketing" class="font-bold text-[#bd3e2e] text-xs dark:text-[#ff8c79] hover:underline">View analytics</a></div>
+        <div class="flex items-center justify-between mb-5"><h2 id="activity-title" class="font-semibold text-lg">Live activity</h2><a href="/dashboard/commshq/analytics" class="font-bold text-[#bd3e2e] text-xs dark:text-[#ff8c79] hover:underline">View analytics</a></div>
         <div class="space-y-1">
           @foreach(activity as item)
             <article class="grid gap-3 grid-cols-[36px_1fr] py-4 border-[#171916]/8 border-b dark:border-white/8 last:border-0">

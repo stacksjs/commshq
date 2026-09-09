@@ -95,7 +95,7 @@ const page = pages[props.feature || 'audience'] || pages.audience
       <p class="mb-5 font-bold text-xs tracking-[0.22em] uppercase coral">{{ page.eyebrow }}</p>
       <h1 class="m-0 max-w-4xl leading-[0.98] text-5xl text-balance tracking-[-0.045em] sm:text-7xl ink">{{ page.title }}</h1>
       <p class="mt-7 max-w-2xl leading-8 text-lg muted">{{ page.intro }}</p>
-      <div class="flex flex-col gap-3 sm:flex-row mt-9"><a href="/dashboard/register" class="inline-flex items-center justify-center px-6 min-h-12 font-bold text-white bg-coral rounded-md">Start free</a><a href="/features" class="inline-flex gap-2 items-center justify-center px-6 min-h-12 font-bold border border-tone rounded-md ink panel">All features<span class="h-4 w-4 i-hugeicons-arrow-right-02" aria-hidden="true"></span></a></div>
+      <div class="flex flex-col gap-3 sm:flex-row mt-9"><a href="/register" class="inline-flex items-center justify-center px-6 min-h-12 font-bold text-white bg-coral rounded-md">Start free</a><a href="/features" class="inline-flex gap-2 items-center justify-center px-6 min-h-12 font-bold border border-tone rounded-md ink panel">All features<span class="h-4 w-4 i-hugeicons-arrow-right-02" aria-hidden="true"></span></a></div>
     </div>
     <aside class="overflow-hidden relative p-8 sm:p-10 border border-tone rounded-[2rem] shadow-[0_28px_80px_rgba(32,29,26,0.12)] panel">
       <span class="coral {{ page.icon }} h-10 w-10" aria-hidden="true"></span>
@@ -133,4 +133,4 @@ const page = pages[props.feature || 'audience'] || pages.audience
   </div>
 </section>
 
-<section class="mx-auto px-5 py-20 lg:px-8 max-w-7xl"><div class="p-8 sm:p-12 text-white bg-coral rounded-xl"><p class="mb-3 font-bold text-white/75 text-xs tracking-[0.2em] uppercase">Make the next move useful</p><h2 class="m-0 max-w-3xl leading-tight text-4xl text-balance sm:text-5xl">Bring this work into one communications home.</h2><a href="/dashboard/register" class="inline-flex items-center mt-7 px-6 min-h-12 font-bold text-[#c73e2c] bg-white rounded-md">Start with CommsHQ</a></div></section>
+<section class="mx-auto px-5 py-20 lg:px-8 max-w-7xl"><div class="p-8 sm:p-12 text-white bg-coral rounded-xl"><p class="mb-3 font-bold text-white/75 text-xs tracking-[0.2em] uppercase">Make the next move useful</p><h2 class="m-0 max-w-3xl leading-tight text-4xl text-balance sm:text-5xl">Bring this work into one communications home.</h2><a href="/register" class="inline-flex items-center mt-7 px-6 min-h-12 font-bold text-[#c73e2c] bg-white rounded-md">Start with CommsHQ</a></div></section>
