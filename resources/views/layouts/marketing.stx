@@ -8,8 +8,8 @@
     <title>@yield('title')</title>
     @appearanceBootstrap({ storageKey: 'commshq-appearance', appearance: { key: 'theme', attribute: 'appearance', allowed: ['editorial'], default: 'editorial' }, colorMode: { key: 'colorMode', attribute: 'color-mode', default: 'system' } })
     <style>
-      :root { --paper: #f7f1ea; --ink: #201d1a; --muted: #6f665e; --coral: #e95843; --line: #d9cec3; --panel: #fffaf5; color-scheme: light; }
-      :root.dark { --paper: #191715; --ink: #f8f0e8; --muted: #b9aca1; --coral: #ff745f; --line: #403a35; --panel: #24211e; color-scheme: dark; }
+      :root { --paper: #f7f1ea; --ink: #201d1a; --muted: #6f665e; --coral: #bd3e2e; --coral-ink: #ffffff; --line: #d9cec3; --panel: #fffaf5; color-scheme: light; }
+      :root.dark { --paper: #191715; --ink: #f8f0e8; --muted: #b9aca1; --coral: #ff8a78; --coral-ink: #191715; --line: #403a35; --panel: #24211e; color-scheme: dark; }
       html { background: var(--paper); scroll-behavior: smooth; } body { margin: 0; background: var(--paper); color: var(--ink); font-family: ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; } h1, h2, h3 { font-family: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, serif; }
       .paper { background: var(--paper); } .panel { background: var(--panel); } .ink { color: var(--ink); } .muted { color: var(--muted); } .coral { color: var(--coral); } .bg-coral { background: var(--coral); } .border-tone { border-color: var(--line); } .text-balance { text-wrap: balance; }
       @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }

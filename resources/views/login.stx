@@ -78,7 +78,7 @@ async function handleSubmit(e: SubmitEvent): Promise<void> {
       {{-- The label is static and the busy state rides on :disabled, an
           attribute binding. A reactive expression in the button's own text
           would make stx cloak it, and this button is the whole page. --}}
-      <button type="submit" :disabled="loading()" class="px-4 py-2.5 w-full font-semibold text-sm text-white rounded-xl border-0 bg-coral" style="cursor: pointer">Sign in</button>
+      <button type="submit" :disabled="loading()" class="px-4 py-2.5 w-full font-semibold text-sm text-[var(--coral-ink)] rounded-xl border-0 bg-coral" style="cursor: pointer">Sign in</button>
       <p class="text-center text-xs muted" :show="loading()" style="display:none">Signing you in...</p>
       <p class="px-3 py-2 text-sm text-center rounded-lg coral" :show="error()" style="display:none">{{ error() }}</p>
     </form>
