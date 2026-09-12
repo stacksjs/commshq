@@ -1,4 +1,4 @@
-@extends('layouts/marketing')
+@extends('marketing')
 @section('title', 'CommsHQ vs Birdeye | CommsHQ')
 @section('description', 'An honest comparison of CommsHQ and Birdeye for teams weighing dedicated reputation management against built-in monitoring.')
 @section('content')

@@ -1,4 +1,4 @@
-@extends('layouts/marketing')
+@extends('marketing')
 @section('title', 'Subscription confirmed | CommsHQ')
 @section('description', 'Your email subscription has been confirmed.')
 @section('content')

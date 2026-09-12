@@ -48,6 +48,12 @@ jobs:
       - name: Install dependencies
         run: bun install --frozen-lockfile
 
+      - name: Build the production artifact
+        run: bun run build
+
+      - name: Validate the production artifact
+        run: bun run release:validate
+
       - name: Check encrypted production environment
         run: ./buddy env:check --file .env.production --strict
         env:
@@ -82,3 +88,7 @@ jobs:
         env:
           DOTENV_PRIVATE_KEY_PRODUCTION: ${{ secrets.DOTENV_PRIVATE_KEY_PRODUCTION }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Smoke test production
+        if: github.event_name == 'push' || github.event.inputs.dry_run == 'false'
+        run: bun run deployment:smoke

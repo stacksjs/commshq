@@ -62,7 +62,7 @@ async function handleSubmit(e: SubmitEvent): Promise<void> {
 }
 </script>
 
-@extends('layouts/auth')
+@extends('auth')
 
 @section('title', 'Create your workspace - CommsHQ')
 
@@ -89,7 +89,7 @@ async function handleSubmit(e: SubmitEvent): Promise<void> {
         <p class="mt-1 text-xs muted">At least 8 characters.</p>
       </div>
 
-      <button type="submit" :disabled="loading()" class="px-4 py-2.5 w-full font-semibold text-sm text-white rounded-xl border-0 bg-coral" style="cursor: pointer">Create workspace</button>
+      <button type="submit" :disabled="loading()" class="px-4 py-2.5 w-full font-semibold text-sm text-[var(--coral-ink)] rounded-xl border-0 bg-coral" style="cursor: pointer">Create workspace</button>
       <p class="text-center text-xs muted" :show="loading()" style="display:none">Creating your workspace...</p>
       <p class="px-3 py-2 text-sm text-center rounded-lg coral" :show="error()" style="display:none">{{ error() }}</p>
     </form>
