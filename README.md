@@ -2,6 +2,8 @@
 
 CommsHQ is a creator-first communications, publishing, automation, and commerce marketing platform built with Stacks.
 
+[Website](https://commshq.org) | [Documentation](https://commshq.org/docs) | [Issues](https://github.com/stacksjs/commshq/issues)
+
 ## Product areas
 
 - Consent-aware audiences, segments, custom fields, and imports

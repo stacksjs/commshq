@@ -1,73 +1,35 @@
 ---
+title: CommsHQ Documentation
+description: Build an audience, publish content, automate communication, and connect revenue data.
 layout: home
-title: Stacks Framework
-description: Build full-stack TypeScript applications, APIs, libraries, and cloud infrastructure with Stacks.
-titleTemplate: Modern TypeScript Fullstack Development.
 hero:
-  name: Stacks.js
-  text: Build. Ship. Faster.
-  tagline: "Rapid application, cloud & library development framework. For the best full-stack teams."
-  image: /images/logos/logo-white.png
+  name: CommsHQ
+  text: One workspace for every customer conversation
+  tagline: Build a consent-aware audience, publish content, automate email and SMS, connect commerce, and protect your reputation.
   actions:
     - theme: brand
-      text: Coming Soon
-      link: /docs/guide/get-started
+      text: Explore the workspace
+      link: /getting-started
     - theme: alt
-      text: View on GitHub
-      link: https://github.com/stacksjs/stacks
+      text: Read the API guide
+      link: /developers/api
 features:
-  - title: Best-in-Class DX
-    icon: 🦋
-    details: One framework that does it all. Building TypeScript apps & libraries has never been simpler.
-  - title: App Development
-    icon: 🖥️
-    details: Performant web and Craft desktop applications with one TypeScript codebase.
-  - title: Library Development
-    icon: 📚
-    details: "Automagically builds & distributes your component & function libraries, via npm."
-  - title: Cloud Development
-    icon: ☁️
-    details: Automatic zero-downtime deployments of production-ready serverless clouds. Self-hosted.
-  - title: Modern Administration
-    icon: 📊
-    details: "A sleek admin dashboard, out-of-the-box. For devs & your clients. Our product is your product."
-  - title: Scalable APIs
-    icon: 📡
-    details: "Building serverless APIs has never been simpler. Focus on your business logic, not your infrastructure."
-  - title: Secure Authentication
-    icon: 🔐
-    details: "Robust API & web authentication, ensuring the security of your user data. User-friendly, zero-config & ready-to-go."
-  - title: Built-in CI / CD
-    icon: 🤖
-    details: "Focus on coding, not publishing. Automates linting, version tagging, changelog generation, test execution, and more."
-  - title: Global CDN
-    icon: 🌐
-    details: "\"Securely deliver content with low latency and high transfer speeds,\" AWS. Your assets, zero-config."
-  - title: Queues & Jobs
-    icon: 📦
-    details: Leverage the power of queues. Defer time-consuming tasks using managed serverless queues.
-  - title: Notifications
-    icon: 📨
-    details: "Send notifications to your users via email, SMS, Slack, Discord, Push and more."
-  - title: Billing & Payments
-    icon: 💳
-    details: "Accept payments from your users using Stripe. One-off payments, subscriptions, and more."
-  - title: Search Engine
-    icon: 🔍
-    details: "Powerful & fast. \"Build an intuitive search experience in a snap,\" Meilisearch."
-  - title: Progressive UI Engine
-    icon: ⚙️
-    details: "An approachable, performant and versatile framework for building web UIs."
-  - title: Atomic CSS Engine
-    icon: 🎨
-    details: "\"Blazingly fast utility-first CSS framework,\" Headwind. Easily create & manage your styles."
-  - title: Streamlined Testing
-    icon: 🧪
-    details: A fast built-in testing framework. Enjoyable support for both unit & feature tests.
-  - title: Commerce
-    icon: 💴
-    details: A fast built-in testing framework. Enjoyable support for both unit & feature tests.
-  - title: Realtime
-    icon: 🏃🏻
-    details: "Build real-time features with WebSockets. Add live updates, chat, notifications & collaborative features with ease."
+  - title: Audience with proof
+    details: Keep contacts, identities, fields, segments, preferences, and consent history together without losing provenance.
+  - title: Publishing and journeys
+    details: Coordinate campaigns, templates, forms, publications, podcasts, gated resources, and versioned automations.
+  - title: Revenue and reputation
+    details: Connect signed commerce events, attribution, referrals, sponsorships, earnings, payouts, reviews, and social mentions.
 ---
+
+## Choose a path
+
+- Use the [quick start](/getting-started) to run CommsHQ and inspect the seeded workspace.
+- Establish clean identity and permission data with [contacts and consent](/audience/contacts-consent).
+- Build an audience with [segments and imports](/audience/segments-imports).
+- Learn the delivery lifecycle in [email and SMS campaigns](/campaigns/email-sms).
+- Connect providers through [signed webhooks](/developers/webhooks).
+
+## Product maturity
+
+CommsHQ is under active development. The domain model and core action endpoints cover the product areas documented here, while parts of the dashboard are still being connected to those APIs. Treat generated model APIs as versioned application interfaces and validate workflows against the release you deploy.
