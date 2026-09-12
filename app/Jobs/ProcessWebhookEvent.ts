@@ -5,20 +5,11 @@ import CommerceConnection from '../Models/CommerceConnection'
 import CommerceEvent from '../Models/CommerceEvent'
 import WebhookEvent from '../Models/WebhookEvent'
 import { twilioConsentIdempotencyKey } from '../Actions/Webhooks/twilio-compliance'
+import { commerceEventType, objectPayload, webhookRecipient } from '../Actions/Webhooks/payload'
 
 interface ProcessWebhookPayload {
   eventId: number
   teamId: number
-}
-
-function objectPayload(value: unknown): Record<string, any> {
-  if (typeof value === 'string') return JSON.parse(value)
-  if (!value || typeof value !== 'object' || Array.isArray(value)) throw new TypeError('Stored webhook payload is invalid')
-  return value as Record<string, any>
-}
-
-function destination(payload: Record<string, any>): string {
-  return String(payload.From || payload.from || payload.recipient || payload.email || '').trim().toLowerCase()
 }
 
 export default new Job({
@@ -36,7 +27,7 @@ export default new Job({
 
     try {
       const payload = objectPayload(event.payload)
-      const recipient = destination(payload)
+      const recipient = webhookRecipient(payload)
 
       if (event.provider === 'twilio' && !payload.MessageStatus) {
         const { intent, keyword } = classifySmsIntent(String(payload.Body || ''))
@@ -71,7 +62,7 @@ export default new Job({
             team_id: input.teamId,
             commerce_connection_id: connection.id,
             externalId: event.providerEventId,
-            type: String(event.type).includes('refund') ? 'order_refunded' : String(event.type).includes('fulfill') ? 'order_fulfilled' : 'order_created',
+            type: commerceEventType(event.type),
             amount: Number(payload.total_price || payload.total || 0) * 100,
             currency: String(payload.currency || 'USD').toUpperCase(),
             payload: JSON.stringify(payload),
