@@ -62,7 +62,7 @@ async function handleSubmit(e: SubmitEvent): Promise<void> {
 }
 </script>
 
-@extends('layouts/auth')
+@extends('auth')
 
 @section('title', 'Create your workspace - CommsHQ')
 

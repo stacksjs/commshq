@@ -1,4 +1,4 @@
-@extends('layouts/marketing')
+@extends('marketing')
 @section('title', 'Integrations | CommsHQ')
 @section('description', 'Connect CommsHQ to owned mail, Twilio, Stripe, Shopify, WooCommerce, Bedrock, and signed custom webhooks.')
 @section('content')

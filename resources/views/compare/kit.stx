@@ -1,4 +1,4 @@
-@extends('layouts/marketing')
+@extends('marketing')
 @section('title', 'CommsHQ vs Kit | CommsHQ')
 @section('description', 'An honest comparison of CommsHQ and Kit, formerly ConvertKit, for creators weighing simplicity against channel breadth.')
 @section('content')

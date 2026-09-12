@@ -1,4 +1,4 @@
-@extends('layouts/marketing')
+@extends('marketing')
 @section('title', 'CommsHQ vs HubSpot | CommsHQ')
 @section('description', 'An honest comparison of CommsHQ and HubSpot for teams weighing an all-in-one CRM suite against a focused publishing workspace.')
 @section('content')

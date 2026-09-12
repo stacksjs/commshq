@@ -1,4 +1,4 @@
-@extends('layouts/marketing')
+@extends('marketing')
 @section('title', 'Marketing automation | CommsHQ')
 @section('description', 'Build versioned, auditable email, SMS, publishing, and commerce automations with human approval.')
 @section('content')

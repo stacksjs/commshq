@@ -1,4 +1,4 @@
-@extends('layouts/marketing')
+@extends('marketing')
 @section('title', 'Creator monetization | CommsHQ')
 @section('description', 'Run paid publications, digital products, referrals, recommendations, sponsorships, commissions, and payouts in CommsHQ.')
 @section('content')

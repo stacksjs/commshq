@@ -1,4 +1,4 @@
-@extends('layouts/marketing')
+@extends('marketing')
 @section('title', 'Publishing | CommsHQ')
 @section('description', 'Publish newsletters, blogs, landing pages, gated posts, podcasts, feeds, and custom-domain sites from CommsHQ.')
 @section('content')
