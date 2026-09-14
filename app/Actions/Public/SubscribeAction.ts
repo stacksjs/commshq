@@ -9,6 +9,7 @@ import Contact from '../../Models/Contact'
 import FormDefinition from '../../Models/FormDefinition'
 import FormSubmission from '../../Models/FormSubmission'
 import { buildConfirmationMessage } from '../../Mail/ConfirmSubscription'
+import { appendConsentOnce, consentIdempotencyKey } from './consent-ledger'
 import { createPublicToken } from './signed-token'
 
 function clientIp(request: RequestInstance): string {
@@ -40,12 +41,27 @@ export default new Action({
     const existing = await FormSubmission.where('form_definition_id', form.id).where('dedupeKey', dedupeKey).first()
     if (!existing) await FormSubmission.forceCreate({ team_id: teamId, form_definition_id: form.id, contact_id: contact.id, payload: JSON.stringify({ email, firstName: request.get('firstName'), lastName: request.get('lastName') }), dedupeKey, sourceUrl: request.headers.get('referer') || undefined, ipHash: createHash('sha256').update(ip).digest('hex'), status: form.doubleOptIn ? 'accepted' : 'confirmed' })
 
-    await ConsentEvent.create({ team_id: teamId, recipient: email, channel: 'email', action: form.doubleOptIn ? 'requested' : 'confirmed', purpose: 'marketing', source: `form:${form.uuid}`, jurisdiction: String(request.get('jurisdiction') || ''), policyVersion: '1.0', proof: JSON.stringify({ formId: form.id, userAgent: request.headers.get('user-agent') }), ipAddress: ip, occurredAt: new Date().toISOString() })
+    const action = form.doubleOptIn ? 'requested' : 'confirmed'
+    const consentKey = consentIdempotencyKey({ scope: `form:${form.id}:${dedupeKey}`, token: email, channel: 'email', action })
+    await appendConsentOnce({
+      teamId,
+      recipient: email,
+      channel: 'email',
+      action,
+      source: `form:${form.uuid}`,
+      idempotencyKey: consentKey,
+      jurisdiction: String(request.get('jurisdiction') || ''),
+      proof: JSON.stringify({ formId: form.id, userAgent: request.headers.get('user-agent') }),
+      ipAddress: ip,
+    })
 
     if (form.doubleOptIn) {
       const token = createPublicToken({ teamId, contactId: contact.id, channel: 'email', purpose: 'confirm', expiresAt: Date.now() + 48 * 60 * 60 * 1000 }, String(config.app.key))
       const confirmationUrl = `${String(config.app.url).replace(/\/$/, '')}/confirm/${token}`
-      await job('SendEmail', { message: buildConfirmationMessage(email, confirmationUrl), driver: config.email.default }).onQueue('emails').dispatch()
+      await job('SendEmail', { message: buildConfirmationMessage(email, confirmationUrl), driver: config.email.default })
+        .withIdempotencyKey(`confirmation:${consentKey}`)
+        .onQueue('emails')
+        .dispatch()
     }
 
     return response.json({ accepted: true, confirmationRequired: !!form.doubleOptIn }, 202)
