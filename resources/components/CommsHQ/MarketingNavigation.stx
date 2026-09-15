@@ -73,11 +73,11 @@ const featureGroups = [
     <div class="flex gap-2 items-center sm:gap-3">
       <a href="/login" class="hidden lg:block font-semibold text-sm ink">Sign in</a>
       <a href="/register" class="hidden sm:inline-flex items-center px-4 min-h-10 font-semibold text-sm text-[var(--coral-ink)] bg-coral rounded-md focus-visible:outline focus-visible:outline-[var(--coral)] focus-visible:outline-2 focus-visible:outline-offset-2">Start free</a>
-      <details class="md:hidden relative feature-menu">
+      <details class="md:hidden relative feature-menu mobile-menu">
         <summary class="inline-flex items-center justify-center h-11 w-11 list-none border border-tone rounded-md focus-visible:outline focus-visible:outline-[var(--coral)] focus-visible:outline-2 cursor-pointer feature-summary ink" aria-label="Open navigation">
           <span class="h-5 w-5 i-hugeicons-menu-01" aria-hidden="true"></span>
         </summary>
-        <div class="absolute overflow-y-auto right-0 top-[calc(100%+0.65rem)] p-4 max-h-[calc(100vh-6rem)] w-[min(92vw,380px)] border border-tone rounded-xl shadow-[0_24px_70px_rgba(32,29,26,0.18)] panel">
+        <div class="absolute overflow-y-auto overscroll-contain right-0 top-[calc(100%+0.65rem)] p-4 max-h-[calc(100dvh-6rem)] w-[min(92vw,380px)] border border-tone rounded-xl shadow-[0_24px_70px_rgba(32,29,26,0.18)] panel">
           <p class="pb-2 px-3 font-bold text-[11px] tracking-[0.18em] uppercase coral">Features</p>
           @foreach(featureGroups as group)
             <section class="py-3 border-t border-tone first:border-0">
@@ -102,4 +102,7 @@ const featureGroups = [
 <style>
   .feature-summary::-webkit-details-marker { display: none; }
   .feature-menu[open] > .feature-summary .feature-chevron { transform: rotate(180deg); }
+  /* The phone menu scrolls inside the viewport, so the page behind it must
+     not: otherwise the first flick past the panel's end scrolls the page. */
+  @media (max-width: 767px) { body:has(.mobile-menu[open]) { overflow: hidden; } }
 </style>
