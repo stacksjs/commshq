@@ -63,6 +63,13 @@ export const tsCloud: TsCloudConfig = {
     },
   },
   sites: {
+    docs: {
+      root: './dist/docs/.bunpress',
+      path: '/docs',
+      domain,
+      deploy: 'server',
+      build: 'PATH="$PWD/node_modules/.bin:$PATH" bun node_modules/@stacksjs/buddy/dist/cli.js build docs && test -d dist/docs/.bunpress',
+    },
     main: {
       root: '.',
       path: '/',

@@ -1,4 +1,4 @@
-@extends('layouts/marketing')
+@extends('marketing')
 @section('title', 'CommsHQ vs ActiveCampaign | CommsHQ')
 @section('description', 'An honest comparison of CommsHQ and ActiveCampaign across automation depth, change control, publishing, and monetization.')
 @section('content')

@@ -1,4 +1,4 @@
-@extends('layouts/marketing')
+@extends('marketing')
 @section('title', 'Forms and landing pages | CommsHQ')
 @section('description', 'Build accessible forms, landing pages, link pages, gated resources, and double opt-in journeys in CommsHQ.')
 @section('content')

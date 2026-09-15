@@ -1,4 +1,4 @@
-@extends('layouts/marketing')
+@extends('marketing')
 @section('title', 'Features | CommsHQ')
 @section('description', 'Explore the connected audience, messaging, publishing, automation, commerce, and analytics features in CommsHQ.')
 <script server>

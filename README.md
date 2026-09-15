@@ -2,6 +2,8 @@
 
 CommsHQ is a creator-first communications, publishing, automation, and commerce marketing platform built with Stacks.
 
+[Website](https://commshq.org) | [Documentation](https://commshq.org/docs) | [Issues](https://github.com/stacksjs/commshq/issues)
+
 ## Product areas
 
 - Consent-aware audiences, segments, custom fields, and imports
@@ -17,9 +19,12 @@ CommsHQ requires Bun 1.3 or newer and uses only packages owned by the Stacks eco
 
 ```bash
 bun install
-./buddy migrate:fresh --seed
+./buddy migrate --auth
+./buddy seed
 ./buddy dev
 ```
+
+Set `COMMSHQ_OWNER_PASSWORD` in your local `.env` before seeding so the owner account and workspace are created. `./buddy migrate:fresh --seed` drops all tables and is only for a disposable development database.
 
 Run the full local quality gate with:
 

@@ -1,4 +1,4 @@
-@extends('layouts/marketing')
+@extends('marketing')
 @section('title', 'Email deliverability | CommsHQ')
 @section('description', 'Verify sender domains, monitor reputation, classify delivery feedback, and enforce suppression with CommsHQ.')
 @section('content')

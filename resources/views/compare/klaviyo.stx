@@ -1,4 +1,4 @@
-@extends('layouts/marketing')
+@extends('marketing')
 @section('title', 'CommsHQ vs Klaviyo | CommsHQ')
 @section('description', 'An honest comparison of CommsHQ and Klaviyo for teams weighing ecommerce marketing against owned-audience publishing.')
 @section('content')

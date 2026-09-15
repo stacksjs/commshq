@@ -1,4 +1,4 @@
-@extends('layouts/marketing')
+@extends('marketing')
 @section('title', 'Privacy | CommsHQ')
 @section('description', 'CommsHQ privacy principles and data rights.')
 @section('content')

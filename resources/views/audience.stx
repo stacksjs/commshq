@@ -1,4 +1,4 @@
-@extends('layouts/marketing')
+@extends('marketing')
 @section('title', 'Audience intelligence | CommsHQ')
 @section('description', 'Unify contacts, identities, segments, consent, preferences, imports, exports, and suppression in CommsHQ.')
 @section('content')
