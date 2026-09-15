@@ -14,8 +14,10 @@ interface PageAudit {
   focusable: number
   imagesWithoutAlt: number
   overflow: number
+  overflowCandidates: string[]
   unresolved: boolean
   unnamedControls: string[]
+  visibleTextLength: number
 }
 
 interface Pending {
@@ -32,17 +34,23 @@ const OUTPUT = resolve('storage/logs/visual-contract')
 const VIEWPORTS: Viewport[] = [
   { name: 'desktop', width: 1440, height: 1000, mobile: false },
   { name: 'tablet', width: 768, height: 1024, mobile: false },
+  { name: 'small-mobile', width: 320, height: 780, mobile: true },
   { name: 'mobile', width: 390, height: 844, mobile: true },
+  { name: 'large-mobile', width: 430, height: 932, mobile: true },
 ]
 const THEMES = ['light', 'dark'] as const
 const ROUTE_CANDIDATES = [
   '/',
   '/login',
   '/register',
-  '/dashboard',
   '/dashboard/commshq',
-  '/reports',
-  '/projects',
+  '/dashboard/commshq/audience',
+  '/dashboard/commshq/campaigns',
+  '/dashboard/commshq/publications',
+  '/dashboard/commshq/automations',
+  '/dashboard/commshq/commerce',
+  '/dashboard/commshq/reputation',
+  '/dashboard/commshq/settings',
 ]
 
 function chromePath(): string {
@@ -210,16 +218,28 @@ const auditExpression = `(() => {
     focusable: controls.length,
     imagesWithoutAlt: [...document.images].filter(image => !image.hasAttribute('alt')).length,
     overflow: Math.max(0, document.documentElement.scrollWidth - document.documentElement.clientWidth),
+    overflowCandidates: [...document.body.querySelectorAll('*')].filter(element => {
+      const rect = element.getBoundingClientRect()
+      return rect.width > 0 && rect.right > document.documentElement.clientWidth + 1
+    }).slice(0, 6).map(element => {
+      const rect = element.getBoundingClientRect()
+      return element.tagName.toLowerCase() + '.' + String(element.className).split(/\\s+/).slice(0, 2).join('.')
+        + ' right=' + Math.round(rect.right) + ' width=' + Math.round(rect.width)
+    }),
     unresolved: document.body.innerText.includes('{{') || document.body.innerText.includes('@if'),
     unnamedControls,
+    visibleTextLength: document.body.innerText.trim().length,
   }
 })()`
 
 async function main(): Promise<void> {
   if (!existsSync(DIST) && !existsSync(SSR_PAGES))
     throw new Error(`Built site not found at ${DIST} or ${SSR_OUTPUT}. Run bun run build first.`)
-  const routes = ROUTE_CANDIDATES.filter(route => routeFile(route))
-  if (routes.length < 3) throw new Error(`Expected at least three visual routes, found ${routes.join(', ') || 'none'}.`)
+  const routes = ROUTE_CANDIDATES.filter(route => routeFile(route) && (!process.env.VISUAL_ROUTE || route === process.env.VISUAL_ROUTE))
+  if (routes.length < (process.env.VISUAL_ROUTE ? 1 : 3))
+    throw new Error(`Expected visual routes, found ${routes.join(', ') || 'none'}.`)
+  const viewports = VIEWPORTS.filter(viewport => !process.env.VISUAL_VIEWPORT || viewport.name === process.env.VISUAL_VIEWPORT)
+  if (!viewports.length) throw new Error(`Unknown visual viewport: ${process.env.VISUAL_VIEWPORT}`)
 
   mkdirSync(OUTPUT, { recursive: true })
   const server = Bun.serve({
@@ -271,7 +291,7 @@ async function main(): Promise<void> {
     await cdp.send('Emulation.setScriptExecutionDisabled', { value: true })
 
     for (const route of routes) {
-      for (const viewport of VIEWPORTS) {
+      for (const viewport of viewports) {
         await cdp.send('Emulation.setDeviceMetricsOverride', {
           width: viewport.width,
           height: viewport.height,
@@ -292,7 +312,8 @@ async function main(): Promise<void> {
           await Bun.sleep(500)
           const audit = await cdp.evaluate<PageAudit>(auditExpression)
           const key = `${route} at ${viewport.name}/${theme}`
-          if (audit.overflow > 1) failures.push(`${key}: ${audit.overflow}px horizontal overflow`)
+          if (audit.overflow > 1) failures.push(`${key}: ${audit.overflow}px horizontal overflow (${audit.overflowCandidates.join(', ')})`)
+          if (audit.visibleTextLength < 20) failures.push(`${key}: no meaningful visible page content`)
           if (audit.unresolved) failures.push(`${key}: unresolved template expression is visible`)
           if (audit.imagesWithoutAlt) failures.push(`${key}: ${audit.imagesWithoutAlt} image(s) have no alt attribute`)
           if (audit.unnamedControls.length) failures.push(`${key}: unnamed controls ${audit.unnamedControls.join(', ')}`)
@@ -320,7 +341,7 @@ async function main(): Promise<void> {
     rmSync(profile, { force: true, recursive: true })
   }
 
-  console.log(`Rendered ${routes.length} routes in ${THEMES.length} themes at ${VIEWPORTS.length} viewports and wrote ${screenshots} screenshots.`)
+  console.log(`Rendered ${routes.length} routes in ${THEMES.length} themes at ${viewports.length} viewports and wrote ${screenshots} screenshots.`)
   if (failures.length) {
     for (const failure of failures) console.error(`- ${failure}`)
     process.exit(1)
