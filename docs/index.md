@@ -24,7 +24,7 @@ features:
 
 ## Choose a path
 
-- Use the [quick start](/getting-started) to run CommsHQ and inspect the seeded workspace.
+- Use the [quick start](/getting-started) to create an owner workspace and inspect the available sample data.
 - Establish clean identity and permission data with [contacts and consent](/audience/contacts-consent).
 - Build an audience with [segments and imports](/audience/segments-imports).
 - Learn the delivery lifecycle in [email and SMS campaigns](/campaigns/email-sms).
