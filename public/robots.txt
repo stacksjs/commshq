@@ -1,0 +1,24 @@
+# https://commshq.org — crawl policy.
+#
+# The auth-walled routes below also send `robots: noindex, nofollow` from their
+# own useSeoMeta call, which is what keeps them out of an index once fetched.
+# This file stops well-behaved crawlers spending the request at all, and is the
+# only place that can speak for routes that never render HTML.
+#
+# No sitemap is published yet (sitemap.xml is a 404). Add a Sitemap: line here
+# when one exists rather than pointing crawlers at a missing file.
+
+User-agent: *
+
+Disallow: /dashboard
+Disallow: /login
+Disallow: /register
+
+# Landing pages reached from email links; nothing worth indexing.
+Disallow: /preferences-saved
+Disallow: /subscription-confirmed
+
+# The JSON API: no HTML, nothing to index.
+Disallow: /api/
+
+Allow: /

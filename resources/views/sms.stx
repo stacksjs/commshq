@@ -1,4 +1,4 @@
-@extends('layouts/marketing')
+@extends('marketing')
 @section('title', 'SMS marketing | CommsHQ')
 @section('description', 'Send consent-aware SMS campaigns with encoding counts, quiet hours, carrier callbacks, and STOP handling.')
 @section('content')

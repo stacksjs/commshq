@@ -81,7 +81,7 @@ describe('interface contracts', () => {
     for (const competitor of competitors) {
       const page = await Bun.file(new URL(`../../resources/views/compare/${competitor}.stx`, import.meta.url)).text()
       expect(page).toContain(`<CompetitorComparison competitor="${competitor}" />`)
-      expect(page).toContain("@extends('layouts/marketing')")
+      expect(page).toContain("@extends('marketing')")
       expect(layout, `${competitor} must be reachable from the footer`).toContain(`href="/compare/${competitor}"`)
       expect(index, `${competitor} must be listed on the compare index`).toContain(`href: '/compare/${competitor}'`)
       expect(comparisons, `${competitor} must have comparison content`).toContain(`  ${competitor.includes('-') ? `'${competitor}'` : competitor}: {`)
@@ -101,7 +101,7 @@ describe('interface contracts', () => {
   it('ships the public consent completion destinations', async () => {
     for (const page of ['subscription-confirmed', 'preferences-saved']) {
       const source = await Bun.file(new URL(`../../resources/views/${page}.stx`, import.meta.url)).text()
-      expect(source).toContain("@extends('layouts/marketing')")
+      expect(source).toContain("@extends('marketing')")
       expect(source).toContain('focus-visible:outline')
     }
   })

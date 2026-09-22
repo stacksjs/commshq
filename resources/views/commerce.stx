@@ -1,4 +1,4 @@
-@extends('layouts/marketing')
+@extends('marketing')
 @section('title', 'Commerce marketing | CommsHQ')
 @section('description', 'Connect store events to audience segments, automations, attribution, and lifecycle revenue reporting.')
 @section('content')

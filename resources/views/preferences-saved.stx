@@ -1,4 +1,4 @@
-@extends('layouts/marketing')
+@extends('marketing')
 @section('title', 'Preferences saved | CommsHQ')
 @section('description', 'Your communication preferences have been saved.')
 @section('content')

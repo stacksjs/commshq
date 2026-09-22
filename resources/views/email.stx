@@ -1,4 +1,4 @@
-@extends('layouts/marketing')
+@extends('marketing')
 @section('title', 'Email marketing | CommsHQ')
 @section('description', 'Create editorial email campaigns with reusable blocks, personalization, experiments, and transparent delivery reporting.')
 @section('content')

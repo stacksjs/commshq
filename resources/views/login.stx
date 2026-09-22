@@ -100,7 +100,7 @@ async function handleVerify(e: SubmitEvent): Promise<void> {
 }
 </script>
 
-@extends('layouts/auth')
+@extends('auth')
 
 @section('title', 'Sign in - CommsHQ')
 
@@ -130,7 +130,7 @@ async function handleVerify(e: SubmitEvent): Promise<void> {
       {{-- The label is static and the busy state rides on :disabled, an
           attribute binding. A reactive expression in the button's own text
           would make stx cloak it, and this button is the whole page. --}}
-      <button type="submit" :disabled="loading()" class="px-4 py-2.5 w-full font-semibold text-sm text-white rounded-xl border-0 bg-coral" style="cursor: pointer">Sign in</button>
+      <button type="submit" :disabled="loading()" class="px-4 py-2.5 w-full font-semibold text-sm text-[var(--coral-ink)] rounded-xl border-0 bg-coral" style="cursor: pointer">Sign in</button>
     </form>
 
     {{-- Second step for TOTP accounts. Hidden until step one reports
@@ -142,7 +142,7 @@ async function handleVerify(e: SubmitEvent): Promise<void> {
         <input id="code" name="code" type="text" inputmode="numeric" autocomplete="one-time-code" maxlength="6" pattern="[0-9]*" placeholder="123456" class="field">
         <p class="mt-1 text-xs muted">Enter the 6-digit code from your authenticator app.</p>
       </div>
-      <button type="submit" :disabled="loading()" class="px-4 py-2.5 w-full font-semibold text-sm text-white rounded-xl border-0 bg-coral" style="cursor: pointer">Verify</button>
+      <button type="submit" :disabled="loading()" class="px-4 py-2.5 w-full font-semibold text-sm text-[var(--coral-ink)] rounded-xl border-0 bg-coral" style="cursor: pointer">Verify</button>
     </form>
 
     <p class="mt-4 text-center text-xs muted" :show="loading()" style="display:none">Signing you in...</p>

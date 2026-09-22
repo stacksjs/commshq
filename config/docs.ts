@@ -5,182 +5,102 @@ const config: BunPressOptions = {
   docsDir: './docs',
   outDir: './dist/docs',
 
-  // Navigation
   nav: [
-    {
-      text: 'Changelog',
-      link: 'https://github.com/stacksjs/stacks/blob/main/CHANGELOG.md',
-    },
-    {
-      text: 'Resources',
-      items: [
-        { text: 'Team', link: '/team' },
-        { text: 'Sponsors', link: '/sponsors' },
-        { text: 'Partners', link: '/partners' },
-        { text: 'Postcardware', link: '/postcardware' },
-        { text: 'Awesome Stacks', link: 'https://github.com/stacksjs/awesome-stacks' },
-        { text: 'Contributing', link: 'https://github.com/stacksjs/stacks/blob/main/.github/CONTRIBUTING.md' },
-      ],
-    },
+    { text: 'Quick start', link: '/getting-started' },
+    { text: 'Audience', link: '/audience/contacts-consent' },
+    { text: 'Campaigns', link: '/campaigns/email-sms' },
+    { text: 'Developers', link: '/developers/api' },
+    { text: 'GitHub', link: 'https://github.com/stacksjs/commshq' },
   ],
 
-  // Markdown configuration
   markdown: {
-    title: 'Stacks Documentation',
+    title: 'CommsHQ Documentation',
     meta: {
-      description: 'Rapid application, cloud & library development framework.',
-      author: 'Stacks.js',
+      description: 'Audience, campaigns, publishing, automations, commerce, reputation, and developer documentation.',
+      author: 'CommsHQ',
     },
     syntaxHighlightTheme: 'github-dark',
-    toc: {
-      enabled: true,
-      minDepth: 2,
-      maxDepth: 3,
-    },
+    toc: { enabled: true, minDepth: 2, maxDepth: 3 },
     sidebar: {
       '/': [
         {
-          text: 'Prologue',
-          collapsed: true,
+          text: 'Introduction',
           items: [
-            { text: 'Release Notes', link: '/release-notes' },
-            { text: 'Upgrade Guide', link: '/upgrade-guide' },
-            { text: 'Contribution Guide', link: '/contribution-guide' },
-            { text: 'Sponsors', link: '/sponsors' },
+            { text: 'What is CommsHQ', link: '/introduction' },
+            { text: 'Quick start', link: '/getting-started' },
           ],
         },
         {
-          text: 'Getting Started',
-          collapsed: true,
+          text: 'Audience',
           items: [
-            { text: 'Introduction', link: '/guide/intro' },
-            { text: 'Quick Start', link: '/guide/get-started' },
-            { text: 'StackBlitz', link: '/guide/stackblitz' },
+            { text: 'Contacts and consent', link: '/audience/contacts-consent' },
+            { text: 'Segments and imports', link: '/audience/segments-imports' },
           ],
         },
         {
-          text: 'Basics',
-          collapsed: true,
+          text: 'Campaigns',
           items: [
-            { text: 'Routing', link: '/basics/routing' },
-            { text: 'Middleware', link: '/basics/middleware' },
-            { text: 'Models', link: '/basics/models' },
-            { text: 'Views', link: '/basics/views' },
-            { text: 'Actions', link: '/basics/actions' },
-            { text: 'Commands', link: '/basics/commands' },
-            { text: 'Jobs', link: '/basics/jobs' },
-            { text: 'Components', link: '/basics/components' },
-            { text: 'Functions', link: '/basics/functions' },
-            { text: 'Validation', link: '/packages/validation' },
-            { text: 'Error Handling', link: '/basics/error-handling' },
-            { text: 'Logging', link: '/basics/logging' },
+            { text: 'Email and SMS', link: '/campaigns/email-sms' },
+            { text: 'Experiments and delivery', link: '/campaigns/experiments-delivery' },
           ],
         },
         {
-          text: 'Digging Deeper',
-          collapsed: true,
+          text: 'Publishing',
           items: [
-            { text: 'Authentication', link: '/guide/auth' },
-            { text: 'Database', link: '/packages/database' },
-            { text: 'Scaling the Database', link: '/guide/database-scaling' },
-            { text: 'Cache', link: '/packages/cache' },
-            { text: 'Events', link: '/packages/events' },
-            { text: 'Queue', link: '/packages/queue' },
-            { text: 'Notifications', link: '/packages/notifications' },
-            { text: 'Payments', link: '/packages/payments' },
-            { text: 'Realtime', link: '/packages/realtime' },
-            { text: 'Search Engine', link: '/packages/search-engine' },
-            { text: 'Storage', link: '/packages/storage' },
+            { text: 'Publications and pages', link: '/publishing/publications-pages' },
+            { text: 'Forms and gated resources', link: '/publishing/forms-resources' },
+            { text: 'Podcasts and feeds', link: '/publishing/podcasts-feeds' },
           ],
         },
         {
-          text: 'Cloud',
-          collapsed: true,
+          text: 'Automation and AI',
           items: [
-            { text: 'Deploy', link: '/guide/cloud/deployment' },
-            { text: 'Extend Cloud', link: '/guide/cloud/extend' },
+            { text: 'Versioned journeys', link: '/automation/journeys' },
+            { text: 'AI drafts and approvals', link: '/automation/ai-drafts' },
           ],
         },
         {
-          text: 'CLI (Buddy)',
-          collapsed: true,
+          text: 'Commerce',
           items: [
-            { text: 'Introduction', link: '/guide/buddy/intro' },
-            { text: 'Command Reference', link: '/guide/buddy/commands' },
-            { text: 'Add Stacks', link: '/guide/buddy/add' },
-            { text: 'Dev', link: '/guide/buddy/dev' },
-            { text: 'Build', link: '/guide/buddy/build' },
-            { text: 'Deploy', link: '/guide/buddy/deploy' },
-            { text: 'Make', link: '/guide/buddy/make' },
-            { text: 'Migrate', link: '/guide/buddy/migrate' },
-            { text: 'Database Backups', link: '/guide/buddy/db' },
-            { text: 'Test', link: '/guide/buddy/test' },
+            { text: 'Events and attribution', link: '/commerce/events-attribution' },
+            { text: 'Recovery and monetization', link: '/commerce/recovery-monetization' },
           ],
         },
         {
-          text: 'Packages',
-          collapsed: true,
+          text: 'Reputation',
           items: [
-            { text: 'STX', link: '/packages/stx' },
-            { text: 'Actions', link: '/packages/actions' },
-            { text: 'AI', link: '/packages/ai' },
-            { text: 'Auth', link: '/packages/auth' },
-            { text: 'Cache', link: '/packages/cache' },
-            { text: 'CLI', link: '/packages/cli' },
-            { text: 'Cloud', link: '/packages/cloud' },
-            { text: 'Database', link: '/packages/database' },
-            { text: 'ORM', link: '/packages/orm' },
-            { text: 'Query Builder', link: '/packages/query-builder' },
-            { text: 'Router', link: '/packages/router' },
-            { text: 'Testing', link: '/packages/testing' },
-            { text: 'Validation', link: '/packages/validation' },
+            { text: 'Monitoring and triage', link: '/reputation/monitoring' },
           ],
         },
         {
-          text: 'Testing',
-          collapsed: true,
+          text: 'Developers',
           items: [
-            { text: 'Getting Started', link: '/testing/getting-started' },
-            { text: 'Unit Tests', link: '/testing/unit-tests' },
-            { text: 'Feature Tests', link: '/testing/feature-tests' },
-            { text: 'Http Tests', link: '/testing/http-tests' },
-            { text: 'Browser Tests', link: '/testing/browser-tests' },
+            { text: 'API', link: '/developers/api' },
+            { text: 'Webhooks', link: '/developers/webhooks' },
           ],
         },
         {
-          text: 'Project',
-          collapsed: true,
+          text: 'Operate',
           items: [
-            { text: 'Roadmap', link: '/project/roadmap' },
-            { text: 'Contributing', link: '/contribution-guide' },
-            { text: 'License', link: '/project/license' },
+            { text: 'Security and compliance', link: '/operate/security-compliance' },
+            { text: 'Self-hosting and CLI', link: '/operate/self-hosting-cli' },
           ],
         },
       ],
     },
-    themeConfig: {
-      logo: '/images/logos/logo-transparent.svg',
-      footer: {
-        message: 'Released under the MIT License.',
-        copyright: 'Copyright 2024-present Stacks.js, Inc.',
-      },
-      socialLinks: [
-        { icon: 'twitter', link: 'https://twitter.com/stacksjs' },
-        { icon: 'github', link: 'https://github.com/stacksjs/stacks' },
-        { icon: 'discord', link: 'https://stacksjs.com/discord' },
-      ],
+  },
+
+  themeConfig: {
+    darkMode: 'auto',
+    footer: {
+      message: 'Creator-first communications infrastructure, released under the MIT License.',
+      copyright: 'Copyright 2026-present CommsHQ',
     },
+    socialLinks: [{ icon: 'github', link: 'https://github.com/stacksjs/commshq' }],
   },
 
-  // SEO Configuration
-  sitemap: {
-    enabled: true,
-    baseUrl: 'https://stacksjs.com/docs',
-  },
-
-  robots: {
-    enabled: true,
-  },
+  sitemap: { enabled: true, baseUrl: 'https://commshq.org/docs' },
+  robots: { enabled: true },
 }
 
 export default config

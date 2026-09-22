@@ -1,4 +1,4 @@
-@extends('layouts/marketing')
+@extends('marketing')
 @section('title', 'Compare CommsHQ | CommsHQ')
 @section('description', 'Honest, regularly reviewed comparisons of CommsHQ against the email, creator, automation, and reputation platforms teams evaluate alongside it.')
 <script server>
