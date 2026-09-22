@@ -14,6 +14,13 @@ useSeoMeta({
 // nothing for this page to persist.
 const error: StxSignal<string> = state('')
 const loading: StxSignal<boolean> = state(false)
+// Two-factor step: revealed only when the account has TOTP enabled. The
+// challenge token from step one and the "remember me" choice are carried in
+// signals so step two can re-send them (the session tier must survive 2FA, and
+// the challenge is single-use).
+const twoFactor: StxSignal<boolean> = state(false)
+const challengeToken: StxSignal<string> = state('')
+const rememberChoice: StxSignal<boolean> = state(false)
 
 async function handleSubmit(e: SubmitEvent): Promise<void> {
   e.preventDefault()
@@ -25,10 +32,12 @@ async function handleSubmit(e: SubmitEvent): Promise<void> {
   try {
     const email = (form.elements.namedItem('email') as HTMLInputElement).value
     const password = (form.elements.namedItem('password') as HTMLInputElement).value
+    const remember = (form.elements.namedItem('remember') as HTMLInputElement).checked
     const res = await fetch('/login', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email, password }),
+      credentials: 'same-origin',
+      body: JSON.stringify({ email, password, remember }),
     })
     const data = await res.json().catch(() => ({})) as Record<string, unknown>
     if (!res.ok) {
@@ -39,7 +48,45 @@ async function handleSubmit(e: SubmitEvent): Promise<void> {
       return
     }
     if (data.requires_two_factor === true) {
-      error.set('This account uses two factor authentication, which this page cannot complete yet.')
+      // Reveal the code step. Keep the challenge token and the remember choice
+      // so the second request completes the same session the user asked for.
+      challengeToken.set(String(data.challenge_token ?? ''))
+      rememberChoice.set(remember)
+      twoFactor.set(true)
+      return
+    }
+    navigate('/dashboard/commshq')
+  }
+  catch {
+    error.set('Could not reach the server. Please try again.')
+  }
+  finally {
+    loading.set(false)
+  }
+}
+
+async function handleVerify(e: SubmitEvent): Promise<void> {
+  e.preventDefault()
+  if (loading())
+    return
+  const form = e.target as HTMLFormElement
+  loading.set(true)
+  error.set('')
+  try {
+    const code = (form.elements.namedItem('code') as HTMLInputElement).value.trim()
+    const res = await fetch('/verify-two-factor-login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'same-origin',
+      body: JSON.stringify({ challenge_token: challengeToken(), code, remember: rememberChoice() }),
+    })
+    const data = await res.json().catch(() => ({})) as Record<string, unknown>
+    if (!res.ok) {
+      // The challenge token is single-use, so a failed or expired attempt has
+      // to restart from the password step rather than retry the code.
+      error.set(String(data.message ?? 'That code did not work. Please sign in again.'))
+      twoFactor.set(false)
+      challengeToken.set('')
       return
     }
     navigate('/dashboard/commshq')
@@ -65,7 +112,7 @@ async function handleSubmit(e: SubmitEvent): Promise<void> {
   </div>
 
   <div class="px-6 py-7 border rounded-2xl border-tone panel">
-    <form @submit="handleSubmit" class="space-y-4">
+    <form @submit="handleSubmit" class="space-y-4" :show="!twoFactor()">
       <div>
         <label for="email" class="block mb-1.5 font-medium text-xs ink">Email</label>
         <input id="email" name="email" type="email" required autocomplete="email" class="field" placeholder="you@example.com">
@@ -75,13 +122,31 @@ async function handleSubmit(e: SubmitEvent): Promise<void> {
         <input id="password" name="password" type="password" required autocomplete="current-password" class="field">
       </div>
 
+      <label for="remember" class="flex items-center gap-2 text-xs muted" style="cursor: pointer">
+        <input id="remember" name="remember" type="checkbox" class="rounded border-tone">
+        Keep me signed in for 30 days
+      </label>
+
       {{-- The label is static and the busy state rides on :disabled, an
           attribute binding. A reactive expression in the button's own text
           would make stx cloak it, and this button is the whole page. --}}
       <button type="submit" :disabled="loading()" class="px-4 py-2.5 w-full font-semibold text-sm text-white rounded-xl border-0 bg-coral" style="cursor: pointer">Sign in</button>
-      <p class="text-center text-xs muted" :show="loading()" style="display:none">Signing you in...</p>
-      <p class="px-3 py-2 text-sm text-center rounded-lg coral" :show="error()" style="display:none">{{ error() }}</p>
     </form>
+
+    {{-- Second step for TOTP accounts. Hidden until step one reports
+        requires_two_factor; the challenge token and remember choice ride in
+        signals, so this form only needs the code. --}}
+    <form @submit="handleVerify" class="space-y-4" :show="twoFactor()" style="display:none">
+      <div>
+        <label for="code" class="block mb-1.5 font-medium text-xs ink">Authentication code</label>
+        <input id="code" name="code" type="text" inputmode="numeric" autocomplete="one-time-code" maxlength="6" pattern="[0-9]*" placeholder="123456" class="field">
+        <p class="mt-1 text-xs muted">Enter the 6-digit code from your authenticator app.</p>
+      </div>
+      <button type="submit" :disabled="loading()" class="px-4 py-2.5 w-full font-semibold text-sm text-white rounded-xl border-0 bg-coral" style="cursor: pointer">Verify</button>
+    </form>
+
+    <p class="mt-4 text-center text-xs muted" :show="loading()" style="display:none">Signing you in...</p>
+    <p class="mt-4 px-3 py-2 text-sm text-center rounded-lg coral" :show="error()" style="display:none">{{ error() }}</p>
   </div>
 
   <p class="mt-6 text-center text-sm muted">

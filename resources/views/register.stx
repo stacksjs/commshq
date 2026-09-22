@@ -41,6 +41,7 @@ async function handleSubmit(e: SubmitEvent): Promise<void> {
     const res = await fetch('/register', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
+      credentials: 'same-origin',
       body: JSON.stringify({ name, email, password }),
     })
     const data = await res.json().catch(() => ({})) as Record<string, unknown>

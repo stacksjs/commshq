@@ -3,37 +3,30 @@ import { route } from '@stacksjs/router'
 /**
  * Signing in and signing up.
  *
- * The framework already ships these actions, and its own `routes/auth.ts`
- * already mounts them - but CSRF-gated, which blocks the same-origin `fetch()`
- * the pages here make. Re-registering them at the root with `.skipCsrf()` is
- * what the sibling HQ apps do for the same reason: the session is a bearer
- * token, and a bearer token is CSRF-immune because the browser does not attach
- * it the way it attaches a cookie. User route files load before the framework
- * defaults, so these win on the duplicate method and path.
+ * These strings resolve to this app's own overrides in
+ * `app/Actions/Auth/*` (app actions win over the framework defaults of the
+ * same route string). They are re-mounted at the root with `.skipCsrf()`
+ * because the same-origin `fetch()` the login/register pages make carries no
+ * CSRF token; the auth-token cookie is `SameSite=Lax`, which is what guards
+ * these posts against cross-site abuse. User route files load before the
+ * framework defaults, so these win on the duplicate method and path.
  *
  * The rate limits are kept, and they are the point: this is the only
  * unauthenticated surface in the app that touches the user table.
  *
- * `LoginAction` returns the token pack as JSON AND sets it as an httpOnly
- * cookie, so a server-rendered dashboard page can identify the caller without
- * the client handing it anything. That is why nothing here has to persist a
- * token by hand.
+ * Every session-issuing action (Login, Register, VerifyTwoFactorLogin) sets a
+ * single HttpOnly `auth-token` cookie whose Max-Age matches the token's own
+ * expiry, so a server-rendered page can identify the caller without the client
+ * handing it anything. There is no refresh exchange: the cookie IS the session
+ * (7-day baseline, 30 days with "keep me signed in").
  */
 route.post('/login', 'Actions/Auth/LoginAction').skipCsrf().rateLimit(5, 'minute')
 route.post('/register', 'Actions/Auth/RegisterAction').skipCsrf().rateLimit(3, 'minute')
 route.post('/logout', 'Actions/Auth/LogoutAction').skipCsrf()
 
 /**
- * Access tokens last an hour (config/auth.ts). Without a refresh route the
- * session simply ends there, and it does not end at the sign-in page: the
- * cookie outlives the access token, so the next request renders a signed-in
- * shell with nothing behind it.
+ * Step two of a 2FA sign-in. `skipCsrf()` for the same reason as the others —
+ * the login page posts JSON with no CSRF token — and the auth here is the
+ * short-lived, single-use challenge token minted by LoginAction, not a cookie.
  */
-route.post('/auth/refresh', 'Actions/Auth/RefreshTokenAction').skipCsrf().rateLimit(10, 'minute')
-
-/**
- * GET endpoints must sit under `/api/**`. The view process only proxies
- * non-GET requests and the `/api/**` prefix through to this API process, so a
- * bare `GET /me` would be swallowed by the view server's page routing.
- */
-route.get('/api/me', 'Actions/MeAction').skipCsrf()
+route.post('/verify-two-factor-login', 'Actions/Auth/VerifyTwoFactorLoginAction').skipCsrf().rateLimit(10, 'minute')

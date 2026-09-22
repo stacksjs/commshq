@@ -47,23 +47,29 @@ export default {
   password: env.AUTH_PASSWORD_FIELD || 'password',
 
   /**
-   * Access-token expiry in milliseconds (default: 1 hour).
+   * Token / session expiry in milliseconds (default: 7 days).
    *
-   * Access tokens are deliberately short-lived: a leaked bearer (logs,
-   * proxy, browser storage) is then usable for an hour, not a month. The
-   * paired refresh token (`refreshTokenExpiry`) carries the long-lived
-   * session and is rotated on use, so UX is unaffected.
+   * This value IS the browser session length. `Auth.loginUsingId(id, { expiresInMinutes })`
+   * stamps the `oauth_access_tokens.expires_at` row and the auth-token cookie's
+   * Max-Age from one number, and nothing extends either afterwards, so it is the
+   * real session cap. 7 days is the baseline; the login form's "keep me signed
+   * in" checkbox overrides it per-login to 30 days (see app/Actions/Auth/authCookie.ts
+   * sessionExpiryMinutes). There is no short-access + refresh-rotation split any
+   * more: the cookie is the session.
    */
-  tokenExpiry: env.AUTH_TOKEN_EXPIRY || 60 * 60 * 1000,
+  tokenExpiry: env.AUTH_TOKEN_EXPIRY || 7 * 24 * 60 * 60 * 1000,
 
   /**
-   * Refresh-token expiry in milliseconds (default: 30 days). This is the
-   * long-lived credential exchanged for fresh access tokens.
+   * Refresh-token expiry in milliseconds. NOT WIRED UP: a refresh token is
+   * still minted and returned in the OAuth2 payload, but nothing consumes it —
+   * there is no `/auth/refresh` route. The session ends when `tokenExpiry`
+   * elapses. Kept only for the payload shape.
    */
   refreshTokenExpiry: env.AUTH_REFRESH_TOKEN_EXPIRY || 30 * 24 * 60 * 60 * 1000,
 
   /**
-   * The token rotation time in hours (default: 24 hours).
+   * Token rotation time in hours. Inert now that there is no refresh route to
+   * rotate on; required by the config type, so kept at its default.
    */
   tokenRotation: env.AUTH_TOKEN_ROTATION || 24,
 
