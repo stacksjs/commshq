@@ -73,7 +73,7 @@
     "stx": "./buddy"
   },
   "dependencies": {
-    "stacks": "^0.74.2"
+    "stacks": "^0.74.59"
   },
   "workspaces": [
     "storage/framework",

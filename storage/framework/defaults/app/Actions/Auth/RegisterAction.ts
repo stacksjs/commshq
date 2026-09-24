@@ -1,5 +1,5 @@
 import { Action } from '@stacksjs/actions'
-import { Auth, authCookie, register } from '@stacksjs/auth'
+import { Auth, authCookieForBrowserSession, register, resolveBrowserSessionPolicy } from '@stacksjs/auth'
 import { dispatch } from '@stacksjs/events'
 import { response } from '@stacksjs/router'
 import { schema } from '@stacksjs/validation'
@@ -12,15 +12,15 @@ export default new Action({
 
   validations: {
     email: {
-      rule: schema.string().email(),
+      rule: schema.string().email().required(),
       message: 'Email must be a valid email address.',
     },
     password: {
-      rule: schema.string().min(PASSWORD_MIN_LENGTH).max(PASSWORD_MAX_LENGTH),
+      rule: schema.string().min(PASSWORD_MIN_LENGTH).max(PASSWORD_MAX_LENGTH).required(),
       message: PASSWORD_POLICY_MESSAGE,
     },
     name: {
-      rule: schema.string().min(2).max(255),
+      rule: schema.string().min(2).max(255).required(),
       message: 'Name must be between 2 and 255 characters.',
     },
   },
@@ -29,8 +29,13 @@ export default new Action({
     const email = request.get('email')
     const password = request.get('password')
     const name = request.get('name')
+    const policy = resolveBrowserSessionPolicy(request.get('remember'))
 
-    const result = await register({ email, password, name })
+    const referralCode = request.get('referralCode')
+    const result = await register(
+      { email, password, name, referralCode: typeof referralCode === 'string' ? referralCode : undefined },
+      { expiresInMinutes: policy.expiresInMinutes, withRefreshToken: policy.withRefreshToken },
+    )
 
     if (result) {
       const user = await Auth.getUserFromToken(result.token)
@@ -71,7 +76,7 @@ export default new Action({
           email: user?.email,
           name: user?.name,
         },
-      }, { headers: { 'Set-Cookie': authCookie(result.token) } })
+      }, { headers: { 'Set-Cookie': authCookieForBrowserSession(result.token, result.expiresIn) } })
     }
 
     return response.error('Registration failed')
