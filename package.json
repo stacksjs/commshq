@@ -74,7 +74,7 @@
   },
   "dependencies": {
     "@stacksjs/ts-cloud": "^0.16.11",
-    "stacks": "^0.74.64"
+    "stacks": "^0.74.66"
   },
   "workspaces": [
     "storage/framework",
