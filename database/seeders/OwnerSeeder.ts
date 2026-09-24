@@ -24,7 +24,10 @@ async function findId(table: 'users' | 'teams', column: 'email' | 'name', value:
     .where(column as any, '=', value)
     .executeTakeFirst() as IdentifiedRow | undefined
 
-  return row?.id
+  // Number(): on Postgres a bigint id arrives as a string, and assignRole
+  // refuses anything but a number ("RBAC user id must be a positive number"),
+  // which stopped the production bootstrap before the usage meters.
+  return row?.id === undefined ? undefined : Number(row.id)
 }
 
 async function ensureOwnerUsageMeters(teamId: number): Promise<void> {

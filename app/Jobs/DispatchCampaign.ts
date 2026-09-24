@@ -5,8 +5,13 @@ import { assertUsageAvailable, deliveryIdempotencyKey } from '@stacksjs/newslett
 import { Campaign, CampaignSend } from '@stacksjs/orm'
 import { Job } from '@stacksjs/queue'
 import { estimateSmsSegments, isWithinSmsQuietHours, sendSms } from '@stacksjs/sms'
+import { createPublicToken } from '../Actions/Public/signed-token'
+import { withUnsubscribe } from '../Mail/unsubscribe'
 import CampaignRecipient from '../Models/CampaignRecipient'
 import UsageMeter from '../Models/UsageMeter'
+
+/** Long enough to outlive any inbox it sits in. */
+const UNSUBSCRIBE_LINK_TTL_MS = 400 * 24 * 60 * 60 * 1000
 
 interface DispatchCampaignPayload {
   campaignId: number
@@ -89,13 +94,20 @@ export default new Job({
           const domain = from.split('@')[1]
           const senderDomain = domain ? await SenderDomain.where('team_id', payload.teamId).where('domain', domain).where('status', 'verified').first() : null
           if (!senderDomain) throw new Error('A verified sender domain is required')
+          const token = createPublicToken({ teamId: payload.teamId, contactId: Number(recipientRow.contact_id), channel: 'email', purpose: 'unsubscribe', expiresAt: Date.now() + UNSUBSCRIBE_LINK_TTL_MS }, String(config.app.key))
+          const body = withUnsubscribe(
+            String(campaign.template || campaign.text || ''),
+            String(campaign.text || ''),
+            `${String(config.app.url).replace(/\/$/, '')}/unsubscribe/${token}`,
+          )
           const result = await mail.send({
             to: [recipient],
             from: { name: String(campaign.fromName || config.email.from?.name || 'CommsHQ'), address: from },
             replyTo: campaign.replyTo || undefined,
             subject: String(campaign.subject || ''),
-            html: String(campaign.template || campaign.text || ''),
-            text: String(campaign.text || ''),
+            html: body.html,
+            text: body.text,
+            headers: body.headers,
           } as any)
           if (result?.success === false) throw new Error(result.message || 'Mail server rejected the message')
           await delivery.update({ status: 'sent', providerMessageId: result?.messageId, sentAt: new Date().toISOString() })

@@ -3,6 +3,9 @@ import { Action } from '@stacksjs/actions'
 import { config } from '@stacksjs/config'
 import { response } from '@stacksjs/router'
 import Contact from '../../Models/Contact'
+import { leaveAudiences } from './audience-membership'
+import { wantsHtml } from './form-settings'
+import { escapeHtml, pageResponse } from './public-response'
 import { appendConsentOnce, consentIdempotencyKey, consentStateMatches, ensureSuppressed, findActiveSuppression, findLatestConsent } from './consent-ledger'
 import { verifyPublicToken } from './signed-token'
 
@@ -33,7 +36,14 @@ export default new Action({
         proof: JSON.stringify({ tokenPurpose: payload.purpose }),
       })
     }
-    if (payload.channel === 'email') await contact.update({ status: 'unsubscribed' })
+    if (payload.channel === 'email') {
+      await contact.update({ status: 'unsubscribed' })
+      await leaveAudiences(payload.teamId, Number(contact.id))
+    }
+    // The button on the unsubscribe page is a plain form post; a mail
+    // client's one-click POST and a script both take JSON.
+    if (wantsHtml(request.headers.get('accept')))
+      return pageResponse('You are unsubscribed', `<p>${escapeHtml(recipient)} will not get any more emails from this list.</p>`)
     return response.json({ unsubscribed: true })
   },
 })

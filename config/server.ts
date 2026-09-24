@@ -35,9 +35,16 @@ export default {
    * of the same name. Listing `/script.js` makes `public/script.js`
    * unreachable.
    */
+  // The links in subscription emails are GETs on the API (routes/public.ts),
+  // so they have to be forwarded; without this /confirm/{token} rendered the
+  // views server's 404 and no one could ever confirm. OPTIONS joins the
+  // default verbs so the CORS preflight a cross-site signup sends reaches the
+  // API's router, which answers it; listing `/forms/` as a prefix instead
+  // would also swallow the /forms page.
   proxy: {
-    prefixes: [],
+    prefixes: ['/confirm/', '/unsubscribe/', '/preferences/'],
     paths: [],
+    methods: ['POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
   },
 
   /**

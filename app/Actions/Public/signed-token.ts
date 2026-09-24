@@ -6,6 +6,12 @@ export interface PublicTokenPayload {
   channel: 'email' | 'sms'
   purpose: 'confirm' | 'preferences' | 'unsubscribe'
   expiresAt: number
+  /**
+   * The form a confirm link came from, so confirming can join the form's
+   * audience and land on its success page. Absent on older links and on
+   * unsubscribe links, which act on the whole channel.
+   */
+  formId?: number
 }
 
 function signature(value: string, secret: string): string {
@@ -29,6 +35,7 @@ export function verifyPublicToken(token: string, secret: string, now = Date.now(
   try {
     const payload = JSON.parse(Buffer.from(encoded, 'base64url').toString()) as PublicTokenPayload
     if (!Number.isInteger(payload.teamId) || !Number.isInteger(payload.contactId) || payload.expiresAt < now) return null
+    if (payload.formId !== undefined && !Number.isInteger(payload.formId)) return null
     return payload
   }
   catch {

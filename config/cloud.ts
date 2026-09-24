@@ -78,8 +78,10 @@ export const tsCloud: TsCloudConfig = {
       port: 3030,
       framework: 'stacks',
       preStart: ['bun install --frozen-lockfile', 'bun node_modules/@stacksjs/buddy/dist/cli.js migrate'],
+      // `emails` is where mail.queue() and SendEmail go: the double opt-in
+      // confirmations wait there, and no worker was reading it.
       queues: [
-        { connection: 'redis', queue: 'campaigns,automations,mail,sms,commerce,default', processes: 2, timeout: 120, tries: 5, memory: 384, stopWaitSecs: 120 },
+        { connection: 'redis', queue: 'campaigns,automations,mail,emails,sms,commerce,default', processes: 2, timeout: 120, tries: 5, memory: 384, stopWaitSecs: 120 },
       ],
       scheduler: true,
       memoryHigh: '1G',
