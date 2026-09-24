@@ -9752,7 +9752,7 @@
           },
           {
             "name": "payload",
-            "type": "string",
+            "type": "text",
             "isPrimaryKey": false,
             "isUnique": false,
             "isNullable": false,
@@ -9760,7 +9760,7 @@
           },
           {
             "name": "exception",
-            "type": "string",
+            "type": "text",
             "isPrimaryKey": false,
             "isUnique": false,
             "isNullable": false,
@@ -10896,7 +10896,7 @@
           },
           {
             "name": "payload",
-            "type": "string",
+            "type": "text",
             "isPrimaryKey": false,
             "isUnique": false,
             "isNullable": false,
@@ -22426,7 +22426,7 @@
       }
     ]
   },
-  "hash": "0fa2ef22fc02c3dad73fd89703baf795fbf087ecdf2d4ba9ea40263644c5e73d",
+  "hash": "ad51e37d62e57f017225501bb477551195eb17c787a249976036d17c0374361c",
   "dialect": "sqlite",
-  "updatedAt": "2026-09-24T17:09:24.802Z"
+  "updatedAt": "2026-09-24T17:36:20.597Z"
 }

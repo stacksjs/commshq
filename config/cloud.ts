@@ -77,7 +77,12 @@ export const tsCloud: TsCloudConfig = {
       start: 'bun node_modules/@stacksjs/buddy/dist/serve-entry.js',
       port: 3030,
       framework: 'stacks',
-      preStart: ['bun install --frozen-lockfile', 'bun node_modules/@stacksjs/buddy/dist/cli.js migrate'],
+      // `queue:table` after `migrate`: it creates the queue's own safeguard
+      // tables (job_idempotency, job_quarantine, queue_circuit_state,
+      // dead_letter_jobs, job_batches), which no model migration does. Without
+      // them an idempotent dispatch errors and the workers log a failure every
+      // second. Every statement is IF NOT EXISTS, so it is safe on each deploy.
+      preStart: ['bun install --frozen-lockfile', 'bun node_modules/@stacksjs/buddy/dist/cli.js migrate', 'bun node_modules/@stacksjs/buddy/dist/cli.js queue:table'],
       // `emails` is where mail.queue() and SendEmail go: the double opt-in
       // confirmations wait there, and no worker was reading it.
       queues: [

@@ -9753,7 +9753,7 @@
           },
           {
             "name": "payload",
-            "type": "string",
+            "type": "text",
             "isPrimaryKey": false,
             "isUnique": false,
             "isNullable": false,
@@ -9761,7 +9761,7 @@
           },
           {
             "name": "exception",
-            "type": "string",
+            "type": "text",
             "isPrimaryKey": false,
             "isUnique": false,
             "isNullable": false,
@@ -10897,7 +10897,7 @@
           },
           {
             "name": "payload",
-            "type": "string",
+            "type": "text",
             "isPrimaryKey": false,
             "isUnique": false,
             "isNullable": false,
@@ -22430,7 +22430,7 @@
       }
     ]
   },
-  "hash": "71a03b494eb1678895ff1cdbb5e3e30d3f2677381e0be54f3b26c33ca209d931",
+  "hash": "6dadd5606c3ae3b58342614a954a49a4c415fb68576cbd6886d77d9461fd1443",
   "dialect": "postgres",
-  "updatedAt": "2026-09-24T17:09:46.904Z"
+  "updatedAt": "2026-09-24T17:36:21.100Z"
 }
