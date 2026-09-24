@@ -148,3 +148,9 @@ storage/framework/core/defaults/*
 !storage/framework/core/defaults/package.json
 !storage/framework/core/defaults/tests/
 !storage/framework/core/defaults/tests/**
+
+# Migrations are source, whatever a global `*.sql` ignore says: without these
+# lines new ones never reach git, and CI and the deploy build a database
+# without them.
+!database/migrations/*.sql
+!database/migrations/postgres/*.sql

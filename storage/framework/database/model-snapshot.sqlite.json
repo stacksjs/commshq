@@ -93,7 +93,7 @@
             "isUnique": false,
             "isNullable": false,
             "hasDefault": true,
-            "defaultValue": "CURRENT_TIMESTAMP"
+            "defaultValue": "UTC_TIMESTAMP"
           },
           {
             "name": "updated_at",
@@ -240,7 +240,7 @@
             "isUnique": false,
             "isNullable": false,
             "hasDefault": true,
-            "defaultValue": "CURRENT_TIMESTAMP"
+            "defaultValue": "UTC_TIMESTAMP"
           },
           {
             "name": "updated_at",
@@ -395,7 +395,7 @@
             "isUnique": false,
             "isNullable": false,
             "hasDefault": true,
-            "defaultValue": "CURRENT_TIMESTAMP"
+            "defaultValue": "UTC_TIMESTAMP"
           },
           {
             "name": "updated_at",
@@ -551,7 +551,7 @@
             "isUnique": false,
             "isNullable": false,
             "hasDefault": true,
-            "defaultValue": "CURRENT_TIMESTAMP"
+            "defaultValue": "UTC_TIMESTAMP"
           },
           {
             "name": "updated_at",
@@ -759,7 +759,7 @@
             "isUnique": false,
             "isNullable": false,
             "hasDefault": true,
-            "defaultValue": "CURRENT_TIMESTAMP"
+            "defaultValue": "UTC_TIMESTAMP"
           },
           {
             "name": "updated_at",
@@ -876,7 +876,7 @@
             "isUnique": false,
             "isNullable": false,
             "hasDefault": true,
-            "defaultValue": "CURRENT_TIMESTAMP"
+            "defaultValue": "UTC_TIMESTAMP"
           },
           {
             "name": "updated_at",
@@ -1049,7 +1049,7 @@
             "isUnique": false,
             "isNullable": false,
             "hasDefault": true,
-            "defaultValue": "CURRENT_TIMESTAMP"
+            "defaultValue": "UTC_TIMESTAMP"
           },
           {
             "name": "updated_at",
@@ -1215,7 +1215,7 @@
             "isUnique": false,
             "isNullable": false,
             "hasDefault": true,
-            "defaultValue": "CURRENT_TIMESTAMP"
+            "defaultValue": "UTC_TIMESTAMP"
           },
           {
             "name": "updated_at",
@@ -1413,7 +1413,7 @@
             "isUnique": false,
             "isNullable": false,
             "hasDefault": true,
-            "defaultValue": "CURRENT_TIMESTAMP"
+            "defaultValue": "UTC_TIMESTAMP"
           },
           {
             "name": "updated_at",
@@ -1528,7 +1528,7 @@
             "isUnique": false,
             "isNullable": false,
             "hasDefault": true,
-            "defaultValue": "CURRENT_TIMESTAMP"
+            "defaultValue": "UTC_TIMESTAMP"
           },
           {
             "name": "updated_at",
@@ -1666,7 +1666,7 @@
             "isUnique": false,
             "isNullable": false,
             "hasDefault": true,
-            "defaultValue": "CURRENT_TIMESTAMP"
+            "defaultValue": "UTC_TIMESTAMP"
           },
           {
             "name": "updated_at",
@@ -1832,7 +1832,7 @@
             "isUnique": false,
             "isNullable": false,
             "hasDefault": true,
-            "defaultValue": "CURRENT_TIMESTAMP"
+            "defaultValue": "UTC_TIMESTAMP"
           },
           {
             "name": "updated_at",
@@ -1954,7 +1954,7 @@
             "isUnique": false,
             "isNullable": false,
             "hasDefault": true,
-            "defaultValue": "CURRENT_TIMESTAMP"
+            "defaultValue": "UTC_TIMESTAMP"
           },
           {
             "name": "updated_at",
@@ -2040,7 +2040,7 @@
             "isUnique": false,
             "isNullable": false,
             "hasDefault": true,
-            "defaultValue": "CURRENT_TIMESTAMP"
+            "defaultValue": "UTC_TIMESTAMP"
           },
           {
             "name": "updated_at",
@@ -2255,7 +2255,7 @@
             "isUnique": false,
             "isNullable": false,
             "hasDefault": true,
-            "defaultValue": "CURRENT_TIMESTAMP"
+            "defaultValue": "UTC_TIMESTAMP"
           },
           {
             "name": "updated_at",
@@ -2387,7 +2387,7 @@
             "isUnique": false,
             "isNullable": false,
             "hasDefault": true,
-            "defaultValue": "CURRENT_TIMESTAMP"
+            "defaultValue": "UTC_TIMESTAMP"
           },
           {
             "name": "updated_at",
@@ -2556,7 +2556,7 @@
             "isUnique": false,
             "isNullable": false,
             "hasDefault": true,
-            "defaultValue": "CURRENT_TIMESTAMP"
+            "defaultValue": "UTC_TIMESTAMP"
           },
           {
             "name": "updated_at",
@@ -2735,7 +2735,7 @@
             "isUnique": false,
             "isNullable": false,
             "hasDefault": true,
-            "defaultValue": "CURRENT_TIMESTAMP"
+            "defaultValue": "UTC_TIMESTAMP"
           },
           {
             "name": "updated_at",
@@ -2910,7 +2910,7 @@
             "isUnique": false,
             "isNullable": false,
             "hasDefault": true,
-            "defaultValue": "CURRENT_TIMESTAMP"
+            "defaultValue": "UTC_TIMESTAMP"
           },
           {
             "name": "updated_at",
@@ -3091,7 +3091,7 @@
             "isUnique": false,
             "isNullable": false,
             "hasDefault": true,
-            "defaultValue": "CURRENT_TIMESTAMP"
+            "defaultValue": "UTC_TIMESTAMP"
           },
           {
             "name": "updated_at",
@@ -3210,7 +3210,7 @@
             "isUnique": false,
             "isNullable": false,
             "hasDefault": true,
-            "defaultValue": "CURRENT_TIMESTAMP"
+            "defaultValue": "UTC_TIMESTAMP"
           },
           {
             "name": "updated_at",
@@ -3347,7 +3347,7 @@
             "isUnique": false,
             "isNullable": false,
             "hasDefault": true,
-            "defaultValue": "CURRENT_TIMESTAMP"
+            "defaultValue": "UTC_TIMESTAMP"
           },
           {
             "name": "updated_at",
@@ -3473,7 +3473,7 @@
             "isUnique": false,
             "isNullable": false,
             "hasDefault": true,
-            "defaultValue": "CURRENT_TIMESTAMP"
+            "defaultValue": "UTC_TIMESTAMP"
           },
           {
             "name": "updated_at",
@@ -3490,6 +3490,18 @@
             "isUnique": true,
             "isNullable": true,
             "hasDefault": false
+          },
+          {
+            "name": "team_id",
+            "type": "bigint",
+            "isPrimaryKey": false,
+            "isUnique": false,
+            "isNullable": true,
+            "hasDefault": false,
+            "references": {
+              "table": "teams",
+              "column": "id"
+            }
           }
         ],
         "indexes": [
@@ -3566,7 +3578,7 @@
             "isUnique": false,
             "isNullable": false,
             "hasDefault": true,
-            "defaultValue": "CURRENT_TIMESTAMP"
+            "defaultValue": "UTC_TIMESTAMP"
           },
           {
             "name": "updated_at",
@@ -3902,7 +3914,7 @@
             "isUnique": false,
             "isNullable": false,
             "hasDefault": true,
-            "defaultValue": "CURRENT_TIMESTAMP"
+            "defaultValue": "UTC_TIMESTAMP"
           },
           {
             "name": "updated_at",
@@ -4052,7 +4064,7 @@
             "isUnique": false,
             "isNullable": false,
             "hasDefault": true,
-            "defaultValue": "CURRENT_TIMESTAMP"
+            "defaultValue": "UTC_TIMESTAMP"
           },
           {
             "name": "updated_at",
@@ -4220,7 +4232,7 @@
             "isUnique": false,
             "isNullable": false,
             "hasDefault": true,
-            "defaultValue": "CURRENT_TIMESTAMP"
+            "defaultValue": "UTC_TIMESTAMP"
           },
           {
             "name": "updated_at",
@@ -4480,7 +4492,7 @@
             "isUnique": false,
             "isNullable": false,
             "hasDefault": true,
-            "defaultValue": "CURRENT_TIMESTAMP"
+            "defaultValue": "UTC_TIMESTAMP"
           },
           {
             "name": "updated_at",
@@ -4638,7 +4650,7 @@
             "isUnique": false,
             "isNullable": false,
             "hasDefault": true,
-            "defaultValue": "CURRENT_TIMESTAMP"
+            "defaultValue": "UTC_TIMESTAMP"
           },
           {
             "name": "updated_at",
@@ -4786,7 +4798,7 @@
             "isUnique": false,
             "isNullable": false,
             "hasDefault": true,
-            "defaultValue": "CURRENT_TIMESTAMP"
+            "defaultValue": "UTC_TIMESTAMP"
           },
           {
             "name": "updated_at",
@@ -4865,7 +4877,7 @@
             "isUnique": false,
             "isNullable": false,
             "hasDefault": true,
-            "defaultValue": "CURRENT_TIMESTAMP"
+            "defaultValue": "UTC_TIMESTAMP"
           },
           {
             "name": "updated_at",
@@ -5031,7 +5043,7 @@
             "isUnique": false,
             "isNullable": false,
             "hasDefault": true,
-            "defaultValue": "CURRENT_TIMESTAMP"
+            "defaultValue": "UTC_TIMESTAMP"
           },
           {
             "name": "updated_at",
@@ -5182,7 +5194,7 @@
             "isUnique": false,
             "isNullable": false,
             "hasDefault": true,
-            "defaultValue": "CURRENT_TIMESTAMP"
+            "defaultValue": "UTC_TIMESTAMP"
           },
           {
             "name": "updated_at",
@@ -5286,7 +5298,7 @@
             "isUnique": false,
             "isNullable": false,
             "hasDefault": true,
-            "defaultValue": "CURRENT_TIMESTAMP"
+            "defaultValue": "UTC_TIMESTAMP"
           },
           {
             "name": "updated_at",
@@ -5442,7 +5454,7 @@
             "isUnique": false,
             "isNullable": false,
             "hasDefault": true,
-            "defaultValue": "CURRENT_TIMESTAMP"
+            "defaultValue": "UTC_TIMESTAMP"
           },
           {
             "name": "updated_at",
@@ -5576,7 +5588,7 @@
             "isUnique": false,
             "isNullable": false,
             "hasDefault": true,
-            "defaultValue": "CURRENT_TIMESTAMP"
+            "defaultValue": "UTC_TIMESTAMP"
           },
           {
             "name": "updated_at",
@@ -5730,7 +5742,7 @@
             "isUnique": false,
             "isNullable": false,
             "hasDefault": true,
-            "defaultValue": "CURRENT_TIMESTAMP"
+            "defaultValue": "UTC_TIMESTAMP"
           },
           {
             "name": "updated_at",
@@ -5932,7 +5944,7 @@
             "isUnique": false,
             "isNullable": false,
             "hasDefault": true,
-            "defaultValue": "CURRENT_TIMESTAMP"
+            "defaultValue": "UTC_TIMESTAMP"
           },
           {
             "name": "updated_at",
@@ -6065,7 +6077,7 @@
             "isUnique": false,
             "isNullable": false,
             "hasDefault": true,
-            "defaultValue": "CURRENT_TIMESTAMP"
+            "defaultValue": "UTC_TIMESTAMP"
           },
           {
             "name": "updated_at",
@@ -6242,7 +6254,7 @@
             "isUnique": false,
             "isNullable": false,
             "hasDefault": true,
-            "defaultValue": "CURRENT_TIMESTAMP"
+            "defaultValue": "UTC_TIMESTAMP"
           },
           {
             "name": "updated_at",
@@ -6398,7 +6410,7 @@
             "isUnique": false,
             "isNullable": false,
             "hasDefault": true,
-            "defaultValue": "CURRENT_TIMESTAMP"
+            "defaultValue": "UTC_TIMESTAMP"
           },
           {
             "name": "updated_at",
@@ -6505,7 +6517,7 @@
             "isUnique": false,
             "isNullable": false,
             "hasDefault": true,
-            "defaultValue": "CURRENT_TIMESTAMP"
+            "defaultValue": "UTC_TIMESTAMP"
           },
           {
             "name": "updated_at",
@@ -6626,7 +6638,7 @@
             "isUnique": false,
             "isNullable": false,
             "hasDefault": true,
-            "defaultValue": "CURRENT_TIMESTAMP"
+            "defaultValue": "UTC_TIMESTAMP"
           },
           {
             "name": "updated_at",
@@ -6731,7 +6743,7 @@
             "isUnique": false,
             "isNullable": false,
             "hasDefault": true,
-            "defaultValue": "CURRENT_TIMESTAMP"
+            "defaultValue": "UTC_TIMESTAMP"
           },
           {
             "name": "updated_at",
@@ -6840,7 +6852,7 @@
             "isUnique": false,
             "isNullable": false,
             "hasDefault": true,
-            "defaultValue": "CURRENT_TIMESTAMP"
+            "defaultValue": "UTC_TIMESTAMP"
           },
           {
             "name": "updated_at",
@@ -7027,7 +7039,7 @@
             "isUnique": false,
             "isNullable": false,
             "hasDefault": true,
-            "defaultValue": "CURRENT_TIMESTAMP"
+            "defaultValue": "UTC_TIMESTAMP"
           },
           {
             "name": "updated_at",
@@ -7158,7 +7170,7 @@
             "isUnique": false,
             "isNullable": false,
             "hasDefault": true,
-            "defaultValue": "CURRENT_TIMESTAMP"
+            "defaultValue": "UTC_TIMESTAMP"
           },
           {
             "name": "updated_at",
@@ -7267,7 +7279,7 @@
             "isUnique": false,
             "isNullable": false,
             "hasDefault": true,
-            "defaultValue": "CURRENT_TIMESTAMP"
+            "defaultValue": "UTC_TIMESTAMP"
           },
           {
             "name": "updated_at",
@@ -7412,7 +7424,7 @@
             "isUnique": false,
             "isNullable": false,
             "hasDefault": true,
-            "defaultValue": "CURRENT_TIMESTAMP"
+            "defaultValue": "UTC_TIMESTAMP"
           },
           {
             "name": "updated_at",
@@ -7537,7 +7549,7 @@
             "isUnique": false,
             "isNullable": false,
             "hasDefault": true,
-            "defaultValue": "CURRENT_TIMESTAMP"
+            "defaultValue": "UTC_TIMESTAMP"
           },
           {
             "name": "updated_at",
@@ -7743,7 +7755,7 @@
             "isUnique": false,
             "isNullable": false,
             "hasDefault": true,
-            "defaultValue": "CURRENT_TIMESTAMP"
+            "defaultValue": "UTC_TIMESTAMP"
           },
           {
             "name": "updated_at",
@@ -7908,7 +7920,7 @@
             "isUnique": false,
             "isNullable": false,
             "hasDefault": true,
-            "defaultValue": "CURRENT_TIMESTAMP"
+            "defaultValue": "UTC_TIMESTAMP"
           },
           {
             "name": "updated_at",
@@ -7963,15 +7975,6 @@
             "isUnique": false,
             "isNullable": false,
             "hasDefault": false
-          },
-          {
-            "name": "driver",
-            "type": "string",
-            "isPrimaryKey": false,
-            "isUnique": false,
-            "isNullable": false,
-            "hasDefault": false,
-            "maxLength": 255
           },
           {
             "name": "vehicle",
@@ -8047,25 +8050,13 @@
             "hasDefault": false
           },
           {
-            "name": "driver_id",
-            "type": "bigint",
-            "isPrimaryKey": false,
-            "isUnique": false,
-            "isNullable": true,
-            "hasDefault": false,
-            "references": {
-              "table": "drivers",
-              "column": "id"
-            }
-          },
-          {
             "name": "created_at",
             "type": "datetime",
             "isPrimaryKey": false,
             "isUnique": false,
             "isNullable": false,
             "hasDefault": true,
-            "defaultValue": "CURRENT_TIMESTAMP"
+            "defaultValue": "UTC_TIMESTAMP"
           },
           {
             "name": "updated_at",
@@ -8082,6 +8073,27 @@
             "isUnique": true,
             "isNullable": true,
             "hasDefault": false
+          },
+          {
+            "name": "courier",
+            "type": "string",
+            "isPrimaryKey": false,
+            "isUnique": false,
+            "isNullable": false,
+            "hasDefault": false,
+            "maxLength": 255
+          },
+          {
+            "name": "courier_id",
+            "type": "bigint",
+            "isPrimaryKey": false,
+            "isUnique": false,
+            "isNullable": true,
+            "hasDefault": false,
+            "references": {
+              "table": "couriers",
+              "column": "id"
+            }
           }
         ],
         "indexes": [
@@ -8246,7 +8258,7 @@
             "isUnique": false,
             "isNullable": false,
             "hasDefault": true,
-            "defaultValue": "CURRENT_TIMESTAMP"
+            "defaultValue": "UTC_TIMESTAMP"
           },
           {
             "name": "updated_at",
@@ -8263,6 +8275,19 @@
             "isUnique": true,
             "isNullable": true,
             "hasDefault": false
+          },
+          {
+            "name": "type",
+            "type": "enum",
+            "isPrimaryKey": false,
+            "isUnique": false,
+            "isNullable": false,
+            "hasDefault": true,
+            "defaultValue": "dropoff",
+            "enumValues": [
+              "pickup",
+              "dropoff"
+            ]
           }
         ],
         "indexes": [
@@ -8370,7 +8395,7 @@
             "isUnique": false,
             "isNullable": false,
             "hasDefault": true,
-            "defaultValue": "CURRENT_TIMESTAMP"
+            "defaultValue": "UTC_TIMESTAMP"
           },
           {
             "name": "updated_at",
@@ -8482,7 +8507,7 @@
             "isUnique": false,
             "isNullable": false,
             "hasDefault": true,
-            "defaultValue": "CURRENT_TIMESTAMP"
+            "defaultValue": "UTC_TIMESTAMP"
           },
           {
             "name": "updated_at",
@@ -8504,278 +8529,6 @@
         "indexes": [
           {
             "name": "digital_deliveries_uuid_unique",
-            "columns": [
-              "uuid"
-            ],
-            "type": "unique"
-          }
-        ]
-      },
-      {
-        "table": "drivers",
-        "columns": [
-          {
-            "name": "id",
-            "type": "bigint",
-            "isPrimaryKey": true,
-            "isUnique": false,
-            "isNullable": false,
-            "hasDefault": false
-          },
-          {
-            "name": "name",
-            "type": "string",
-            "isPrimaryKey": false,
-            "isUnique": false,
-            "isNullable": false,
-            "hasDefault": false,
-            "maxLength": 255
-          },
-          {
-            "name": "phone",
-            "type": "string",
-            "isPrimaryKey": false,
-            "isUnique": false,
-            "isNullable": false,
-            "hasDefault": false,
-            "maxLength": 255
-          },
-          {
-            "name": "vehicle_number",
-            "type": "string",
-            "isPrimaryKey": false,
-            "isUnique": false,
-            "isNullable": false,
-            "hasDefault": false,
-            "maxLength": 255
-          },
-          {
-            "name": "license",
-            "type": "string",
-            "isPrimaryKey": false,
-            "isUnique": false,
-            "isNullable": false,
-            "hasDefault": false,
-            "maxLength": 255
-          },
-          {
-            "name": "status",
-            "type": "enum",
-            "isPrimaryKey": false,
-            "isUnique": false,
-            "isNullable": true,
-            "hasDefault": true,
-            "defaultValue": "active",
-            "enumValues": [
-              "active",
-              "on_delivery",
-              "on_break",
-              "offline"
-            ],
-            "enumTypeName": "drivers_status_type"
-          },
-          {
-            "name": "latitude",
-            "type": "integer",
-            "isPrimaryKey": false,
-            "isUnique": false,
-            "isNullable": true,
-            "hasDefault": false
-          },
-          {
-            "name": "longitude",
-            "type": "integer",
-            "isPrimaryKey": false,
-            "isUnique": false,
-            "isNullable": true,
-            "hasDefault": false
-          },
-          {
-            "name": "heading",
-            "type": "integer",
-            "isPrimaryKey": false,
-            "isUnique": false,
-            "isNullable": true,
-            "hasDefault": false
-          },
-          {
-            "name": "speed",
-            "type": "integer",
-            "isPrimaryKey": false,
-            "isUnique": false,
-            "isNullable": true,
-            "hasDefault": true,
-            "defaultValue": 0
-          },
-          {
-            "name": "last_ping_at",
-            "type": "datetime",
-            "isPrimaryKey": false,
-            "isUnique": false,
-            "isNullable": true,
-            "hasDefault": false
-          },
-          {
-            "name": "user_id",
-            "type": "bigint",
-            "isPrimaryKey": false,
-            "isUnique": false,
-            "isNullable": true,
-            "hasDefault": false,
-            "references": {
-              "table": "users",
-              "column": "id"
-            }
-          },
-          {
-            "name": "created_at",
-            "type": "datetime",
-            "isPrimaryKey": false,
-            "isUnique": false,
-            "isNullable": false,
-            "hasDefault": true,
-            "defaultValue": "CURRENT_TIMESTAMP"
-          },
-          {
-            "name": "updated_at",
-            "type": "datetime",
-            "isPrimaryKey": false,
-            "isUnique": false,
-            "isNullable": true,
-            "hasDefault": false
-          },
-          {
-            "name": "uuid",
-            "type": "string",
-            "isPrimaryKey": false,
-            "isUnique": true,
-            "isNullable": true,
-            "hasDefault": false
-          }
-        ],
-        "indexes": [
-          {
-            "name": "drivers_uuid_unique",
-            "columns": [
-              "uuid"
-            ],
-            "type": "unique"
-          }
-        ]
-      },
-      {
-        "table": "driver_pings",
-        "columns": [
-          {
-            "name": "id",
-            "type": "bigint",
-            "isPrimaryKey": true,
-            "isUnique": false,
-            "isNullable": false,
-            "hasDefault": false
-          },
-          {
-            "name": "latitude",
-            "type": "integer",
-            "isPrimaryKey": false,
-            "isUnique": false,
-            "isNullable": false,
-            "hasDefault": false
-          },
-          {
-            "name": "longitude",
-            "type": "integer",
-            "isPrimaryKey": false,
-            "isUnique": false,
-            "isNullable": false,
-            "hasDefault": false
-          },
-          {
-            "name": "heading",
-            "type": "integer",
-            "isPrimaryKey": false,
-            "isUnique": false,
-            "isNullable": true,
-            "hasDefault": false
-          },
-          {
-            "name": "speed",
-            "type": "integer",
-            "isPrimaryKey": false,
-            "isUnique": false,
-            "isNullable": true,
-            "hasDefault": true,
-            "defaultValue": 0
-          },
-          {
-            "name": "accuracy",
-            "type": "integer",
-            "isPrimaryKey": false,
-            "isUnique": false,
-            "isNullable": true,
-            "hasDefault": false
-          },
-          {
-            "name": "recorded_at",
-            "type": "datetime",
-            "isPrimaryKey": false,
-            "isUnique": false,
-            "isNullable": false,
-            "hasDefault": false
-          },
-          {
-            "name": "driver_id",
-            "type": "bigint",
-            "isPrimaryKey": false,
-            "isUnique": false,
-            "isNullable": true,
-            "hasDefault": false,
-            "references": {
-              "table": "drivers",
-              "column": "id"
-            }
-          },
-          {
-            "name": "delivery_route_id",
-            "type": "bigint",
-            "isPrimaryKey": false,
-            "isUnique": false,
-            "isNullable": true,
-            "hasDefault": false,
-            "references": {
-              "table": "delivery_routes",
-              "column": "id"
-            }
-          },
-          {
-            "name": "created_at",
-            "type": "datetime",
-            "isPrimaryKey": false,
-            "isUnique": false,
-            "isNullable": false,
-            "hasDefault": true,
-            "defaultValue": "CURRENT_TIMESTAMP"
-          },
-          {
-            "name": "updated_at",
-            "type": "datetime",
-            "isPrimaryKey": false,
-            "isUnique": false,
-            "isNullable": true,
-            "hasDefault": false
-          },
-          {
-            "name": "uuid",
-            "type": "string",
-            "isPrimaryKey": false,
-            "isUnique": true,
-            "isNullable": true,
-            "hasDefault": false
-          }
-        ],
-        "indexes": [
-          {
-            "name": "driver_pings_uuid_unique",
             "columns": [
               "uuid"
             ],
@@ -8892,7 +8645,7 @@
             "isUnique": false,
             "isNullable": false,
             "hasDefault": true,
-            "defaultValue": "CURRENT_TIMESTAMP"
+            "defaultValue": "UTC_TIMESTAMP"
           },
           {
             "name": "updated_at",
@@ -9007,7 +8760,7 @@
             "isUnique": false,
             "isNullable": false,
             "hasDefault": true,
-            "defaultValue": "CURRENT_TIMESTAMP"
+            "defaultValue": "UTC_TIMESTAMP"
           },
           {
             "name": "updated_at",
@@ -9142,7 +8895,7 @@
             "isUnique": false,
             "isNullable": false,
             "hasDefault": true,
-            "defaultValue": "CURRENT_TIMESTAMP"
+            "defaultValue": "UTC_TIMESTAMP"
           },
           {
             "name": "updated_at",
@@ -9262,7 +9015,7 @@
             "isUnique": false,
             "isNullable": false,
             "hasDefault": true,
-            "defaultValue": "CURRENT_TIMESTAMP"
+            "defaultValue": "UTC_TIMESTAMP"
           },
           {
             "name": "updated_at",
@@ -9435,7 +9188,7 @@
             "isUnique": false,
             "isNullable": false,
             "hasDefault": true,
-            "defaultValue": "CURRENT_TIMESTAMP"
+            "defaultValue": "UTC_TIMESTAMP"
           },
           {
             "name": "updated_at",
@@ -9522,7 +9275,7 @@
             "isUnique": false,
             "isNullable": false,
             "hasDefault": true,
-            "defaultValue": "CURRENT_TIMESTAMP"
+            "defaultValue": "UTC_TIMESTAMP"
           },
           {
             "name": "updated_at",
@@ -9594,7 +9347,7 @@
             "isUnique": false,
             "isNullable": false,
             "hasDefault": true,
-            "defaultValue": "CURRENT_TIMESTAMP"
+            "defaultValue": "UTC_TIMESTAMP"
           },
           {
             "name": "updated_at",
@@ -9698,7 +9451,7 @@
             "isUnique": false,
             "isNullable": false,
             "hasDefault": true,
-            "defaultValue": "CURRENT_TIMESTAMP"
+            "defaultValue": "UTC_TIMESTAMP"
           },
           {
             "name": "updated_at",
@@ -9843,7 +9596,7 @@
             "isUnique": false,
             "isNullable": false,
             "hasDefault": true,
-            "defaultValue": "CURRENT_TIMESTAMP"
+            "defaultValue": "UTC_TIMESTAMP"
           },
           {
             "name": "updated_at",
@@ -9947,7 +9700,7 @@
             "isUnique": false,
             "isNullable": false,
             "hasDefault": true,
-            "defaultValue": "CURRENT_TIMESTAMP"
+            "defaultValue": "UTC_TIMESTAMP"
           },
           {
             "name": "updated_at",
@@ -10052,7 +9805,7 @@
             "isUnique": false,
             "isNullable": false,
             "hasDefault": true,
-            "defaultValue": "CURRENT_TIMESTAMP"
+            "defaultValue": "UTC_TIMESTAMP"
           },
           {
             "name": "updated_at",
@@ -10152,7 +9905,7 @@
             "isUnique": false,
             "isNullable": false,
             "hasDefault": true,
-            "defaultValue": "CURRENT_TIMESTAMP"
+            "defaultValue": "UTC_TIMESTAMP"
           },
           {
             "name": "updated_at",
@@ -10309,7 +10062,7 @@
             "isUnique": false,
             "isNullable": false,
             "hasDefault": true,
-            "defaultValue": "CURRENT_TIMESTAMP"
+            "defaultValue": "UTC_TIMESTAMP"
           },
           {
             "name": "updated_at",
@@ -10464,7 +10217,7 @@
             "isUnique": false,
             "isNullable": false,
             "hasDefault": true,
-            "defaultValue": "CURRENT_TIMESTAMP"
+            "defaultValue": "UTC_TIMESTAMP"
           },
           {
             "name": "updated_at",
@@ -10590,7 +10343,7 @@
             "isUnique": false,
             "isNullable": false,
             "hasDefault": true,
-            "defaultValue": "CURRENT_TIMESTAMP"
+            "defaultValue": "UTC_TIMESTAMP"
           },
           {
             "name": "updated_at",
@@ -10763,7 +10516,7 @@
             "isUnique": false,
             "isNullable": false,
             "hasDefault": true,
-            "defaultValue": "CURRENT_TIMESTAMP"
+            "defaultValue": "UTC_TIMESTAMP"
           },
           {
             "name": "updated_at",
@@ -10963,7 +10716,7 @@
             "isUnique": false,
             "isNullable": false,
             "hasDefault": true,
-            "defaultValue": "CURRENT_TIMESTAMP"
+            "defaultValue": "UTC_TIMESTAMP"
           },
           {
             "name": "updated_at",
@@ -11083,7 +10836,7 @@
             "isUnique": false,
             "isNullable": false,
             "hasDefault": true,
-            "defaultValue": "CURRENT_TIMESTAMP"
+            "defaultValue": "UTC_TIMESTAMP"
           },
           {
             "name": "updated_at",
@@ -11180,7 +10933,7 @@
             "isUnique": false,
             "isNullable": false,
             "hasDefault": true,
-            "defaultValue": "CURRENT_TIMESTAMP"
+            "defaultValue": "UTC_TIMESTAMP"
           },
           {
             "name": "updated_at",
@@ -11241,7 +10994,7 @@
             "isUnique": false,
             "isNullable": false,
             "hasDefault": true,
-            "defaultValue": "CURRENT_TIMESTAMP"
+            "defaultValue": "UTC_TIMESTAMP"
           },
           {
             "name": "updated_at",
@@ -11382,7 +11135,7 @@
             "isUnique": false,
             "isNullable": false,
             "hasDefault": true,
-            "defaultValue": "CURRENT_TIMESTAMP"
+            "defaultValue": "UTC_TIMESTAMP"
           },
           {
             "name": "updated_at",
@@ -11519,7 +11272,7 @@
             "isUnique": false,
             "isNullable": false,
             "hasDefault": true,
-            "defaultValue": "CURRENT_TIMESTAMP"
+            "defaultValue": "UTC_TIMESTAMP"
           },
           {
             "name": "updated_at",
@@ -11667,7 +11420,7 @@
             "isUnique": false,
             "isNullable": false,
             "hasDefault": true,
-            "defaultValue": "CURRENT_TIMESTAMP"
+            "defaultValue": "UTC_TIMESTAMP"
           },
           {
             "name": "updated_at",
@@ -11794,7 +11547,7 @@
             "isUnique": false,
             "isNullable": false,
             "hasDefault": true,
-            "defaultValue": "CURRENT_TIMESTAMP"
+            "defaultValue": "UTC_TIMESTAMP"
           },
           {
             "name": "updated_at",
@@ -11913,7 +11666,7 @@
             "isUnique": false,
             "isNullable": false,
             "hasDefault": true,
-            "defaultValue": "CURRENT_TIMESTAMP"
+            "defaultValue": "UTC_TIMESTAMP"
           },
           {
             "name": "updated_at",
@@ -11930,6 +11683,18 @@
             "isUnique": true,
             "isNullable": true,
             "hasDefault": false
+          },
+          {
+            "name": "customer_id",
+            "type": "bigint",
+            "isPrimaryKey": false,
+            "isUnique": false,
+            "isNullable": true,
+            "hasDefault": false,
+            "references": {
+              "table": "customers",
+              "column": "id"
+            }
           }
         ],
         "indexes": [
@@ -12046,7 +11811,7 @@
             "isUnique": false,
             "isNullable": false,
             "hasDefault": true,
-            "defaultValue": "CURRENT_TIMESTAMP"
+            "defaultValue": "UTC_TIMESTAMP"
           },
           {
             "name": "updated_at",
@@ -12155,7 +11920,7 @@
             "isUnique": false,
             "isNullable": false,
             "hasDefault": true,
-            "defaultValue": "CURRENT_TIMESTAMP"
+            "defaultValue": "UTC_TIMESTAMP"
           },
           {
             "name": "updated_at",
@@ -12433,7 +12198,7 @@
             "isUnique": false,
             "isNullable": false,
             "hasDefault": true,
-            "defaultValue": "CURRENT_TIMESTAMP"
+            "defaultValue": "UTC_TIMESTAMP"
           },
           {
             "name": "updated_at",
@@ -12507,7 +12272,7 @@
             "isUnique": false,
             "isNullable": false,
             "hasDefault": true,
-            "defaultValue": "CURRENT_TIMESTAMP"
+            "defaultValue": "UTC_TIMESTAMP"
           },
           {
             "name": "updated_at",
@@ -12591,7 +12356,7 @@
             "isUnique": false,
             "isNullable": false,
             "hasDefault": true,
-            "defaultValue": "CURRENT_TIMESTAMP"
+            "defaultValue": "UTC_TIMESTAMP"
           },
           {
             "name": "updated_at",
@@ -12717,7 +12482,7 @@
             "isUnique": false,
             "isNullable": false,
             "hasDefault": true,
-            "defaultValue": "CURRENT_TIMESTAMP"
+            "defaultValue": "UTC_TIMESTAMP"
           },
           {
             "name": "updated_at",
@@ -12825,7 +12590,7 @@
             "isUnique": false,
             "isNullable": false,
             "hasDefault": true,
-            "defaultValue": "CURRENT_TIMESTAMP"
+            "defaultValue": "UTC_TIMESTAMP"
           },
           {
             "name": "updated_at",
@@ -12949,7 +12714,7 @@
             "isUnique": false,
             "isNullable": false,
             "hasDefault": true,
-            "defaultValue": "CURRENT_TIMESTAMP"
+            "defaultValue": "UTC_TIMESTAMP"
           },
           {
             "name": "updated_at",
@@ -13183,7 +12948,7 @@
             "isUnique": false,
             "isNullable": false,
             "hasDefault": true,
-            "defaultValue": "CURRENT_TIMESTAMP"
+            "defaultValue": "UTC_TIMESTAMP"
           },
           {
             "name": "updated_at",
@@ -13284,7 +13049,7 @@
             "isUnique": false,
             "isNullable": false,
             "hasDefault": true,
-            "defaultValue": "CURRENT_TIMESTAMP"
+            "defaultValue": "UTC_TIMESTAMP"
           },
           {
             "name": "updated_at",
@@ -13409,7 +13174,7 @@
             "isUnique": false,
             "isNullable": false,
             "hasDefault": true,
-            "defaultValue": "CURRENT_TIMESTAMP"
+            "defaultValue": "UTC_TIMESTAMP"
           },
           {
             "name": "updated_at",
@@ -13591,7 +13356,7 @@
             "isUnique": false,
             "isNullable": false,
             "hasDefault": true,
-            "defaultValue": "CURRENT_TIMESTAMP"
+            "defaultValue": "UTC_TIMESTAMP"
           },
           {
             "name": "updated_at",
@@ -13666,7 +13431,7 @@
             "isUnique": false,
             "isNullable": false,
             "hasDefault": true,
-            "defaultValue": "CURRENT_TIMESTAMP"
+            "defaultValue": "UTC_TIMESTAMP"
           },
           {
             "name": "updated_at",
@@ -13754,7 +13519,7 @@
             "isUnique": false,
             "isNullable": false,
             "hasDefault": true,
-            "defaultValue": "CURRENT_TIMESTAMP"
+            "defaultValue": "UTC_TIMESTAMP"
           },
           {
             "name": "updated_at",
@@ -13918,7 +13683,7 @@
             "isUnique": false,
             "isNullable": false,
             "hasDefault": true,
-            "defaultValue": "CURRENT_TIMESTAMP"
+            "defaultValue": "UTC_TIMESTAMP"
           },
           {
             "name": "updated_at",
@@ -14040,7 +13805,7 @@
             "isUnique": false,
             "isNullable": false,
             "hasDefault": true,
-            "defaultValue": "CURRENT_TIMESTAMP"
+            "defaultValue": "UTC_TIMESTAMP"
           },
           {
             "name": "updated_at",
@@ -14226,7 +13991,7 @@
             "isUnique": false,
             "isNullable": false,
             "hasDefault": true,
-            "defaultValue": "CURRENT_TIMESTAMP"
+            "defaultValue": "UTC_TIMESTAMP"
           },
           {
             "name": "updated_at",
@@ -14638,7 +14403,7 @@
             "isUnique": false,
             "isNullable": false,
             "hasDefault": true,
-            "defaultValue": "CURRENT_TIMESTAMP"
+            "defaultValue": "UTC_TIMESTAMP"
           },
           {
             "name": "updated_at",
@@ -14761,7 +14526,7 @@
             "isUnique": false,
             "isNullable": false,
             "hasDefault": true,
-            "defaultValue": "CURRENT_TIMESTAMP"
+            "defaultValue": "UTC_TIMESTAMP"
           },
           {
             "name": "updated_at",
@@ -14778,6 +14543,18 @@
             "isUnique": true,
             "isNullable": true,
             "hasDefault": false
+          },
+          {
+            "name": "customer_id",
+            "type": "bigint",
+            "isPrimaryKey": false,
+            "isUnique": false,
+            "isNullable": true,
+            "hasDefault": false,
+            "references": {
+              "table": "customers",
+              "column": "id"
+            }
           }
         ],
         "indexes": [
@@ -14905,7 +14682,7 @@
             "isUnique": false,
             "isNullable": false,
             "hasDefault": true,
-            "defaultValue": "CURRENT_TIMESTAMP"
+            "defaultValue": "UTC_TIMESTAMP"
           },
           {
             "name": "updated_at",
@@ -15093,7 +14870,7 @@
             "isUnique": false,
             "isNullable": false,
             "hasDefault": true,
-            "defaultValue": "CURRENT_TIMESTAMP"
+            "defaultValue": "UTC_TIMESTAMP"
           },
           {
             "name": "updated_at",
@@ -15208,7 +14985,7 @@
             "isUnique": false,
             "isNullable": false,
             "hasDefault": true,
-            "defaultValue": "CURRENT_TIMESTAMP"
+            "defaultValue": "UTC_TIMESTAMP"
           },
           {
             "name": "updated_at",
@@ -15352,7 +15129,7 @@
             "isUnique": false,
             "isNullable": false,
             "hasDefault": true,
-            "defaultValue": "CURRENT_TIMESTAMP"
+            "defaultValue": "UTC_TIMESTAMP"
           },
           {
             "name": "updated_at",
@@ -15455,7 +15232,7 @@
             "isUnique": false,
             "isNullable": false,
             "hasDefault": true,
-            "defaultValue": "CURRENT_TIMESTAMP"
+            "defaultValue": "UTC_TIMESTAMP"
           },
           {
             "name": "updated_at",
@@ -15562,7 +15339,7 @@
             "isUnique": false,
             "isNullable": false,
             "hasDefault": true,
-            "defaultValue": "CURRENT_TIMESTAMP"
+            "defaultValue": "UTC_TIMESTAMP"
           },
           {
             "name": "updated_at",
@@ -15698,7 +15475,7 @@
             "isUnique": false,
             "isNullable": false,
             "hasDefault": true,
-            "defaultValue": "CURRENT_TIMESTAMP"
+            "defaultValue": "UTC_TIMESTAMP"
           },
           {
             "name": "updated_at",
@@ -15831,7 +15608,7 @@
             "isUnique": false,
             "isNullable": false,
             "hasDefault": true,
-            "defaultValue": "CURRENT_TIMESTAMP"
+            "defaultValue": "UTC_TIMESTAMP"
           },
           {
             "name": "updated_at",
@@ -16083,7 +15860,7 @@
             "isUnique": false,
             "isNullable": false,
             "hasDefault": true,
-            "defaultValue": "CURRENT_TIMESTAMP"
+            "defaultValue": "UTC_TIMESTAMP"
           },
           {
             "name": "updated_at",
@@ -16224,7 +16001,7 @@
             "isUnique": false,
             "isNullable": false,
             "hasDefault": true,
-            "defaultValue": "CURRENT_TIMESTAMP"
+            "defaultValue": "UTC_TIMESTAMP"
           },
           {
             "name": "updated_at",
@@ -16361,7 +16138,7 @@
             "isUnique": false,
             "isNullable": false,
             "hasDefault": true,
-            "defaultValue": "CURRENT_TIMESTAMP"
+            "defaultValue": "UTC_TIMESTAMP"
           },
           {
             "name": "updated_at",
@@ -16468,7 +16245,7 @@
             "isUnique": false,
             "isNullable": false,
             "hasDefault": true,
-            "defaultValue": "CURRENT_TIMESTAMP"
+            "defaultValue": "UTC_TIMESTAMP"
           },
           {
             "name": "updated_at",
@@ -16595,7 +16372,7 @@
             "isUnique": false,
             "isNullable": false,
             "hasDefault": true,
-            "defaultValue": "CURRENT_TIMESTAMP"
+            "defaultValue": "UTC_TIMESTAMP"
           },
           {
             "name": "updated_at",
@@ -16708,7 +16485,7 @@
             "isUnique": false,
             "isNullable": false,
             "hasDefault": true,
-            "defaultValue": "CURRENT_TIMESTAMP"
+            "defaultValue": "UTC_TIMESTAMP"
           },
           {
             "name": "updated_at",
@@ -16915,7 +16692,7 @@
             "isUnique": false,
             "isNullable": false,
             "hasDefault": true,
-            "defaultValue": "CURRENT_TIMESTAMP"
+            "defaultValue": "UTC_TIMESTAMP"
           },
           {
             "name": "updated_at",
@@ -17133,7 +16910,7 @@
             "isUnique": false,
             "isNullable": false,
             "hasDefault": true,
-            "defaultValue": "CURRENT_TIMESTAMP"
+            "defaultValue": "UTC_TIMESTAMP"
           },
           {
             "name": "updated_at",
@@ -17398,7 +17175,7 @@
             "isUnique": false,
             "isNullable": false,
             "hasDefault": true,
-            "defaultValue": "CURRENT_TIMESTAMP"
+            "defaultValue": "UTC_TIMESTAMP"
           },
           {
             "name": "updated_at",
@@ -17544,7 +17321,7 @@
             "isUnique": false,
             "isNullable": false,
             "hasDefault": true,
-            "defaultValue": "CURRENT_TIMESTAMP"
+            "defaultValue": "UTC_TIMESTAMP"
           },
           {
             "name": "updated_at",
@@ -17715,7 +17492,7 @@
             "isUnique": false,
             "isNullable": false,
             "hasDefault": true,
-            "defaultValue": "CURRENT_TIMESTAMP"
+            "defaultValue": "UTC_TIMESTAMP"
           },
           {
             "name": "updated_at",
@@ -17823,7 +17600,7 @@
             "isUnique": false,
             "isNullable": false,
             "hasDefault": true,
-            "defaultValue": "CURRENT_TIMESTAMP"
+            "defaultValue": "UTC_TIMESTAMP"
           },
           {
             "name": "updated_at",
@@ -17949,7 +17726,7 @@
             "isUnique": false,
             "isNullable": false,
             "hasDefault": true,
-            "defaultValue": "CURRENT_TIMESTAMP"
+            "defaultValue": "UTC_TIMESTAMP"
           },
           {
             "name": "updated_at",
@@ -18078,7 +17855,7 @@
             "isUnique": false,
             "isNullable": false,
             "hasDefault": true,
-            "defaultValue": "CURRENT_TIMESTAMP"
+            "defaultValue": "UTC_TIMESTAMP"
           },
           {
             "name": "updated_at",
@@ -18205,7 +17982,7 @@
             "isUnique": false,
             "isNullable": false,
             "hasDefault": true,
-            "defaultValue": "CURRENT_TIMESTAMP"
+            "defaultValue": "UTC_TIMESTAMP"
           },
           {
             "name": "updated_at",
@@ -18347,7 +18124,7 @@
             "isUnique": false,
             "isNullable": false,
             "hasDefault": true,
-            "defaultValue": "CURRENT_TIMESTAMP"
+            "defaultValue": "UTC_TIMESTAMP"
           },
           {
             "name": "updated_at",
@@ -18451,7 +18228,7 @@
             "isUnique": false,
             "isNullable": false,
             "hasDefault": true,
-            "defaultValue": "CURRENT_TIMESTAMP"
+            "defaultValue": "UTC_TIMESTAMP"
           },
           {
             "name": "updated_at",
@@ -18546,7 +18323,7 @@
             "isUnique": false,
             "isNullable": false,
             "hasDefault": true,
-            "defaultValue": "CURRENT_TIMESTAMP"
+            "defaultValue": "UTC_TIMESTAMP"
           },
           {
             "name": "updated_at",
@@ -18653,7 +18430,7 @@
             "isUnique": false,
             "isNullable": false,
             "hasDefault": true,
-            "defaultValue": "CURRENT_TIMESTAMP"
+            "defaultValue": "UTC_TIMESTAMP"
           },
           {
             "name": "updated_at",
@@ -18763,7 +18540,7 @@
             "isUnique": false,
             "isNullable": false,
             "hasDefault": true,
-            "defaultValue": "CURRENT_TIMESTAMP"
+            "defaultValue": "UTC_TIMESTAMP"
           },
           {
             "name": "updated_at",
@@ -18870,7 +18647,7 @@
             "isUnique": false,
             "isNullable": false,
             "hasDefault": true,
-            "defaultValue": "CURRENT_TIMESTAMP"
+            "defaultValue": "UTC_TIMESTAMP"
           },
           {
             "name": "updated_at",
@@ -19004,7 +18781,7 @@
             "isUnique": false,
             "isNullable": false,
             "hasDefault": true,
-            "defaultValue": "CURRENT_TIMESTAMP"
+            "defaultValue": "UTC_TIMESTAMP"
           },
           {
             "name": "updated_at",
@@ -19086,7 +18863,7 @@
             "isUnique": false,
             "isNullable": false,
             "hasDefault": true,
-            "defaultValue": "CURRENT_TIMESTAMP"
+            "defaultValue": "UTC_TIMESTAMP"
           },
           {
             "name": "updated_at",
@@ -19171,7 +18948,7 @@
             "isUnique": false,
             "isNullable": false,
             "hasDefault": true,
-            "defaultValue": "CURRENT_TIMESTAMP"
+            "defaultValue": "UTC_TIMESTAMP"
           },
           {
             "name": "updated_at",
@@ -19340,7 +19117,7 @@
             "isUnique": false,
             "isNullable": false,
             "hasDefault": true,
-            "defaultValue": "CURRENT_TIMESTAMP"
+            "defaultValue": "UTC_TIMESTAMP"
           },
           {
             "name": "updated_at",
@@ -19449,7 +19226,7 @@
             "isUnique": false,
             "isNullable": false,
             "hasDefault": true,
-            "defaultValue": "CURRENT_TIMESTAMP"
+            "defaultValue": "UTC_TIMESTAMP"
           },
           {
             "name": "updated_at",
@@ -19559,7 +19336,7 @@
             "isUnique": false,
             "isNullable": false,
             "hasDefault": true,
-            "defaultValue": "CURRENT_TIMESTAMP"
+            "defaultValue": "UTC_TIMESTAMP"
           },
           {
             "name": "updated_at",
@@ -19644,7 +19421,7 @@
             "isUnique": false,
             "isNullable": false,
             "hasDefault": true,
-            "defaultValue": "CURRENT_TIMESTAMP"
+            "defaultValue": "UTC_TIMESTAMP"
           },
           {
             "name": "updated_at",
@@ -19829,7 +19606,7 @@
             "isUnique": false,
             "isNullable": false,
             "hasDefault": true,
-            "defaultValue": "CURRENT_TIMESTAMP"
+            "defaultValue": "UTC_TIMESTAMP"
           },
           {
             "name": "updated_at",
@@ -19927,7 +19704,7 @@
             "isUnique": false,
             "isNullable": false,
             "hasDefault": true,
-            "defaultValue": "CURRENT_TIMESTAMP"
+            "defaultValue": "UTC_TIMESTAMP"
           },
           {
             "name": "updated_at",
@@ -20083,7 +19860,7 @@
             "isUnique": false,
             "isNullable": false,
             "hasDefault": true,
-            "defaultValue": "CURRENT_TIMESTAMP"
+            "defaultValue": "UTC_TIMESTAMP"
           },
           {
             "name": "updated_at",
@@ -20165,7 +19942,7 @@
             "isUnique": false,
             "isNullable": false,
             "hasDefault": true,
-            "defaultValue": "CURRENT_TIMESTAMP"
+            "defaultValue": "UTC_TIMESTAMP"
           },
           {
             "name": "updated_at",
@@ -20352,7 +20129,7 @@
             "isUnique": false,
             "isNullable": false,
             "hasDefault": true,
-            "defaultValue": "CURRENT_TIMESTAMP"
+            "defaultValue": "UTC_TIMESTAMP"
           },
           {
             "name": "updated_at",
@@ -20476,7 +20253,7 @@
             "isUnique": false,
             "isNullable": false,
             "hasDefault": true,
-            "defaultValue": "CURRENT_TIMESTAMP"
+            "defaultValue": "UTC_TIMESTAMP"
           },
           {
             "name": "updated_at",
@@ -20607,7 +20384,7 @@
             "isUnique": false,
             "isNullable": false,
             "hasDefault": true,
-            "defaultValue": "CURRENT_TIMESTAMP"
+            "defaultValue": "UTC_TIMESTAMP"
           },
           {
             "name": "updated_at",
@@ -20747,7 +20524,7 @@
             "isUnique": false,
             "isNullable": false,
             "hasDefault": true,
-            "defaultValue": "CURRENT_TIMESTAMP"
+            "defaultValue": "UTC_TIMESTAMP"
           },
           {
             "name": "updated_at",
@@ -20872,7 +20649,7 @@
             "isUnique": false,
             "isNullable": false,
             "hasDefault": true,
-            "defaultValue": "CURRENT_TIMESTAMP"
+            "defaultValue": "UTC_TIMESTAMP"
           },
           {
             "name": "updated_at",
@@ -20962,7 +20739,7 @@
             "isUnique": false,
             "isNullable": false,
             "hasDefault": true,
-            "defaultValue": "CURRENT_TIMESTAMP"
+            "defaultValue": "UTC_TIMESTAMP"
           },
           {
             "name": "updated_at",
@@ -21155,7 +20932,7 @@
             "isUnique": false,
             "isNullable": false,
             "hasDefault": true,
-            "defaultValue": "CURRENT_TIMESTAMP"
+            "defaultValue": "UTC_TIMESTAMP"
           },
           {
             "name": "updated_at",
@@ -21336,7 +21113,7 @@
             "isUnique": false,
             "isNullable": false,
             "hasDefault": true,
-            "defaultValue": "CURRENT_TIMESTAMP"
+            "defaultValue": "UTC_TIMESTAMP"
           },
           {
             "name": "updated_at",
@@ -21474,7 +21251,7 @@
             "isUnique": false,
             "isNullable": false,
             "hasDefault": true,
-            "defaultValue": "CURRENT_TIMESTAMP"
+            "defaultValue": "UTC_TIMESTAMP"
           },
           {
             "name": "updated_at",
@@ -21640,7 +21417,7 @@
             "isUnique": false,
             "isNullable": false,
             "hasDefault": true,
-            "defaultValue": "CURRENT_TIMESTAMP"
+            "defaultValue": "UTC_TIMESTAMP"
           },
           {
             "name": "updated_at",
@@ -21734,7 +21511,7 @@
             "isUnique": false,
             "isNullable": false,
             "hasDefault": true,
-            "defaultValue": "CURRENT_TIMESTAMP"
+            "defaultValue": "UTC_TIMESTAMP"
           },
           {
             "name": "updated_at",
@@ -21766,7 +21543,7 @@
             "isNullable": false,
             "hasDefault": false,
             "references": {
-              "table": "categories",
+              "table": "categorizables",
               "column": "id"
             }
           },
@@ -21794,7 +21571,7 @@
             "isUnique": false,
             "isNullable": false,
             "hasDefault": true,
-            "defaultValue": "CURRENT_TIMESTAMP"
+            "defaultValue": "UTC_TIMESTAMP"
           },
           {
             "name": "updated_at",
@@ -21864,7 +21641,7 @@
             "isUnique": false,
             "isNullable": false,
             "hasDefault": true,
-            "defaultValue": "CURRENT_TIMESTAMP"
+            "defaultValue": "UTC_TIMESTAMP"
           },
           {
             "name": "updated_at",
@@ -21886,10 +21663,770 @@
             "type": "unique"
           }
         ]
+      },
+      {
+        "table": "categorizables",
+        "columns": [
+          {
+            "name": "id",
+            "type": "bigint",
+            "isPrimaryKey": true,
+            "isUnique": false,
+            "isNullable": false,
+            "hasDefault": false
+          },
+          {
+            "name": "name",
+            "type": "string",
+            "isPrimaryKey": false,
+            "isUnique": false,
+            "isNullable": false,
+            "hasDefault": false
+          },
+          {
+            "name": "slug",
+            "type": "string",
+            "isPrimaryKey": false,
+            "isUnique": false,
+            "isNullable": false,
+            "hasDefault": false
+          },
+          {
+            "name": "description",
+            "type": "string",
+            "isPrimaryKey": false,
+            "isUnique": false,
+            "isNullable": true,
+            "hasDefault": false
+          },
+          {
+            "name": "is_active",
+            "type": "boolean",
+            "isPrimaryKey": false,
+            "isUnique": false,
+            "isNullable": false,
+            "hasDefault": true,
+            "defaultValue": true
+          },
+          {
+            "name": "categorizable_id",
+            "type": "integer",
+            "isPrimaryKey": false,
+            "isUnique": false,
+            "isNullable": false,
+            "hasDefault": true,
+            "defaultValue": 0
+          },
+          {
+            "name": "categorizable_type",
+            "type": "string",
+            "isPrimaryKey": false,
+            "isUnique": false,
+            "isNullable": false,
+            "hasDefault": false
+          },
+          {
+            "name": "created_at",
+            "type": "datetime",
+            "isPrimaryKey": false,
+            "isUnique": false,
+            "isNullable": false,
+            "hasDefault": true,
+            "defaultValue": "UTC_TIMESTAMP"
+          },
+          {
+            "name": "updated_at",
+            "type": "datetime",
+            "isPrimaryKey": false,
+            "isUnique": false,
+            "isNullable": true,
+            "hasDefault": false
+          }
+        ],
+        "indexes": [
+          {
+            "name": "categorizables_type_slug_unique",
+            "columns": [
+              "categorizable_type",
+              "slug"
+            ],
+            "type": "unique"
+          },
+          {
+            "name": "categorizables_owner_slug_unique",
+            "columns": [
+              "categorizable_type",
+              "categorizable_id",
+              "slug"
+            ],
+            "type": "unique"
+          }
+        ]
+      },
+      {
+        "table": "couriers",
+        "columns": [
+          {
+            "name": "id",
+            "type": "bigint",
+            "isPrimaryKey": true,
+            "isUnique": false,
+            "isNullable": false,
+            "hasDefault": false
+          },
+          {
+            "name": "name",
+            "type": "string",
+            "isPrimaryKey": false,
+            "isUnique": false,
+            "isNullable": false,
+            "hasDefault": false,
+            "maxLength": 255
+          },
+          {
+            "name": "phone",
+            "type": "string",
+            "isPrimaryKey": false,
+            "isUnique": false,
+            "isNullable": false,
+            "hasDefault": false,
+            "maxLength": 255
+          },
+          {
+            "name": "vehicle_number",
+            "type": "string",
+            "isPrimaryKey": false,
+            "isUnique": false,
+            "isNullable": false,
+            "hasDefault": false,
+            "maxLength": 255
+          },
+          {
+            "name": "license",
+            "type": "string",
+            "isPrimaryKey": false,
+            "isUnique": false,
+            "isNullable": false,
+            "hasDefault": false,
+            "maxLength": 255
+          },
+          {
+            "name": "status",
+            "type": "enum",
+            "isPrimaryKey": false,
+            "isUnique": false,
+            "isNullable": true,
+            "hasDefault": true,
+            "defaultValue": "active",
+            "enumValues": [
+              "active",
+              "on_delivery",
+              "on_break",
+              "offline"
+            ]
+          },
+          {
+            "name": "latitude",
+            "type": "integer",
+            "isPrimaryKey": false,
+            "isUnique": false,
+            "isNullable": true,
+            "hasDefault": false
+          },
+          {
+            "name": "longitude",
+            "type": "integer",
+            "isPrimaryKey": false,
+            "isUnique": false,
+            "isNullable": true,
+            "hasDefault": false
+          },
+          {
+            "name": "heading",
+            "type": "integer",
+            "isPrimaryKey": false,
+            "isUnique": false,
+            "isNullable": true,
+            "hasDefault": false
+          },
+          {
+            "name": "speed",
+            "type": "integer",
+            "isPrimaryKey": false,
+            "isUnique": false,
+            "isNullable": true,
+            "hasDefault": true,
+            "defaultValue": 0
+          },
+          {
+            "name": "last_ping_at",
+            "type": "datetime",
+            "isPrimaryKey": false,
+            "isUnique": false,
+            "isNullable": true,
+            "hasDefault": false
+          },
+          {
+            "name": "user_id",
+            "type": "bigint",
+            "isPrimaryKey": false,
+            "isUnique": false,
+            "isNullable": true,
+            "hasDefault": false,
+            "references": {
+              "table": "users",
+              "column": "id"
+            }
+          },
+          {
+            "name": "created_at",
+            "type": "datetime",
+            "isPrimaryKey": false,
+            "isUnique": false,
+            "isNullable": false,
+            "hasDefault": true,
+            "defaultValue": "UTC_TIMESTAMP"
+          },
+          {
+            "name": "updated_at",
+            "type": "datetime",
+            "isPrimaryKey": false,
+            "isUnique": false,
+            "isNullable": true,
+            "hasDefault": false
+          },
+          {
+            "name": "uuid",
+            "type": "string",
+            "isPrimaryKey": false,
+            "isUnique": true,
+            "isNullable": true,
+            "hasDefault": false
+          }
+        ],
+        "indexes": [
+          {
+            "name": "couriers_uuid_unique",
+            "columns": [
+              "uuid"
+            ],
+            "type": "unique"
+          }
+        ]
+      },
+      {
+        "table": "courier_pings",
+        "columns": [
+          {
+            "name": "id",
+            "type": "bigint",
+            "isPrimaryKey": true,
+            "isUnique": false,
+            "isNullable": false,
+            "hasDefault": false
+          },
+          {
+            "name": "latitude",
+            "type": "integer",
+            "isPrimaryKey": false,
+            "isUnique": false,
+            "isNullable": false,
+            "hasDefault": false
+          },
+          {
+            "name": "longitude",
+            "type": "integer",
+            "isPrimaryKey": false,
+            "isUnique": false,
+            "isNullable": false,
+            "hasDefault": false
+          },
+          {
+            "name": "heading",
+            "type": "integer",
+            "isPrimaryKey": false,
+            "isUnique": false,
+            "isNullable": true,
+            "hasDefault": false
+          },
+          {
+            "name": "speed",
+            "type": "integer",
+            "isPrimaryKey": false,
+            "isUnique": false,
+            "isNullable": true,
+            "hasDefault": true,
+            "defaultValue": 0
+          },
+          {
+            "name": "accuracy",
+            "type": "integer",
+            "isPrimaryKey": false,
+            "isUnique": false,
+            "isNullable": true,
+            "hasDefault": false
+          },
+          {
+            "name": "recorded_at",
+            "type": "datetime",
+            "isPrimaryKey": false,
+            "isUnique": false,
+            "isNullable": false,
+            "hasDefault": false
+          },
+          {
+            "name": "courier_id",
+            "type": "bigint",
+            "isPrimaryKey": false,
+            "isUnique": false,
+            "isNullable": true,
+            "hasDefault": false,
+            "references": {
+              "table": "couriers",
+              "column": "id"
+            }
+          },
+          {
+            "name": "delivery_route_id",
+            "type": "bigint",
+            "isPrimaryKey": false,
+            "isUnique": false,
+            "isNullable": true,
+            "hasDefault": false,
+            "references": {
+              "table": "delivery_routes",
+              "column": "id"
+            }
+          },
+          {
+            "name": "created_at",
+            "type": "datetime",
+            "isPrimaryKey": false,
+            "isUnique": false,
+            "isNullable": false,
+            "hasDefault": true,
+            "defaultValue": "UTC_TIMESTAMP"
+          },
+          {
+            "name": "updated_at",
+            "type": "datetime",
+            "isPrimaryKey": false,
+            "isUnique": false,
+            "isNullable": true,
+            "hasDefault": false
+          },
+          {
+            "name": "uuid",
+            "type": "string",
+            "isPrimaryKey": false,
+            "isUnique": true,
+            "isNullable": true,
+            "hasDefault": false
+          }
+        ],
+        "indexes": [
+          {
+            "name": "courier_pings_uuid_unique",
+            "columns": [
+              "uuid"
+            ],
+            "type": "unique"
+          }
+        ]
+      },
+      {
+        "table": "oauth_access_tokens",
+        "columns": [
+          {
+            "name": "id",
+            "type": "bigint",
+            "isPrimaryKey": true,
+            "isUnique": false,
+            "isNullable": false,
+            "hasDefault": false
+          },
+          {
+            "name": "tokenable_type",
+            "type": "string",
+            "isPrimaryKey": false,
+            "isUnique": false,
+            "isNullable": true,
+            "hasDefault": false,
+            "maxLength": 255
+          },
+          {
+            "name": "tokenable_id",
+            "type": "integer",
+            "isPrimaryKey": false,
+            "isUnique": false,
+            "isNullable": true,
+            "hasDefault": false
+          },
+          {
+            "name": "name",
+            "type": "string",
+            "isPrimaryKey": false,
+            "isUnique": false,
+            "isNullable": true,
+            "hasDefault": false,
+            "maxLength": 255
+          },
+          {
+            "name": "token",
+            "type": "string",
+            "isPrimaryKey": false,
+            "isUnique": false,
+            "isNullable": true,
+            "hasDefault": false
+          },
+          {
+            "name": "scopes",
+            "type": "text",
+            "isPrimaryKey": false,
+            "isUnique": false,
+            "isNullable": true,
+            "hasDefault": false
+          },
+          {
+            "name": "revoked",
+            "type": "boolean",
+            "isPrimaryKey": false,
+            "isUnique": false,
+            "isNullable": true,
+            "hasDefault": true,
+            "defaultValue": false
+          },
+          {
+            "name": "expires_at",
+            "type": "string",
+            "isPrimaryKey": false,
+            "isUnique": false,
+            "isNullable": true,
+            "hasDefault": false
+          },
+          {
+            "name": "user_agent",
+            "type": "string",
+            "isPrimaryKey": false,
+            "isUnique": false,
+            "isNullable": true,
+            "hasDefault": false,
+            "maxLength": 255
+          },
+          {
+            "name": "ip_address",
+            "type": "string",
+            "isPrimaryKey": false,
+            "isUnique": false,
+            "isNullable": true,
+            "hasDefault": false,
+            "maxLength": 45
+          },
+          {
+            "name": "created_at",
+            "type": "datetime",
+            "isPrimaryKey": false,
+            "isUnique": false,
+            "isNullable": false,
+            "hasDefault": true,
+            "defaultValue": "UTC_TIMESTAMP"
+          },
+          {
+            "name": "updated_at",
+            "type": "datetime",
+            "isPrimaryKey": false,
+            "isUnique": false,
+            "isNullable": true,
+            "hasDefault": false
+          }
+        ],
+        "indexes": []
+      },
+      {
+        "table": "referral_codes",
+        "columns": [
+          {
+            "name": "id",
+            "type": "bigint",
+            "isPrimaryKey": true,
+            "isUnique": false,
+            "isNullable": false,
+            "hasDefault": false
+          },
+          {
+            "name": "user_id",
+            "type": "bigint",
+            "isPrimaryKey": false,
+            "isUnique": true,
+            "isNullable": false,
+            "hasDefault": false,
+            "references": {
+              "table": "users",
+              "column": "id"
+            }
+          },
+          {
+            "name": "code",
+            "type": "string",
+            "isPrimaryKey": false,
+            "isUnique": true,
+            "isNullable": false,
+            "hasDefault": false,
+            "maxLength": 24
+          },
+          {
+            "name": "created_at",
+            "type": "datetime",
+            "isPrimaryKey": false,
+            "isUnique": false,
+            "isNullable": false,
+            "hasDefault": true,
+            "defaultValue": "UTC_TIMESTAMP"
+          },
+          {
+            "name": "updated_at",
+            "type": "datetime",
+            "isPrimaryKey": false,
+            "isUnique": false,
+            "isNullable": true,
+            "hasDefault": false
+          }
+        ],
+        "indexes": [
+          {
+            "name": "referral_codes_user_id_unique",
+            "columns": [
+              "user_id"
+            ],
+            "type": "unique"
+          },
+          {
+            "name": "referral_codes_code_unique",
+            "columns": [
+              "code"
+            ],
+            "type": "unique"
+          }
+        ]
+      },
+      {
+        "table": "storage_items",
+        "columns": [
+          {
+            "name": "id",
+            "type": "bigint",
+            "isPrimaryKey": true,
+            "isUnique": false,
+            "isNullable": false,
+            "hasDefault": false
+          },
+          {
+            "name": "disk",
+            "type": "string",
+            "isPrimaryKey": false,
+            "isUnique": false,
+            "isNullable": false,
+            "hasDefault": false,
+            "maxLength": 64
+          },
+          {
+            "name": "path",
+            "type": "text",
+            "isPrimaryKey": false,
+            "isUnique": false,
+            "isNullable": false,
+            "hasDefault": false
+          },
+          {
+            "name": "favorite",
+            "type": "boolean",
+            "isPrimaryKey": false,
+            "isUnique": false,
+            "isNullable": true,
+            "hasDefault": true,
+            "defaultValue": false
+          },
+          {
+            "name": "created_at",
+            "type": "datetime",
+            "isPrimaryKey": false,
+            "isUnique": false,
+            "isNullable": false,
+            "hasDefault": true,
+            "defaultValue": "UTC_TIMESTAMP"
+          },
+          {
+            "name": "updated_at",
+            "type": "datetime",
+            "isPrimaryKey": false,
+            "isUnique": false,
+            "isNullable": true,
+            "hasDefault": false
+          },
+          {
+            "name": "uuid",
+            "type": "string",
+            "isPrimaryKey": false,
+            "isUnique": true,
+            "isNullable": true,
+            "hasDefault": false
+          }
+        ],
+        "indexes": [
+          {
+            "name": "storage_items_disk_path_unique",
+            "columns": [
+              "disk",
+              "path"
+            ],
+            "type": "unique"
+          },
+          {
+            "name": "storage_items_uuid_unique",
+            "columns": [
+              "uuid"
+            ],
+            "type": "unique"
+          }
+        ]
+      },
+      {
+        "table": "storage_item_tasks",
+        "columns": [
+          {
+            "name": "id",
+            "type": "bigint",
+            "isPrimaryKey": true,
+            "isUnique": false,
+            "isNullable": false,
+            "hasDefault": false
+          },
+          {
+            "name": "disk",
+            "type": "string",
+            "isPrimaryKey": false,
+            "isUnique": false,
+            "isNullable": false,
+            "hasDefault": false,
+            "maxLength": 64
+          },
+          {
+            "name": "path",
+            "type": "text",
+            "isPrimaryKey": false,
+            "isUnique": false,
+            "isNullable": false,
+            "hasDefault": false
+          },
+          {
+            "name": "kind",
+            "type": "enum",
+            "isPrimaryKey": false,
+            "isUnique": false,
+            "isNullable": true,
+            "hasDefault": false,
+            "enumValues": [
+              "optimize",
+              "transcode",
+              "tag"
+            ]
+          },
+          {
+            "name": "state",
+            "type": "enum",
+            "isPrimaryKey": false,
+            "isUnique": false,
+            "isNullable": true,
+            "hasDefault": true,
+            "defaultValue": "queued",
+            "enumValues": [
+              "queued",
+              "running",
+              "done",
+              "failed"
+            ]
+          },
+          {
+            "name": "attempts",
+            "type": "integer",
+            "isPrimaryKey": false,
+            "isUnique": false,
+            "isNullable": true,
+            "hasDefault": true,
+            "defaultValue": 0
+          },
+          {
+            "name": "error",
+            "type": "text",
+            "isPrimaryKey": false,
+            "isUnique": false,
+            "isNullable": true,
+            "hasDefault": false
+          },
+          {
+            "name": "started_at",
+            "type": "string",
+            "isPrimaryKey": false,
+            "isUnique": false,
+            "isNullable": true,
+            "hasDefault": false
+          },
+          {
+            "name": "finished_at",
+            "type": "string",
+            "isPrimaryKey": false,
+            "isUnique": false,
+            "isNullable": true,
+            "hasDefault": false
+          },
+          {
+            "name": "created_at",
+            "type": "datetime",
+            "isPrimaryKey": false,
+            "isUnique": false,
+            "isNullable": false,
+            "hasDefault": true,
+            "defaultValue": "UTC_TIMESTAMP"
+          },
+          {
+            "name": "updated_at",
+            "type": "datetime",
+            "isPrimaryKey": false,
+            "isUnique": false,
+            "isNullable": true,
+            "hasDefault": false
+          },
+          {
+            "name": "uuid",
+            "type": "string",
+            "isPrimaryKey": false,
+            "isUnique": true,
+            "isNullable": true,
+            "hasDefault": false
+          }
+        ],
+        "indexes": [
+          {
+            "name": "storage_item_tasks_disk_path_kind_unique",
+            "columns": [
+              "disk",
+              "path",
+              "kind"
+            ],
+            "type": "unique"
+          },
+          {
+            "name": "storage_item_tasks_uuid_unique",
+            "columns": [
+              "uuid"
+            ],
+            "type": "unique"
+          }
+        ]
       }
     ]
   },
-  "hash": "173561d7dc0369941b2cd09bb2c3ff041340c6cee3db66fc8be7b140bea539bf",
+  "hash": "0fa2ef22fc02c3dad73fd89703baf795fbf087ecdf2d4ba9ea40263644c5e73d",
   "dialect": "sqlite",
-  "updatedAt": "2026-08-18T00:08:50.455Z"
+  "updatedAt": "2026-09-24T17:09:24.802Z"
 }
