@@ -105,6 +105,14 @@ jobs:
           DOTENV_PRIVATE_KEY_PRODUCTION: ${{ secrets.DOTENV_PRIVATE_KEY_PRODUCTION }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
+      # SMOKE_EMAIL / SMOKE_PASSWORD turn on the sign-in leg: a real POST /login
+      # followed by an authenticated GET /api/v1/workspace. Without them the
+      # script still runs and says it skipped that leg, so this step does not
+      # fail before the secrets exist. The account must belong to a team and
+      # must not have two-factor enabled.
       - name: Smoke test production
         if: github.event_name == 'push' || github.event.inputs.dry_run == 'false'
         run: bun run deployment:smoke
+        env:
+          SMOKE_EMAIL: ${{ secrets.SMOKE_EMAIL }}
+          SMOKE_PASSWORD: ${{ secrets.SMOKE_PASSWORD }}
