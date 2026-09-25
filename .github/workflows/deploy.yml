@@ -48,6 +48,22 @@ jobs:
       - name: Install dependencies
         run: bun install --frozen-lockfile
 
+      # The suite runs here, not as a `needs:` on the CI workflow: `needs:`
+      # only reaches jobs in the same file, and lint/typecheck/test live in
+      # ci.yml. Without this, a push whose tests fail still deploys - as
+      # aac396460 did on 2026-09-24, where CI's test job failed and this
+      # workflow succeeded on the same sha, in the same minute. The whole
+      # suite costs a few seconds, so gating here is cheaper than a
+      # workflow_run indirection.
+      - name: Lint
+        run: ./buddy lint
+
+      - name: Typecheck
+        run: ./buddy typecheck
+
+      - name: Test
+        run: bun run test
+
       - name: Build the production artifact
         run: bun run build
 
