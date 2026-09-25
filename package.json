@@ -73,7 +73,7 @@
     "stx": "./buddy"
   },
   "dependencies": {
-    "@stacksjs/ts-cloud": "^0.16.11",
+    "@stacksjs/ts-cloud": "^0.16.13",
     "stacks": "^0.74.66"
   },
   "workspaces": [
