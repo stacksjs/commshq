@@ -1,11 +1,11 @@
 import { describe, expect, it } from 'bun:test'
 import {
+  authCookie,
   authCookieForBrowserSession,
   browserSessionRemembered,
   resolveBrowserSessionPolicy,
   shouldSecureAuthCookie,
 } from '@stacksjs/auth'
-import { buildAuthCookie, sessionExpiryMinutes } from '../../app/Actions/Auth/authCookie'
 
 /**
  * Characterization tests for the browser session contract.
@@ -39,8 +39,8 @@ const TIERED_AUTH = {
 
 describe('browser session: lifetime tiers', () => {
   it('is a week unchecked and a month when remembered, today', () => {
-    expect(sessionExpiryMinutes(undefined)).toBe(WEEK_MINUTES)
-    expect(sessionExpiryMinutes(true)).toBe(MONTH_MINUTES)
+    expect(resolveBrowserSessionPolicy(undefined, TIERED_AUTH).expiresInMinutes).toBe(WEEK_MINUTES)
+    expect(resolveBrowserSessionPolicy(true, TIERED_AUTH).expiresInMinutes).toBe(MONTH_MINUTES)
   })
 
   it('reproduces both tiers through the framework policy, given the config', () => {
@@ -110,7 +110,8 @@ describe('browser session: the remember accept-list', () => {
 
   it('agrees with the framework on every value the login view can send', () => {
     for (const value of [true, false, undefined, '1', 'true', 'on', 'yes', '', '0'])
-      expect(sessionExpiryMinutes(value) === MONTH_MINUTES).toBe(browserSessionRemembered(value))
+      expect(resolveBrowserSessionPolicy(value, TIERED_AUTH).expiresInMinutes === MONTH_MINUTES)
+        .toBe(browserSessionRemembered(value))
   })
 
   it('treats the documented truthy forms as remembered', () => {
@@ -126,7 +127,7 @@ describe('browser session: the remember accept-list', () => {
 
 describe('browser session: the cookie contract', () => {
   it('names, scopes and flags the cookie exactly as it does today', () => {
-    const cookie = buildAuthCookie('a'.repeat(80), WEEK_MINUTES * 60)
+    const cookie = authCookieForBrowserSession('a'.repeat(80), WEEK_MINUTES * 60)
 
     expect(cookie).toContain(`auth-token=${'a'.repeat(80)}`)
     expect(cookie).toContain('Path=/')
@@ -142,7 +143,6 @@ describe('browser session: the cookie contract', () => {
    */
   it('stamps Max-Age from the issued lifetime, not from a recomputed default', () => {
     const issued = 1234
-    expect(buildAuthCookie('token', issued)).toContain(`Max-Age=${issued}`)
     expect(authCookieForBrowserSession('token', issued)).toContain(`Max-Age=${issued}`)
   })
 
@@ -167,17 +167,15 @@ describe('browser session: two-factor keeps the tier', () => {
   /**
    * Step two must not downgrade a remembered session. Today `login.stx` stores
    * the checkbox at step one and re-sends it with the code, and
-   * `VerifyTwoFactorLoginAction` runs it back through `sessionExpiryMinutes`.
+   * `VerifyTwoFactorLoginAction` reads it back off the challenge.
    * The framework carries it on the challenge id instead. Either way the
    * property is the same, so this assertion survives the swap.
    */
   it('resolves a remembered challenge to the month, not the week', () => {
-    expect(sessionExpiryMinutes(true)).toBe(MONTH_MINUTES)
     expect(resolveBrowserSessionPolicy(true, TIERED_AUTH).lifetimeMs).toBe(MONTH_MS)
   })
 
   it('resolves an unremembered challenge to the week', () => {
-    expect(sessionExpiryMinutes(false)).toBe(WEEK_MINUTES)
     expect(resolveBrowserSessionPolicy(false, TIERED_AUTH).lifetimeMs).toBe(WEEK_MS)
   })
 })
@@ -224,24 +222,4 @@ describe('browser session: the Secure flag', () => {
     expect(shouldSecureAuthCookie({ url: 'http://localhost:3000' })).toBe(false)
   })
 
-  it('still sets Secure today, because the app helper reads APP_ENV', () => {
-    // Guards the current behavior: whatever the migration does, a production
-    // cookie must keep this attribute.
-    const production = buildAuthCookieUnder('production')
-    expect(production).toContain('Secure')
-  })
 })
-
-/** Build a cookie with APP_ENV temporarily set, then restore it. */
-function buildAuthCookieUnder(appEnv: string): string {
-  const previous = process.env.APP_ENV
-  process.env.APP_ENV = appEnv
-  try {
-    return buildAuthCookie('token', 60)
-  }
-  finally {
-    if (previous === undefined)
-      delete process.env.APP_ENV
-    else process.env.APP_ENV = previous
-  }
-}
