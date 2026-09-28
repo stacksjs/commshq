@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'bun:test'
-import { createPublicToken, verifyPublicToken } from '../../app/Actions/Public/signed-token'
+import { createPublicToken, verifyPublicToken } from '../../app/Support/signedToken'
 
 describe('public preference tokens', () => {
   const secret = 'test-signing-key'

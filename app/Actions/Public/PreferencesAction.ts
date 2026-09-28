@@ -5,7 +5,7 @@ import { resourcesPath } from '@stacksjs/path'
 import { response } from '@stacksjs/router'
 import { renderTemplate } from '@stacksjs/stx'
 import Contact from '../../Models/Contact'
-import { verifyPublicToken } from './signed-token'
+import { verifyPublicToken } from '../../Support/signedToken'
 
 async function channelPreference(teamId: number, channel: 'email' | 'sms', recipient: string) {
   if (!recipient) return { available: false, enabled: false }

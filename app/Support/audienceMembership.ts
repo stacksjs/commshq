@@ -1,5 +1,5 @@
-import Audience from '../../Models/Audience'
-import AudienceMembership from '../../Models/AudienceMembership'
+import Audience from '../Models/Audience'
+import AudienceMembership from '../Models/AudienceMembership'
 
 type MembershipStatus = 'active' | 'pending' | 'unsubscribed'
 

@@ -3,11 +3,11 @@ import { Action } from '@stacksjs/actions'
 import { config } from '@stacksjs/config'
 import { response } from '@stacksjs/router'
 import Contact from '../../Models/Contact'
-import { leaveAudiences } from './audience-membership'
-import { wantsHtml } from './form-settings'
-import { escapeHtml, pageResponse } from './public-response'
+import { leaveAudiences } from '../../Support/audienceMembership'
+import { wantsHtml } from '../../Support/formSettings'
+import { escapeHtml, pageResponse } from '../../Support/publicResponse'
 import { appendConsentOnce, consentIdempotencyKey, consentStateMatches, ensureSuppressed, findActiveSuppression, findLatestConsent } from './consent-ledger'
-import { verifyPublicToken } from './signed-token'
+import { verifyPublicToken } from '../../Support/signedToken'
 
 export default new Action({
   name: 'Public Unsubscribe', description: 'Applies one-click channel suppression', method: 'POST',

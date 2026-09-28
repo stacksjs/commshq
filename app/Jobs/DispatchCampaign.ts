@@ -5,7 +5,7 @@ import { assertUsageAvailable, deliveryIdempotencyKey } from '@stacksjs/newslett
 import { Campaign, CampaignSend } from '@stacksjs/orm'
 import { Job } from '@stacksjs/queue'
 import { estimateSmsSegments, isWithinSmsQuietHours, sendSms } from '@stacksjs/sms'
-import { createPublicToken } from '../Actions/Public/signed-token'
+import { createPublicToken } from '../Support/signedToken'
 import { withUnsubscribe } from '../Mail/unsubscribe'
 import CampaignRecipient from '../Models/CampaignRecipient'
 import UsageMeter from '../Models/UsageMeter'

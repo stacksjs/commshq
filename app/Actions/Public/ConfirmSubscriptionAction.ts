@@ -4,11 +4,11 @@ import { config } from '@stacksjs/config'
 import { response } from '@stacksjs/router'
 import Contact from '../../Models/Contact'
 import FormDefinition from '../../Models/FormDefinition'
-import { joinAudience } from './audience-membership'
+import { joinAudience } from '../../Support/audienceMembership'
 import { appendConsentOnce, consentIdempotencyKey, findConsentByKey } from './consent-ledger'
-import { parseFormSettings } from './form-settings'
-import { pageResponse } from './public-response'
-import { verifyPublicToken } from './signed-token'
+import { parseFormSettings } from '../../Support/formSettings'
+import { pageResponse } from '../../Support/publicResponse'
+import { verifyPublicToken } from '../../Support/signedToken'
 
 /**
  * Where a confirmed subscriber lands: the form's own success page when it has

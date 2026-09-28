@@ -8,12 +8,12 @@ import Contact from '../../Models/Contact'
 import FormDefinition from '../../Models/FormDefinition'
 import FormSubmission from '../../Models/FormSubmission'
 import { buildConfirmationMessage } from '../../Mail/ConfirmSubscription'
-import { joinAudience } from './audience-membership'
+import { joinAudience } from '../../Support/audienceMembership'
 import { appendConsentOnce, consentIdempotencyKey } from './consent-ledger'
 import { formSender } from './form-sender'
-import { originAllowed, parseFormSettings, wantsHtml } from './form-settings'
-import { escapeHtml, jsonResponse, pageResponse } from './public-response'
-import { createPublicToken } from './signed-token'
+import { originAllowed, parseFormSettings, wantsHtml } from '../../Support/formSettings'
+import { escapeHtml, jsonResponse, pageResponse } from '../../Support/publicResponse'
+import { createPublicToken } from '../../Support/signedToken'
 
 function clientIp(request: RequestInstance): string {
   return String(request.headers.get('cf-connecting-ip') || request.headers.get('x-forwarded-for') || '').split(',')[0]!.trim()

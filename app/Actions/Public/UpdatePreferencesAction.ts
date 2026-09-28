@@ -6,8 +6,8 @@ import { response } from '@stacksjs/router'
 import Contact from '../../Models/Contact'
 import { buildConfirmationMessage } from '../../Mail/ConfirmSubscription'
 import { appendConsentOnce, consentIdempotencyKey, consentStateMatches, ensureSuppressed, findActiveSuppression, findLatestConsent } from './consent-ledger'
-import { parsePreferenceChoice } from './preference-policy'
-import { createPublicToken, verifyPublicToken } from './signed-token'
+import { parsePreferenceChoice } from '../../Support/preferencePolicy'
+import { createPublicToken, verifyPublicToken } from '../../Support/signedToken'
 
 async function suppress(teamId: number, channel: 'email' | 'sms', recipient: string, token: string): Promise<void> {
   if (!recipient) return

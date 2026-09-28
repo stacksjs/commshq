@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'bun:test'
-import { parsePreferenceChoice } from '../../app/Actions/Public/preference-policy'
+import { parsePreferenceChoice } from '../../app/Support/preferencePolicy'
 
 describe('preference policy', () => {
   it('accepts JSON booleans and progressive-enhancement form values', () => {

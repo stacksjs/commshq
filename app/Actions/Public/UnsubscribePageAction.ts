@@ -2,8 +2,8 @@ import type { RequestInstance } from '@stacksjs/types'
 import { Action } from '@stacksjs/actions'
 import { config } from '@stacksjs/config'
 import Contact from '../../Models/Contact'
-import { escapeHtml, pageResponse } from './public-response'
-import { verifyPublicToken } from './signed-token'
+import { escapeHtml, pageResponse } from '../../Support/publicResponse'
+import { verifyPublicToken } from '../../Support/signedToken'
 
 /**
  * What the unsubscribe link in an email opens.

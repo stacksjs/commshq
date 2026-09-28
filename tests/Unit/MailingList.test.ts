@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'bun:test'
 import { readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
-import { originAllowed, parseFormSettings, wantsHtml } from '../../app/Actions/Public/form-settings'
-import { createPublicToken, verifyPublicToken } from '../../app/Actions/Public/signed-token'
+import { originAllowed, parseFormSettings, wantsHtml } from '../../app/Support/formSettings'
+import { createPublicToken, verifyPublicToken } from '../../app/Support/signedToken'
 import { buildConfirmationMessage } from '../../app/Mail/ConfirmSubscription'
 
 describe('form settings', () => {
