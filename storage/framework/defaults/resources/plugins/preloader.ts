@@ -209,6 +209,7 @@ async function belongsToThisProject(specifier: string): Promise<boolean> {
 // explicitly when needed — see #1835 root cause 3.
 export async function loadAutoImports() {
   const { Glob } = await import('bun')
+  const { userFunctionFiles } = await import('./user-functions')
   const pathPackage = '@stacksjs/' + 'path'
   const path = await import('../../../core/path/src/index.ts')
     .catch(() => import(pathPackage))
@@ -277,7 +278,7 @@ export async function loadAutoImports() {
         // Skip default exports and protected globals
         if (name === 'default' || protectedGlobals.has(name)) continue
         if (typeof value !== 'undefined') {
-          (globalThis as any)[name] = value
+          Reflect.set(globalThis, name, value)
         }
       }
     } catch {
@@ -289,12 +290,7 @@ export async function loadAutoImports() {
   const functionsPath = path.resourcesPath('functions')
   const glob = new Glob('**/*.ts')
 
-  for await (const file of glob.scan({
-    cwd: functionsPath,
-    absolute: true,
-    onlyFiles: true,
-  })) {
-    if (file.endsWith('.d.ts')) continue
+  for await (const file of userFunctionFiles(functionsPath)) {
 
     try {
       const module = await import(file)
@@ -302,7 +298,7 @@ export async function loadAutoImports() {
         // Skip default exports and protected globals
         if (name === 'default' || protectedGlobals.has(name)) continue
         if (typeof value !== 'undefined') {
-          (globalThis as any)[name] = value
+          Reflect.set(globalThis, name, value)
         }
       }
     } catch {
@@ -335,7 +331,7 @@ export async function loadAutoImports() {
         try {
           const module = await import(file)
           if (module.default) {
-            (globalThis as any)[modelName] = module.default
+            Reflect.set(globalThis, modelName, module.default)
             loadedModels.add(modelName)
           }
         } catch {
@@ -366,7 +362,7 @@ export async function loadAutoImports() {
       try {
         const module = await import(file)
         if (module.default) {
-          (globalThis as any)[jobName] = module.default
+          Reflect.set(globalThis, jobName, module.default)
           loadedJobs.add(jobName)
         }
       } catch {
@@ -401,7 +397,7 @@ export async function loadAutoImports() {
         try {
           const module = await import(file)
           if (module.default) {
-            (globalThis as any)[controllerName] = module.default
+            Reflect.set(globalThis, controllerName, module.default)
             loadedControllers.add(controllerName)
           }
         } catch {
