@@ -1,9 +1,9 @@
-import type { ReputationPlatform } from '../../../Support/reputationPlatforms'
-import type { ReputationProvider } from './types'
-import IntegrationCredential from '../../../Models/IntegrationCredential'
-import { googleBusinessProvider } from './google-business'
-import { ProviderNotConfiguredError } from './types'
-import { yelpProvider } from './yelp'
+import type { ReputationPlatform } from './reputationPlatforms'
+import type { ReputationProvider } from './reputationProviderTypes'
+import IntegrationCredential from '../Models/IntegrationCredential'
+import { googleBusinessProvider } from './googleBusinessProvider'
+import { ProviderNotConfiguredError } from './reputationProviderTypes'
+import { yelpProvider } from './yelpProvider'
 
 /**
  * Platforms with a working client. A platform absent from this map is reported
@@ -47,4 +47,4 @@ export async function credentialFor(teamId: number, provider: ReputationProvider
   return secret
 }
 
-export * from './types'
+export * from './reputationProviderTypes'

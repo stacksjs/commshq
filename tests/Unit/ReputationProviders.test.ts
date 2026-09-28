@@ -1,8 +1,8 @@
 import { afterEach, describe, expect, it } from 'bun:test'
-import { googleBusinessProvider } from '../../app/Actions/Reputation/providers/google-business'
-import { isSupported, providerFor, supportedPlatforms } from '../../app/Actions/Reputation/providers'
-import { ProviderRequestError } from '../../app/Actions/Reputation/providers/types'
-import { yelpProvider } from '../../app/Actions/Reputation/providers/yelp'
+import { googleBusinessProvider } from '../../app/Support/googleBusinessProvider'
+import { isSupported, providerFor, supportedPlatforms } from '../../app/Support/reputationProviders'
+import { ProviderRequestError } from '../../app/Support/reputationProviderTypes'
+import { yelpProvider } from '../../app/Support/yelpProvider'
 
 const realFetch = globalThis.fetch
 

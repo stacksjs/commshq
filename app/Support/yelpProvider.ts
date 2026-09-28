@@ -1,5 +1,5 @@
-import type { FetchMentionsInput, FetchMentionsResult, NormalizedMention, ReputationProvider } from './types'
-import { readJson } from './types'
+import type { FetchMentionsInput, FetchMentionsResult, NormalizedMention, ReputationProvider } from './reputationProviderTypes'
+import { readJson } from './reputationProviderTypes'
 
 const ENDPOINT = 'https://api.yelp.com/v3/businesses'
 
