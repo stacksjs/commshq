@@ -3,7 +3,7 @@ import { Action } from '@stacksjs/actions'
 import { response } from '@stacksjs/router'
 import AuditEvent from '../../../../Models/AuditEvent'
 import ReputationAlert from '../../../../Models/ReputationAlert'
-import { canTriageReputation } from '../../../Reputation/policy'
+import { canTriageReputation } from '../../../../Support/reputationPolicy'
 import { activeTeam } from '../team'
 
 const DECISIONS = ['acknowledged', 'resolved']

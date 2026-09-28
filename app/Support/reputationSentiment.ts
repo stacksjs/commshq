@@ -1,4 +1,4 @@
-import type { Sentiment } from './platforms'
+import type { Sentiment } from './reputationPlatforms'
 
 /**
  * Deterministic lexicon scoring for review and comment text.

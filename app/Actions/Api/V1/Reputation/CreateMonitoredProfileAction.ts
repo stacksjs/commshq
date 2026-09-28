@@ -2,11 +2,11 @@ import type { RequestInstance } from '@stacksjs/types'
 import { Action } from '@stacksjs/actions'
 import { isUniqueViolation } from '@stacksjs/orm'
 import { response } from '@stacksjs/router'
-import { parsePlatform, profileKindFor } from '../../../Reputation/platforms'
+import { parsePlatform, profileKindFor } from '../../../../Support/reputationPlatforms'
 import { isSupported, supportedPlatforms } from '../../../Reputation/providers'
 import AuditEvent from '../../../../Models/AuditEvent'
 import MonitoredProfile from '../../../../Models/MonitoredProfile'
-import { canManageReputation } from '../../../Reputation/policy'
+import { canManageReputation } from '../../../../Support/reputationPolicy'
 import { activeTeam } from '../team'
 
 export default new Action({

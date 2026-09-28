@@ -1,6 +1,6 @@
-import type { AlertRuleInput, EvaluableMention } from '../../app/Actions/Reputation/thresholds'
+import type { AlertRuleInput, EvaluableMention } from '../../app/Support/reputationThresholds'
 import { describe, expect, it } from 'bun:test'
-import { parseChannels } from '../../app/Actions/Reputation/notify-alert'
+import { parseChannels } from '../../app/Support/notifyReputationAlert'
 import {
   alertFingerprint,
   breaches,
@@ -9,7 +9,7 @@ import {
   parseComparator,
   parseMetric,
   withinCooldown,
-} from '../../app/Actions/Reputation/thresholds'
+} from '../../app/Support/reputationThresholds'
 
 const NOW = new Date('2026-03-10T12:00:00.000Z')
 

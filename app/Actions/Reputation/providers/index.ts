@@ -1,4 +1,4 @@
-import type { ReputationPlatform } from '../platforms'
+import type { ReputationPlatform } from '../../../Support/reputationPlatforms'
 import type { ReputationProvider } from './types'
 import IntegrationCredential from '../../../Models/IntegrationCredential'
 import { googleBusinessProvider } from './google-business'

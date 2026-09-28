@@ -3,7 +3,7 @@ import { Action } from '@stacksjs/actions'
 import { response } from '@stacksjs/router'
 import AuditEvent from '../../../../Models/AuditEvent'
 import ReputationMention from '../../../../Models/ReputationMention'
-import { canTriageReputation } from '../../../Reputation/policy'
+import { canTriageReputation } from '../../../../Support/reputationPolicy'
 import { activeTeam } from '../team'
 
 const STATUSES = ['triaged', 'responded', 'ignored']

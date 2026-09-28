@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'bun:test'
-import { classifyMention, scoreFromRating, scoreText } from '../../app/Actions/Reputation/sentiment'
+import { classifyMention, scoreFromRating, scoreText } from '../../app/Support/reputationSentiment'
 
 describe('reputation sentiment', () => {
   it('maps star ratings onto the shared scale', () => {

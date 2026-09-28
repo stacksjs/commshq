@@ -1,5 +1,5 @@
 import { createHash } from 'node:crypto'
-import type { ReputationPlatform } from './platforms'
+import type { ReputationPlatform } from './reputationPlatforms'
 
 export const ALERT_METRICS = [
   'negative_mention_count',

@@ -1,4 +1,4 @@
-import type { MentionKind, ReputationPlatform } from '../platforms'
+import type { MentionKind, ReputationPlatform } from '../../../Support/reputationPlatforms'
 
 /** A mention normalized out of a provider payload, before sentiment is applied. */
 export interface NormalizedMention {

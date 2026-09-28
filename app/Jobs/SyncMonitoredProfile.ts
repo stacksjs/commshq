@@ -1,9 +1,9 @@
-import type { ReputationPlatform } from '../Actions/Reputation/platforms'
+import type { ReputationPlatform } from '../Support/reputationPlatforms'
 import { log } from '@stacksjs/logging'
 import { isUniqueViolation } from '@stacksjs/orm'
 import { Job } from '@stacksjs/queue'
 import { credentialFor, ProviderNotConfiguredError, ProviderRequestError, providerFor } from '../Actions/Reputation/providers'
-import { classifyMention } from '../Actions/Reputation/sentiment'
+import { classifyMention } from '../Support/reputationSentiment'
 import MonitoredProfile from '../Models/MonitoredProfile'
 import ReputationMention from '../Models/ReputationMention'
 

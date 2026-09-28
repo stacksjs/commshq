@@ -1,4 +1,4 @@
-import type { AlertMetric, Severity } from './thresholds'
+import type { AlertMetric, Severity } from './reputationThresholds'
 import { db } from '@stacksjs/database'
 import { log } from '@stacksjs/logging'
 import { notify } from '@stacksjs/notifications'
