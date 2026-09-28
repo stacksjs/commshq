@@ -53,17 +53,70 @@ export default {
    * stamps the `oauth_access_tokens.expires_at` row and the auth-token cookie's
    * Max-Age from one number, and nothing extends either afterwards, so it is the
    * real session cap. 7 days is the baseline; the login form's "keep me signed
-   * in" checkbox overrides it per-login to 30 days (see app/Actions/Auth/authCookie.ts
-   * sessionExpiryMinutes). There is no short-access + refresh-rotation split any
-   * more: the cookie is the session.
+   * in" checkbox overrides it per-login to 30 days - see the `browserSession`
+   * block below, which is where that tier now lives. There is no short-access +
+   * refresh-rotation split any more: the cookie is the session.
    */
   tokenExpiry: env.AUTH_TOKEN_EXPIRY || 7 * 24 * 60 * 60 * 1000,
 
   /**
+   * Browser session policy, in milliseconds.
+   *
+   * The framework issues browser sessions from these two lifetimes, so an app
+   * no longer has to hand-roll LoginAction to get a tier.
+   * `resolveBrowserSessionPolicy(remember)` picks `rememberedLifetime` when the
+   * login form's "keep me signed in" box is checked and `baselineLifetime`
+   * otherwise, then stamps BOTH the `oauth_access_tokens.expires_at` row and
+   * the cookie's Max-Age from that one number - so the whole session honours
+   * the tier, not just the cookie.
+   *
+   * `rememberedLifetime` is set explicitly because it DEFAULTS TO
+   * `baselineLifetime` when omitted: leaving it out would silently collapse
+   * "keep me signed in for 30 days" to 7 days, with no error and nothing else
+   * failing. tests/Unit/BrowserSession.test.ts fails if that ever regresses.
+   */
+  browserSession: {
+    baselineLifetime: 7 * 24 * 60 * 60 * 1000,
+    rememberedLifetime: 30 * 24 * 60 * 60 * 1000,
+
+    // Left true to preserve the current response shape - a refresh_token still
+    // appears in the login, register and 2FA bodies. Turning it off also
+    // strands the /auth/refresh route the defaults bundle still mounts, so it
+    // belongs in its own change.
+    withRefreshToken: true,
+
+    // logoutRedirect deliberately unset: nothing under resources/ posts to
+    // /logout, so there is no HTML logout navigation to redirect. Setting it
+    // would invent behaviour rather than preserve it.
+  },
+
+  /**
+   * Auth cookie attributes.
+   *
+   * `secure` is set explicitly rather than left to inference. The framework's
+   * `shouldSecureAuthCookie()` decides from `config.app.url`, and config/app.ts
+   * falls back to `commshq.localhost` - a loopback host, so the flag would be
+   * DROPPED if APP_URL were ever absent or failed to decrypt, shipping a
+   * 7-to-30 day session token in the clear with nothing to notice it.
+   *
+   * The predicate below is a like-for-like port of the one the app's own cookie
+   * helper has always used: secure everywhere except a local environment.
+   */
+  cookie: {
+    name: 'auth-token',
+    path: '/',
+    sameSite: 'Lax',
+    secure: !['', 'local', 'development', 'dev', 'test', 'testing']
+      .includes(String(env.APP_ENV ?? '').toLowerCase()),
+  },
+
+  /**
    * Refresh-token expiry in milliseconds. NOT WIRED UP: a refresh token is
-   * still minted and returned in the OAuth2 payload, but nothing consumes it —
-   * there is no `/auth/refresh` route. The session ends when `tokenExpiry`
-   * elapses. Kept only for the payload shape.
+   * still minted and returned in the OAuth2 payload, but nothing in this app
+   * consumes it. The framework defaults bundle does still mount an
+   * /auth/refresh route, so the old claim that none exists was wrong. The
+   * session ends when the browserSession lifetime elapses. Kept for the
+   * payload shape; see browserSession.withRefreshToken to stop issuing one.
    */
   refreshTokenExpiry: env.AUTH_REFRESH_TOKEN_EXPIRY || 30 * 24 * 60 * 60 * 1000,
 

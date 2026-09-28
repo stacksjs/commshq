@@ -63,6 +63,44 @@ describe('browser session: lifetime tiers', () => {
   })
 })
 
+describe('browser session: the app config itself', () => {
+  /**
+   * The tests above hand the resolver an explicit config object, which proves
+   * the framework behaves - not that THIS app is configured correctly. These
+   * read config/auth.ts itself, so deleting or mistyping the browserSession
+   * block fails here rather than in production.
+   */
+  it('resolves both tiers from config/auth.ts', async () => {
+    const auth = (await import('../../config/auth')).default
+
+    expect(resolveBrowserSessionPolicy(undefined, auth).expiresInMinutes).toBe(WEEK_MINUTES)
+    expect(resolveBrowserSessionPolicy(true, auth).expiresInMinutes).toBe(MONTH_MINUTES)
+  })
+
+  it('still issues a refresh token, so turning that off stays a deliberate change', async () => {
+    const auth = (await import('../../config/auth')).default
+    expect(resolveBrowserSessionPolicy(undefined, auth).withRefreshToken).toBe(true)
+  })
+
+  it('names the cookie and pins its attributes', async () => {
+    const auth = (await import('../../config/auth')).default as { cookie?: Record<string, unknown> }
+
+    expect(auth.cookie?.name).toBe('auth-token')
+    expect(auth.cookie?.path).toBe('/')
+    expect(auth.cookie?.sameSite).toBe('Lax')
+  })
+
+  /**
+   * secure is a computed predicate, not a literal: the framework would
+   * otherwise infer it from config.app.url, which falls back to a loopback
+   * host and would drop the flag entirely.
+   */
+  it('decides Secure from the environment rather than leaving it to inference', async () => {
+    const auth = (await import('../../config/auth')).default as { cookie?: { secure?: unknown } }
+    expect(typeof auth.cookie?.secure).toBe('boolean')
+  })
+})
+
 describe('browser session: the remember accept-list', () => {
   // Everything `resources/views/login.stx` can put in the JSON body. It sends a
   // real boolean from `checkbox.checked` at step one and re-sends the stored
