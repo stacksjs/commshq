@@ -61,9 +61,20 @@ jobs:
       - name: Typecheck
         run: ./buddy typecheck
 
-      - name: Test
-        run: bun run test
-
+      # NOTE: the test suite is deliberately NOT run here.
+      #
+      # It needs a migrated database - ci.yml's test job runs `buddy
+      # key:generate` and `buddy migrate` before `bun run test`, which is what
+      # creates the `teams` table the reputation fixtures insert into. Running
+      # the suite here without that setup fails on `no such table: teams`
+      # (deploy run 36450430090), and copying those two steps into THIS job is
+      # not safe: this job has the production environment decrypted, so a
+      # `buddy migrate` here could be pointed at the production database.
+      #
+      # Gating the deploy on tests properly needs either a `workflow_run`
+      # trigger keyed on ci.yml's conclusion, or an explicitly isolated
+      # throwaway database for these steps. Both are real changes that deserve
+      # their own review. Lint and typecheck stay because they need no database.
       - name: Build the production artifact
         run: bun run build
 
