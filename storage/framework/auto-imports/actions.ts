@@ -13,7 +13,6 @@ export const actions = {
   'Actions/Api/V1/Reputation/TriageMentionAction': '../../../app/Actions/Api/V1/Reputation/TriageMentionAction.ts',
   'Actions/Api/V1/Reputation/UpsertAlertRuleAction': '../../../app/Actions/Api/V1/Reputation/UpsertAlertRuleAction.ts',
   'Actions/Api/V1/WorkspaceSummaryAction': '../../../app/Actions/Api/V1/WorkspaceSummaryAction.ts',
-  'Actions/Api/V1/team': '../../../app/Actions/Api/V1/team.ts',
   'Actions/Public/ConfirmSubscriptionAction': '../../../app/Actions/Public/ConfirmSubscriptionAction.ts',
   'Actions/Public/PreferencesAction': '../../../app/Actions/Public/PreferencesAction.ts',
   'Actions/Public/SubscribeAction': '../../../app/Actions/Public/SubscribeAction.ts',

@@ -4,7 +4,7 @@ import { response } from '@stacksjs/router'
 import AuditEvent from '../../../../Models/AuditEvent'
 import ReputationAlert from '../../../../Models/ReputationAlert'
 import { canTriageReputation } from '../../../../Support/reputationPolicy'
-import { activeTeam } from '../team'
+import { activeTeam } from '../../../../Support/activeTeam'
 
 const DECISIONS = ['acknowledged', 'resolved']
 

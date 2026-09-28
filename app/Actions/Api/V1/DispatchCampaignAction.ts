@@ -7,7 +7,7 @@ import { response } from '@stacksjs/router'
 import AudienceMembership from '../../../Models/AudienceMembership'
 import CampaignRecipient from '../../../Models/CampaignRecipient'
 import Contact from '../../../Models/Contact'
-import { activeTeamId } from './team'
+import { activeTeamId } from '../../../Support/activeTeam'
 
 /**
  * The audience a campaign is for, from `segmentDefinition.audienceId`. A

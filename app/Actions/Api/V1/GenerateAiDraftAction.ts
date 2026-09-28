@@ -13,7 +13,7 @@ import AiGeneration from '../../../Models/AiGeneration'
 import UsageMeter from '../../../Models/UsageMeter'
 import { canGenerateAi, estimateTokens, parseAiPurpose, validAiPrompt, validIdempotencyKey } from '../../../Support/aiGenerationPolicy'
 import { updatedRows, usageMeterStore } from '../../../Support/usageMeterStore'
-import { activeTeam } from './team'
+import { activeTeam } from '../../../Support/activeTeam'
 
 const MODEL_ID = 'amazon.titan-text-express-v1'
 

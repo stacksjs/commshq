@@ -4,7 +4,7 @@ import { response } from '@stacksjs/router'
 import AiGeneration from '../../../Models/AiGeneration'
 import AuditEvent from '../../../Models/AuditEvent'
 import { canGenerateAi } from '../../../Support/aiGenerationPolicy'
-import { activeTeam } from './team'
+import { activeTeam } from '../../../Support/activeTeam'
 
 export default new Action({
   name: 'Decide AI Draft',

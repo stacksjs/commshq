@@ -7,7 +7,7 @@ import Contact from '../../../Models/Contact'
 import Earning from '../../../Models/Earning'
 import Publication from '../../../Models/Publication'
 import UsageMeter from '../../../Models/UsageMeter'
-import { activeTeamId } from './team'
+import { activeTeamId } from '../../../Support/activeTeam'
 
 export default new Action({
   name: 'Workspace Summary',

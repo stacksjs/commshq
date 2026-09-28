@@ -8,7 +8,7 @@ import { ALERT_CHANNELS } from '../../../../Support/notifyReputationAlert'
 import { parsePlatform } from '../../../../Support/reputationPlatforms'
 import { canManageReputation } from '../../../../Support/reputationPolicy'
 import { parseComparator, parseMetric } from '../../../../Support/reputationThresholds'
-import { activeTeam } from '../team'
+import { activeTeam } from '../../../../Support/activeTeam'
 
 const SEVERITIES = ['info', 'warning', 'critical']
 

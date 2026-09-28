@@ -7,7 +7,7 @@ import { isSupported, supportedPlatforms } from '../../../../Support/reputationP
 import AuditEvent from '../../../../Models/AuditEvent'
 import MonitoredProfile from '../../../../Models/MonitoredProfile'
 import { canManageReputation } from '../../../../Support/reputationPolicy'
-import { activeTeam } from '../team'
+import { activeTeam } from '../../../../Support/activeTeam'
 
 export default new Action({
   name: 'Create Monitored Profile',
