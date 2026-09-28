@@ -224,6 +224,34 @@ export default {
     default: '',
   },
 
+  // Read by config/dns.ts to publish the DKIM record; unset until the mail
+  // server's key exists, and the record is skipped while it is.
+  MAIL_DKIM_PUBLIC_KEY: {
+    validation: schema.string(),
+    default: '',
+  },
+
+  // Read by config/cache.ts.
+  CACHE_DRIVER: {
+    validation: schema.enum(['memory', 'redis']),
+    default: 'memory',
+  },
+
+  CACHE_PREFIX: {
+    validation: schema.string(),
+    default: 'commshq:cache',
+  },
+
+  REDIS_USERNAME: {
+    validation: schema.string(),
+    default: '',
+  },
+
+  REDIS_TLS: {
+    validation: schema.boolean(),
+    default: false,
+  },
+
   SEARCH_ENGINE_DRIVER: {
     validation: schema.enum(['meilisearch', 'algolia', 'typesense']),
     default: 'meilisearch',
@@ -235,6 +263,12 @@ export default {
   },
 
   STRIPE_PUBLISHABLE_KEY: {
+    validation: schema.string(),
+    default: '',
+  },
+
+  // Read by config/saas.ts to verify Stripe webhook signatures.
+  STRIPE_WEBHOOK_SECRET: {
     validation: schema.string(),
     default: '',
   },
