@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'bun:test'
-import { commerceEventType, objectPayload, webhookRecipient } from '../../app/Actions/Webhooks/payload'
+import { commerceEventType, objectPayload, webhookRecipient } from '../../app/Support/webhookPayload'
 
 describe('webhook payload normalization', () => {
   it('accepts stored JSON and object payloads', () => {

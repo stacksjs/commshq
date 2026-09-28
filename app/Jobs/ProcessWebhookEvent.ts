@@ -5,8 +5,8 @@ import CommerceConnection from '../Models/CommerceConnection'
 import CommerceEvent from '../Models/CommerceEvent'
 import WebhookEvent from '../Models/WebhookEvent'
 import { appendConsentOnce, ensureSuppressed } from '../Support/consentLedger'
-import { twilioConsentIdempotencyKey } from '../Actions/Webhooks/twilio-compliance'
-import { commerceEventType, objectPayload, webhookRecipient } from '../Actions/Webhooks/payload'
+import { twilioConsentIdempotencyKey } from '../Support/twilioCompliance'
+import { commerceEventType, objectPayload, webhookRecipient } from '../Support/webhookPayload'
 
 interface ProcessWebhookPayload {
   eventId: number

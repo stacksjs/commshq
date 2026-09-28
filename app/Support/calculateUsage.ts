@@ -1,4 +1,4 @@
-import type { CommsHQPlanLimits, CommsHQUsagePricing } from '../../../config/saas'
+import type { CommsHQPlanLimits, CommsHQUsagePricing } from '../../config/saas'
 
 export interface UsageInput {
   contacts: number

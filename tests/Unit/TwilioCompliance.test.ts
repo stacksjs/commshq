@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'bun:test'
-import { twilioComplianceXml, twilioConsentIdempotencyKey } from '../../app/Actions/Webhooks/twilio-compliance'
+import { twilioComplianceXml, twilioConsentIdempotencyKey } from '../../app/Support/twilioCompliance'
 
 describe('Twilio compliance responses', () => {
   it('returns provider-ready TwiML for every compliance keyword', () => {

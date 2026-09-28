@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'bun:test'
 import { createHmac } from 'node:crypto'
-import { providerSignatureHeader, verifyHmac, verifyStripeSignature } from '../../app/Actions/Webhooks/signatures'
+import { providerSignatureHeader, verifyHmac, verifyStripeSignature } from '../../app/Support/webhookSignatures'
 
 describe('webhook signatures', () => {
   it('accepts valid hex and base64 HMAC signatures', () => {

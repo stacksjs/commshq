@@ -5,8 +5,8 @@ import { response } from '@stacksjs/router'
 import { verifyTwilioWebhook } from '@stacksjs/sms'
 import WebhookEndpoint from '../../Models/WebhookEndpoint'
 import WebhookEvent from '../../Models/WebhookEvent'
-import { providerSignatureHeader, verifyHmac, verifyStripeSignature } from './signatures'
-import { twilioComplianceXml } from './twilio-compliance'
+import { providerSignatureHeader, verifyHmac, verifyStripeSignature } from '../../Support/webhookSignatures'
+import { twilioComplianceXml } from '../../Support/twilioCompliance'
 
 const SUPPORTED_PROVIDERS = new Set(['twilio', 'stripe', 'shopify', 'woocommerce', 'mail', 'generic'])
 

@@ -12,7 +12,7 @@ import { randomUUIDv7 } from 'bun'
 import AiGeneration from '../../../Models/AiGeneration'
 import UsageMeter from '../../../Models/UsageMeter'
 import { canGenerateAi, estimateTokens, parseAiPurpose, validAiPrompt, validIdempotencyKey } from '../../../Support/aiGenerationPolicy'
-import { updatedRows, usageMeterStore } from '../../Usage/usage-meter-store'
+import { updatedRows, usageMeterStore } from '../../../Support/usageMeterStore'
 import { activeTeam } from './team'
 
 const MODEL_ID = 'amazon.titan-text-express-v1'

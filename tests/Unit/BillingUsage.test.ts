@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'bun:test'
 import saas from '../../config/saas'
-import { calculateUsageCharges } from '../../app/Actions/Billing/calculate-usage'
+import { calculateUsageCharges } from '../../app/Support/calculateUsage'
 
 describe('usage billing', () => {
   it('bills overages in whole thousand-unit blocks', () => {

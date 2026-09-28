@@ -1,6 +1,6 @@
 import type { UsageQuotaStore } from '@stacksjs/newsletter'
 import { db, sqlDateTime } from '@stacksjs/database'
-import UsageMeter from '../../Models/UsageMeter'
+import UsageMeter from '../Models/UsageMeter'
 
 export function updatedRows(result: unknown): number {
   const raw = (result as { numUpdatedRows?: unknown } | null | undefined)?.numUpdatedRows
