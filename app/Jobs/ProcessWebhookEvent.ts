@@ -4,7 +4,7 @@ import { Job } from '@stacksjs/queue'
 import CommerceConnection from '../Models/CommerceConnection'
 import CommerceEvent from '../Models/CommerceEvent'
 import WebhookEvent from '../Models/WebhookEvent'
-import { appendConsentOnce, ensureSuppressed } from '../Actions/Public/consent-ledger'
+import { appendConsentOnce, ensureSuppressed } from '../Support/consentLedger'
 import { twilioConsentIdempotencyKey } from '../Actions/Webhooks/twilio-compliance'
 import { commerceEventType, objectPayload, webhookRecipient } from '../Actions/Webhooks/payload'
 

@@ -1,7 +1,7 @@
 import { afterEach, describe, expect, it } from 'bun:test'
 import { readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
-import { appendConsentOnce, consentIdempotencyKey, consentStateMatches, ensureSuppressed } from '../../app/Actions/Public/consent-ledger'
+import { appendConsentOnce, consentIdempotencyKey, consentStateMatches, ensureSuppressed } from '../../app/Support/consentLedger'
 
 const originalConsentModel = (globalThis as any).ConsentEvent
 const originalSuppressionModel = (globalThis as any).CommunicationSuppression

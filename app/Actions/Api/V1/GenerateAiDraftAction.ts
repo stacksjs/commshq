@@ -11,7 +11,7 @@ import { response } from '@stacksjs/router'
 import { randomUUIDv7 } from 'bun'
 import AiGeneration from '../../../Models/AiGeneration'
 import UsageMeter from '../../../Models/UsageMeter'
-import { canGenerateAi, estimateTokens, parseAiPurpose, validAiPrompt, validIdempotencyKey } from '../../Ai/generation-policy'
+import { canGenerateAi, estimateTokens, parseAiPurpose, validAiPrompt, validIdempotencyKey } from '../../../Support/aiGenerationPolicy'
 import { updatedRows, usageMeterStore } from '../../Usage/usage-meter-store'
 import { activeTeam } from './team'
 

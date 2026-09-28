@@ -2,7 +2,7 @@ import { Automation, AutomationRun } from '@stacksjs/orm'
 import { Job } from '@stacksjs/queue'
 import AutomationStepRun from '../Models/AutomationStepRun'
 import AutomationVersion from '../Models/AutomationVersion'
-import { automationDelaySeconds, automationNodes, automationStepKey, isTerminalAutomationStatus } from '../Actions/Automations/flow'
+import { automationDelaySeconds, automationNodes, automationStepKey, isTerminalAutomationStatus } from '../Support/automationFlow'
 
 interface AutomationPayload { runId: number, teamId: number }
 

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'bun:test'
-import { automationDelaySeconds, automationNodes, automationStepKey, isTerminalAutomationStatus } from '../../app/Actions/Automations/flow'
+import { automationDelaySeconds, automationNodes, automationStepKey, isTerminalAutomationStatus } from '../../app/Support/automationFlow'
 
 describe('automation flow contracts', () => {
   it('reads the immutable graph from JSON or an object', () => {

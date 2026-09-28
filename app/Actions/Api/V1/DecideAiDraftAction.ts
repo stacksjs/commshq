@@ -3,7 +3,7 @@ import { Action } from '@stacksjs/actions'
 import { response } from '@stacksjs/router'
 import AiGeneration from '../../../Models/AiGeneration'
 import AuditEvent from '../../../Models/AuditEvent'
-import { canGenerateAi } from '../../Ai/generation-policy'
+import { canGenerateAi } from '../../../Support/aiGenerationPolicy'
 import { activeTeam } from './team'
 
 export default new Action({

@@ -5,7 +5,6 @@
 // resolves. Values are paths rather than import thunks on purpose: thunks
 // would make every compilation that touches a name resolve every module.
 export const actions = {
-  'Actions/Ai/generation-policy': '../../../app/Actions/Ai/generation-policy.ts',
   'Actions/Api/V1/DecideAiDraftAction': '../../../app/Actions/Api/V1/DecideAiDraftAction.ts',
   'Actions/Api/V1/DispatchCampaignAction': '../../../app/Actions/Api/V1/DispatchCampaignAction.ts',
   'Actions/Api/V1/GenerateAiDraftAction': '../../../app/Actions/Api/V1/GenerateAiDraftAction.ts',
@@ -15,17 +14,13 @@ export const actions = {
   'Actions/Api/V1/Reputation/UpsertAlertRuleAction': '../../../app/Actions/Api/V1/Reputation/UpsertAlertRuleAction.ts',
   'Actions/Api/V1/WorkspaceSummaryAction': '../../../app/Actions/Api/V1/WorkspaceSummaryAction.ts',
   'Actions/Api/V1/team': '../../../app/Actions/Api/V1/team.ts',
-  'Actions/Automations/flow': '../../../app/Actions/Automations/flow.ts',
   'Actions/Billing/calculate-usage': '../../../app/Actions/Billing/calculate-usage.ts',
-  'Actions/Compliance/delivery-policy': '../../../app/Actions/Compliance/delivery-policy.ts',
   'Actions/Public/ConfirmSubscriptionAction': '../../../app/Actions/Public/ConfirmSubscriptionAction.ts',
   'Actions/Public/PreferencesAction': '../../../app/Actions/Public/PreferencesAction.ts',
   'Actions/Public/SubscribeAction': '../../../app/Actions/Public/SubscribeAction.ts',
   'Actions/Public/UnsubscribeAction': '../../../app/Actions/Public/UnsubscribeAction.ts',
   'Actions/Public/UnsubscribePageAction': '../../../app/Actions/Public/UnsubscribePageAction.ts',
   'Actions/Public/UpdatePreferencesAction': '../../../app/Actions/Public/UpdatePreferencesAction.ts',
-  'Actions/Public/consent-ledger': '../../../app/Actions/Public/consent-ledger.ts',
-  'Actions/Public/form-sender': '../../../app/Actions/Public/form-sender.ts',
   'Actions/Reputation/providers/google-business': '../../../app/Actions/Reputation/providers/google-business.ts',
   'Actions/Reputation/providers/types': '../../../app/Actions/Reputation/providers/types.ts',
   'Actions/Reputation/providers/yelp': '../../../app/Actions/Reputation/providers/yelp.ts',

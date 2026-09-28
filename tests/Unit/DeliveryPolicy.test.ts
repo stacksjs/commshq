@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'bun:test'
-import { canDeliver, normalizedRecipient } from '../../app/Actions/Compliance/delivery-policy'
+import { canDeliver, normalizedRecipient } from '../../app/Support/deliveryPolicy'
 
 describe('delivery policy', () => {
   it('lets the latest consent decision win', () => {

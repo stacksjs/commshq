@@ -5,7 +5,7 @@ import { job } from '@stacksjs/queue'
 import { response } from '@stacksjs/router'
 import Contact from '../../Models/Contact'
 import { buildConfirmationMessage } from '../../Mail/ConfirmSubscription'
-import { appendConsentOnce, consentIdempotencyKey, consentStateMatches, ensureSuppressed, findActiveSuppression, findLatestConsent } from './consent-ledger'
+import { appendConsentOnce, consentIdempotencyKey, consentStateMatches, ensureSuppressed, findActiveSuppression, findLatestConsent } from '../../Support/consentLedger'
 import { parsePreferenceChoice } from '../../Support/preferencePolicy'
 import { createPublicToken, verifyPublicToken } from '../../Support/signedToken'
 

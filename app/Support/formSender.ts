@@ -1,4 +1,4 @@
-import SenderIdentity from '../../Models/SenderIdentity'
+import SenderIdentity from '../Models/SenderIdentity'
 
 export interface ResolvedSender {
   from: { name: string, address: string }

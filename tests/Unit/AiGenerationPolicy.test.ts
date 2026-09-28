@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'bun:test'
-import { canGenerateAi, estimateTokens, parseAiPurpose, validAiPrompt, validIdempotencyKey } from '../../app/Actions/Ai/generation-policy'
+import { canGenerateAi, estimateTokens, parseAiPurpose, validAiPrompt, validIdempotencyKey } from '../../app/Support/aiGenerationPolicy'
 
 describe('AI generation policy', () => {
   it('limits generation and review to publishing roles', () => {

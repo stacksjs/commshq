@@ -6,7 +6,7 @@ import Contact from '../../Models/Contact'
 import { leaveAudiences } from '../../Support/audienceMembership'
 import { wantsHtml } from '../../Support/formSettings'
 import { escapeHtml, pageResponse } from '../../Support/publicResponse'
-import { appendConsentOnce, consentIdempotencyKey, consentStateMatches, ensureSuppressed, findActiveSuppression, findLatestConsent } from './consent-ledger'
+import { appendConsentOnce, consentIdempotencyKey, consentStateMatches, ensureSuppressed, findActiveSuppression, findLatestConsent } from '../../Support/consentLedger'
 import { verifyPublicToken } from '../../Support/signedToken'
 
 export default new Action({
