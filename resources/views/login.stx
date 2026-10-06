@@ -115,11 +115,11 @@ async function handleVerify(e: SubmitEvent): Promise<void> {
     <form @submit="handleSubmit" class="space-y-4" :show="!twoFactor()">
       <div>
         <label for="email" class="block mb-1.5 font-medium text-xs ink">Email</label>
-        <input id="email" name="email" type="email" required autocomplete="email" class="field" placeholder="you@example.com">
+        <input id="email" name="email" type="email" required autocomplete="email" class="field" placeholder="you@example.com" :aria-invalid="error() ? 'true' : 'false'" :aria-describedby="error() ? 'login-error' : ''">
       </div>
       <div>
         <label for="password" class="block mb-1.5 font-medium text-xs ink">Password</label>
-        <input id="password" name="password" type="password" required autocomplete="current-password" class="field">
+        <input id="password" name="password" type="password" required autocomplete="current-password" class="field" :aria-invalid="error() ? 'true' : 'false'" :aria-describedby="error() ? 'login-error' : ''">
       </div>
 
       <label for="remember" class="flex items-center gap-2 text-xs muted" style="cursor: pointer">
@@ -139,14 +139,14 @@ async function handleVerify(e: SubmitEvent): Promise<void> {
     <form @submit="handleVerify" class="space-y-4" :show="twoFactor()" style="display:none">
       <div>
         <label for="code" class="block mb-1.5 font-medium text-xs ink">Authentication code</label>
-        <input id="code" name="code" type="text" inputmode="numeric" autocomplete="one-time-code" maxlength="6" pattern="[0-9]*" placeholder="123456" class="field">
+        <input id="code" name="code" type="text" inputmode="numeric" autocomplete="one-time-code" maxlength="6" pattern="[0-9]*" placeholder="123456" class="field" :aria-invalid="error() ? 'true' : 'false'" :aria-describedby="error() ? 'login-error' : ''">
         <p class="mt-1 text-xs muted">Enter the 6-digit code from your authenticator app.</p>
       </div>
       <button type="submit" :disabled="loading()" class="px-4 py-2.5 w-full font-semibold text-sm text-[var(--coral-ink)] rounded-xl border-0 bg-coral" style="cursor: pointer">Verify</button>
     </form>
 
-    <p class="mt-4 text-center text-xs muted" :show="loading()" style="display:none">Signing you in...</p>
-    <p class="mt-4 px-3 py-2 text-sm text-center rounded-lg coral" :show="error()" style="display:none">{{ error() }}</p>
+    <p role="status" class="mt-4 text-center text-xs muted" :show="loading()" style="display:none">Signing you in...</p>
+    <p id="login-error" role="alert" class="mt-4 px-3 py-2 text-sm text-center rounded-lg coral" :show="error()" style="display:none">{{ error() }}</p>
   </div>
 
   <p class="mt-6 text-center text-sm muted">
