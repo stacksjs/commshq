@@ -77,13 +77,17 @@ describe('interface contracts', () => {
     const index = await Bun.file(new URL('../../resources/views/compare.stx', import.meta.url)).text()
 
     expect(layout, 'the footer must carry a Compare section').toContain('>Compare<')
-    expect(layout).toContain('href="/compare"')
+    // href= or to=: the contract is that the footer links to the comparison
+    // index, not which attribute spells it. Internal destinations are
+    // <StxLink to="…"> per AGENTS.md, and StxLink still server-renders a
+    // crawlable <a href="…">, so the destination is what this should assert.
+    expect(layout).toMatch(/(?:href|to)="\/compare"/)
 
     for (const competitor of competitors) {
       const page = await Bun.file(new URL(`../../resources/views/compare/${competitor}.stx`, import.meta.url)).text()
       expect(page).toContain(`<CompetitorComparison competitor="${competitor}" />`)
       expect(page).toContain("@extends('marketing')")
-      expect(layout, `${competitor} must be reachable from the footer`).toContain(`href="/compare/${competitor}"`)
+      expect(layout, `${competitor} must be reachable from the footer`).toMatch(new RegExp(`(?:href|to)="/compare/${competitor}"`))
       expect(index, `${competitor} must be listed on the compare index`).toContain(`href: '/compare/${competitor}'`)
       expect(comparisons, `${competitor} must have comparison content`).toContain(`  ${competitor.includes('-') ? `'${competitor}'` : competitor}: {`)
     }

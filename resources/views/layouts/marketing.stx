@@ -26,45 +26,45 @@
           <section>
             <h2 class="m-0 font-bold text-[11px] tracking-[0.18em] uppercase coral">Compare</h2>
             <ul class="m-0 mt-4 p-0 space-y-2 list-none text-sm">
-              <li><a class="hover:text-[var(--ink)] muted" href="/compare/mailchimp">vs Mailchimp</a></li>
-              <li><a class="hover:text-[var(--ink)] muted" href="/compare/klaviyo">vs Klaviyo</a></li>
-              <li><a class="hover:text-[var(--ink)] muted" href="/compare/kit">vs Kit</a></li>
-              <li><a class="hover:text-[var(--ink)] muted" href="/compare/beehiiv">vs beehiiv</a></li>
-              <li><a class="hover:text-[var(--ink)] muted" href="/compare/substack">vs Substack</a></li>
-              <li><a class="font-semibold ink" href="/compare">All comparisons</a></li>
+              <li><StxLink class="hover:text-[var(--ink)] muted" to="/compare/mailchimp">vs Mailchimp</StxLink></li>
+              <li><StxLink class="hover:text-[var(--ink)] muted" to="/compare/klaviyo">vs Klaviyo</StxLink></li>
+              <li><StxLink class="hover:text-[var(--ink)] muted" to="/compare/kit">vs Kit</StxLink></li>
+              <li><StxLink class="hover:text-[var(--ink)] muted" to="/compare/beehiiv">vs beehiiv</StxLink></li>
+              <li><StxLink class="hover:text-[var(--ink)] muted" to="/compare/substack">vs Substack</StxLink></li>
+              <li><StxLink class="font-semibold ink" to="/compare">All comparisons</StxLink></li>
             </ul>
           </section>
           <section>
             <h2 class="m-0 font-bold text-[11px] tracking-[0.18em] uppercase coral">Compare more</h2>
             <ul class="m-0 mt-4 p-0 space-y-2 list-none text-sm">
-              <li><a class="hover:text-[var(--ink)] muted" href="/compare/hubspot">vs HubSpot</a></li>
-              <li><a class="hover:text-[var(--ink)] muted" href="/compare/activecampaign">vs ActiveCampaign</a></li>
-              <li><a class="hover:text-[var(--ink)] muted" href="/compare/brevo">vs Brevo</a></li>
-              <li><a class="hover:text-[var(--ink)] muted" href="/compare/customer-io">vs Customer.io</a></li>
-              <li><a class="hover:text-[var(--ink)] muted" href="/compare/birdeye">vs Birdeye</a></li>
-              <li><a class="hover:text-[var(--ink)] muted" href="/compare/podium">vs Podium</a></li>
+              <li><StxLink class="hover:text-[var(--ink)] muted" to="/compare/hubspot">vs HubSpot</StxLink></li>
+              <li><StxLink class="hover:text-[var(--ink)] muted" to="/compare/activecampaign">vs ActiveCampaign</StxLink></li>
+              <li><StxLink class="hover:text-[var(--ink)] muted" to="/compare/brevo">vs Brevo</StxLink></li>
+              <li><StxLink class="hover:text-[var(--ink)] muted" to="/compare/customer-io">vs Customer.io</StxLink></li>
+              <li><StxLink class="hover:text-[var(--ink)] muted" to="/compare/birdeye">vs Birdeye</StxLink></li>
+              <li><StxLink class="hover:text-[var(--ink)] muted" to="/compare/podium">vs Podium</StxLink></li>
             </ul>
           </section>
           <section>
             <h2 class="m-0 font-bold text-[11px] tracking-[0.18em] uppercase coral">Product</h2>
             <ul class="m-0 mt-4 p-0 space-y-2 list-none text-sm">
-              <li><a class="hover:text-[var(--ink)] muted" href="/features">Features</a></li>
-              <li><a class="hover:text-[var(--ink)] muted" href="/solutions">Solutions</a></li>
-              <li><a class="hover:text-[var(--ink)] muted" href="/pricing">Pricing</a></li>
-              <li><a class="hover:text-[var(--ink)] muted" href="/integrations">Integrations</a></li>
+              <li><StxLink class="hover:text-[var(--ink)] muted" to="/features">Features</StxLink></li>
+              <li><StxLink class="hover:text-[var(--ink)] muted" to="/solutions">Solutions</StxLink></li>
+              <li><StxLink class="hover:text-[var(--ink)] muted" to="/pricing">Pricing</StxLink></li>
+              <li><StxLink class="hover:text-[var(--ink)] muted" to="/integrations">Integrations</StxLink></li>
             </ul>
           </section>
           <section>
             <h2 class="m-0 font-bold text-[11px] tracking-[0.18em] uppercase coral">Company</h2>
             <ul class="m-0 mt-4 p-0 space-y-2 list-none text-sm">
-              <li><a class="hover:text-[var(--ink)] muted" href="/security">Security</a></li>
-              <li><a class="hover:text-[var(--ink)] muted" href="/privacy">Privacy</a></li>
-              <li><a class="hover:text-[var(--ink)] muted" href="/terms">Terms</a></li>
+              <li><StxLink class="hover:text-[var(--ink)] muted" to="/security">Security</StxLink></li>
+              <li><StxLink class="hover:text-[var(--ink)] muted" to="/privacy">Privacy</StxLink></li>
+              <li><StxLink class="hover:text-[var(--ink)] muted" to="/terms">Terms</StxLink></li>
             </ul>
           </section>
         </nav>
         <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between mt-12 pt-6 border-t border-tone">
-          <a href="/" class="font-bold ink">CommsHQ</a>
+          <StxLink to="/" class="font-bold ink">CommsHQ</StxLink>
           <p class="m-0 text-sm muted">Comparisons name other companies only to describe their products. All trademarks belong to their owners.</p>
           <p class="m-0 text-sm muted">Built with Stacks.</p>
         </div>

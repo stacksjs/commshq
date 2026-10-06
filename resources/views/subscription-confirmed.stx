@@ -7,6 +7,6 @@
     <p class="mt-8 font-bold text-xs tracking-[0.22em] uppercase coral">Subscription confirmed</p>
     <h1 id="confirmation-title" class="mt-4 leading-tight text-5xl text-balance tracking-[-0.04em] sm:text-7xl ink">You are on the list.</h1>
     <p class="mt-6 mx-auto max-w-2xl leading-8 text-lg muted">Your consent is confirmed. The publication you joined can now send the updates you requested.</p>
-    <a href="/" class="inline-flex items-center mt-9 px-6 min-h-12 font-bold text-white bg-coral rounded-md focus-visible:outline focus-visible:outline-[var(--coral)] focus-visible:outline-2 focus-visible:outline-offset-4">Return to CommsHQ</a>
+    <StxLink to="/" class="inline-flex items-center mt-9 px-6 min-h-12 font-bold text-white bg-coral rounded-md focus-visible:outline focus-visible:outline-[var(--coral)] focus-visible:outline-2 focus-visible:outline-offset-4">Return to CommsHQ</StxLink>
   </section>
 @endsection
