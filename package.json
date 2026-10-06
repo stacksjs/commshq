@@ -70,7 +70,8 @@
     "test:types": "./buddy test:types",
     "deps:lockfile:check": "bun .github/scripts/check-lockfile-version.ts",
     "bud": "./buddy",
-    "stx": "./buddy"
+    "stx": "./buddy",
+    "serve:validate": "bun scripts/validate-serve.ts"
   },
   "dependencies": {
     "@stacksjs/ts-cloud": "^0.16.15",
