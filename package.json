@@ -74,8 +74,9 @@
     "serve:validate": "bun scripts/validate-serve.ts"
   },
   "dependencies": {
-    "@stacksjs/components": "0.2.382",
-    "@stacksjs/stx": "0.2.382",
+    "@stacksjs/components": "0.2.395",
+    "@stacksjs/stx": "0.2.395",
+    "bun-plugin-stx": "0.2.395",
     "@stacksjs/ts-cloud": "^0.16.15",
     "stacks": "^0.75.17"
   },
