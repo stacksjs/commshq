@@ -162,7 +162,7 @@ const viewState = state('populated')
         <div class="flex items-center justify-between px-5 py-4 border-[#171916]/10 border-b dark:border-white/10"><h2 id="records-title" class="font-bold text-sm">Active work</h2><button type="button" aria-label="Filter records" class="p-2 text-[#6c6f68] dark:text-[#aaa9a3] hover:bg-black/5 dark:hover:bg-white/10 rounded-full"><span aria-hidden="true" class="block h-4 w-4 i-hugeicons-filter-horizontal"></span></button></div>
         <div class="divide-[#171916]/8 divide-y dark:divide-white/8">
           @foreach(page().records as record)
-            <article class="grid gap-4 sm:grid-cols-[1fr_auto] sm:items-center px-5 py-5"><div><div class="flex flex-wrap gap-2 items-center"><h3 class="font-bold text-sm">{{ record.name }}</h3><span class="px-2 py-1 font-bold text-[#466833] text-[10px] dark:text-[#acd294] bg-[#eef5e8] dark:bg-[#75a65a]/15 rounded-full">{{ record.status }}</span></div><p class="mt-1 leading-5 text-[#6c6f68] text-xs dark:text-[#aaa9a3]">{{ record.detail }}</p></div><p class="font-bold text-sm">{{ record.value }}</p></article>
+            <article class="grid gap-4 sm:grid-cols-[1fr_auto] sm:items-center px-5 py-5"><div><div class="flex flex-wrap gap-2 items-center"><h3 class="font-bold text-sm">{{ record.name }}</h3><Badge size="sm" className="workspace-record-badge">{{ record.status }}</Badge></div><p class="mt-1 leading-5 text-[#6c6f68] text-xs dark:text-[#aaa9a3]">{{ record.detail }}</p></div><p class="font-bold text-sm">{{ record.value }}</p></article>
           @endforeach
         </div>
       </section>
@@ -171,7 +171,7 @@ const viewState = state('populated')
         <div class="flex items-center justify-between"><h2 id="checks-title" class="font-bold text-sm">Readiness checks</h2><span aria-hidden="true" class="h-5 w-5 text-[#ff8c79] i-hugeicons-shield-02"></span></div>
         <div class="mt-5 space-y-1">
           @foreach(page().checklist as check)
-            <div class="py-4 border-b border-white/10 last:border-0"><div class="flex gap-4 items-start justify-between"><p class="font-bold text-sm">{{ check.label }}</p><span class="px-2 py-1 font-bold text-[#bfe2ab] text-[10px] bg-white/10 rounded-full">{{ check.state }}</span></div><p class="mt-1 leading-5 text-white/55 text-xs">{{ check.detail }}</p></div>
+            <div class="py-4 border-b border-white/10 last:border-0"><div class="flex gap-4 items-start justify-between"><p class="font-bold text-sm">{{ check.label }}</p><Badge size="sm" className="workspace-check-badge">{{ check.state }}</Badge></div><p class="mt-1 leading-5 text-white/55 text-xs">{{ check.detail }}</p></div>
           @endforeach
         </div>
       </aside>
