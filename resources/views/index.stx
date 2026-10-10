@@ -80,7 +80,7 @@ const plans = [
             </div>
             <p class="mt-4 text-sm muted">No card required. Email stays free for your first 1,000 contacts.</p>
           </div>
-          <figure class="relative m-0 lg:-mr-16">
+          <figure class="relative m-0 min-w-0">
             <div class="overflow-hidden border border-tone rounded-[2rem] shadow-2xl">
               <img src="/images/commshq-editorial-hero.png" alt="A coral mailer, notebook, phone, and editorial cards arranged on a warm studio table" class="object-cover h-full min-h-[420px] w-full" width="1536" height="1024">
             </div>
