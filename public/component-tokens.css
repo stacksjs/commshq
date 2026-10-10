@@ -1,0 +1,28 @@
+/* Component defaults for the workspace, which otherwise uses literal colors.
+ * Zero specificity lets marketing/auth's existing :root palettes win regardless
+ * of stylesheet order. Theme selection still belongs to the existing bootstrap.
+ * Success/error hues match WorkspaceSurface; warning/info remain neutral.
+ */
+:where(:root) {
+  --paper: #f6f3ee;
+  --panel: #ffffff;
+  --ink: #171916;
+  --muted: #686b65;
+  --line: rgba(23, 25, 22, 0.15);
+  --coral: #bd3e2e;
+  --coral-ink: #ffffff;
+  --comms-success: #466833;
+  --comms-danger: #8f3025;
+}
+
+:where(:root.dark) {
+  --paper: #111210;
+  --panel: #1b1c1a;
+  --ink: #f5f2ec;
+  --muted: #aaa9a3;
+  --line: rgba(255, 255, 255, 0.15);
+  --coral: #ff8a78;
+  --coral-ink: #191715;
+  --comms-success: #acd294;
+  --comms-danger: #ffab9a;
+}

@@ -35,6 +35,12 @@ export default {
 
   partialsDir: 'partials',
 
+  app: {
+    head: {
+      link: [{ rel: 'stylesheet', href: '/component-tokens.css' }],
+    },
+  },
+
   /*
    * stx's client-script DOM guard: 25 rules at script-validation.js:1-127,
    * run by process.js on every non-server <script> body. serve.js forwards the
