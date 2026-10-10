@@ -6,6 +6,20 @@ import type { CrosswindConfig, Theme } from '@cwcss/crosswind'
  * Use theme entries rather than layered preflight overrides of library tokens.
  */
 export default {
+  shortcuts: {
+    // Preserve the existing consent pill while Badge owns its markup. Explicit
+    // precedence is required: class attribute order does not decide CSS order.
+    'audience-consent-badge': 'sm:!inline !px-2.5 !py-1 !font-bold !text-[#466833] !bg-[#edf5e8] '
+      + 'dark:!text-[#acd294] dark:!bg-[#75a65a]/15',
+    // These were flex items. Block-level flex avoids an extra inline baseline
+    // inside the component scope wrapper, preserving the original row heights.
+    'workspace-change-badge': '!flex !px-2.5 !py-1 !font-bold !text-[11px] !leading-[inherit] '
+      + '!text-[#42652e] !bg-[#eef5e8] dark:!text-[#a8d28e] dark:!bg-[#75a65a]/15',
+    'workspace-record-badge': '!flex !py-1 !font-bold !text-[10px] !leading-[inherit] '
+      + '!text-[#466833] !bg-[#eef5e8] dark:!text-[#acd294] dark:!bg-[#75a65a]/15',
+    // The readiness panel is dark in both modes, so this treatment stays fixed.
+    'workspace-check-badge': '!flex !py-1 !font-bold !text-[10px] !leading-[inherit] !text-[#bfe2ab] !bg-white/10',
+  },
   theme: {
     extend: {
       borderRadius: {
