@@ -6,6 +6,8 @@ import { loadCssEngine } from '../../node_modules/@stacksjs/stx/dist/dev-server/
 import { SEMANTIC_TOKENS, SHAPE_TOKENS } from '../../node_modules/@stacksjs/stx/dist/theme-tokens.js'
 import { mergeCssConfig } from '../../node_modules/@stacksjs/stx/dist/ts-css-config.js'
 
+const colors: Record<string, string> = theme.theme.extend.colors
+
 describe('component palette contract', () => {
   test('the root STX config delivers the component palette on every page', () => {
     expect(stx.app?.head?.link).toContainEqual({ rel: 'stylesheet', href: '/component-tokens.css' })
@@ -25,5 +27,21 @@ describe('component palette contract', () => {
     expect(css).toContain('.bg-accent-solid {\n  background-color: var(--coral);')
     expect(css).toContain('.rounded-control {\n  border-radius: 10px;')
     expect(css).toContain('.rounded-panel {\n  border-radius: 12px;')
+  })
+
+  test('the quiet text scale collapses on purpose, because this palette has two steps', () => {
+    /*
+     * fg-soft is the one that matters: <Breadcrumb> paints separators with it
+     * and links with fg-muted, so equal values mean a divider as loud as the
+     * labels it divides. The other four HQ apps have a third text step and
+     * point fg-soft at it; this palette has only --ink and --muted, so all three quiet
+     * roles share one value.
+     *
+     * Pinned as a test so it reads as a decision. If a third step is ever
+     * added, this fails and points at the four roles that should use it.
+     */
+    expect(colors['fg-strong']).toBe('var(--ink)')
+    for (const role of ['fg-muted', 'fg-soft', 'fg-subtle'])
+      expect(colors[role]).toBe('var(--muted)')
   })
 })

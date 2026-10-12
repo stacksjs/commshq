@@ -45,6 +45,19 @@ export default {
         'field-hover': 'color-mix(in srgb, var(--ink) 6%, var(--panel))',
         'fg': 'var(--ink)',
         'fg-strong': 'var(--ink)',
+        /*
+         * The library asks for four steps of quiet text - fg, fg-muted,
+         * fg-soft, fg-subtle - and this palette has TWO: --ink and --muted. So the
+         * three quiet roles all take the same value, and that is a statement
+         * rather than an oversight.
+         *
+         * The other four HQ apps have a third text step and point fg-soft at
+         * it, because <Breadcrumb> paints separators with fg-soft and links
+         * with fg-muted, and equal values make a divider as loud as the labels
+         * it divides. There is nothing to point at here. Inventing a third
+         * grey with color-mix would be a design decision, not a mapping, so it
+         * stays a deliberate collapse until this palette grows one.
+         */
         'fg-muted': 'var(--muted)',
         'fg-soft': 'var(--muted)',
         'fg-subtle': 'var(--muted)',
