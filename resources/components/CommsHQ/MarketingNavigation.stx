@@ -99,10 +99,3 @@ const featureGroups = [
   </nav>
 </header>
 
-<style>
-  .feature-summary::-webkit-details-marker { display: none; }
-  .feature-menu[open] > .feature-summary .feature-chevron { transform: rotate(180deg); }
-  /* The phone menu scrolls inside the viewport, so the page behind it must
-     not: otherwise the first flick past the panel's end scrolls the page. */
-  @media (max-width: 767px) { body:has(.mobile-menu[open]) { overflow: hidden; } }
-</style>

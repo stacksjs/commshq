@@ -39,25 +39,6 @@ const plans = [
       appearance: { key: 'theme', attribute: 'appearance', allowed: ['editorial'], default: 'editorial' },
       colorMode: { key: 'colorMode', attribute: 'color-mode', default: 'system' },
     })
-    <style>
-      :root { --paper: #f7f1ea; --ink: #201d1a; --muted: #6f665e; --coral: #bd3e2e; --coral-ink: #ffffff; --line: #d9cec3; --panel: #fffaf5; color-scheme: light; }
-      :root.dark { --paper: #191715; --ink: #f8f0e8; --muted: #b9aca1; --coral: #ff8a78; --coral-ink: #191715; --line: #403a35; --panel: #24211e; color-scheme: dark; }
-      html { scroll-behavior: smooth; background: var(--paper); }
-      body { margin: 0; background: var(--paper); color: var(--ink); font-family: ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
-      h1, h2, h3 { font-family: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, serif; }
-      .paper { background: var(--paper); }
-      .panel { background: var(--panel); }
-      .ink { color: var(--ink); }
-      .muted { color: var(--muted); }
-      .coral { color: var(--coral); }
-      .bg-coral { background: var(--coral); }
-      .border-tone { border-color: var(--line); }
-      .text-balance { text-wrap: balance; }
-      .editorial-grid { background-image: linear-gradient(to right, color-mix(in srgb, var(--line) 45%, transparent) 1px, transparent 1px); background-size: min(8vw, 6rem) 100%; }
-      .reveal { animation: reveal 700ms both; animation-timeline: view(); animation-range: entry 8% cover 28%; }
-      @keyframes reveal { from { opacity: 0; transform: translateY(18px); } to { opacity: 1; transform: translateY(0); } }
-      @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } .reveal { animation: none; } }
-    </style>
   </head>
   <body>
     <a href="#main" class="focus:fixed focus:left-4 focus:top-4 focus:z-50 focus:px-4 focus:py-3 focus:text-white focus:bg-black focus:rounded-md sr-only focus:not-sr-only">Skip to content</a>
