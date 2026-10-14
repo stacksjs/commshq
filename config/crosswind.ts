@@ -33,26 +33,34 @@ const DARK = `--paper:#191715;--ink:#f8f0e8;--muted:#b9aca1;--coral:#ff8a78;`
   + `--coral-ink:#191715;--line:#403a35;--panel:#24211e;color-scheme:dark;`
 
 /*
- * Single quotes, not double, and that is load-bearing rather than style.
- * A double-quoted family name inside a preflight corrupts the emitted sheet:
- * `"Segoe UI"` swallowed the rest of the body rule, all of h1-h3 and the first
+ * Single quotes, not double, and this one IS load-bearing. Re-measured against
+ * @stacksjs/ts-css, the engine stx actually loads.
+ *
+ * A double-quoted family name inside a preflight corrupts the emitted sheet
+ * two ways at once: the stack is replaced by the engine's own default
+ * (`ui-sans-serif, system-ui, sans-serif`), and everything from the quote up to
+ * the next `transform` is swallowed -- which ate all of h1-h3 and the opening
  * half of @keyframes reveal, splicing `transform:translateY(18px)}to{...` into
- * body. Measured at both minify settings; single quotes and unquoted names are
- * both clean. CSS treats the two quotings identically, so this costs nothing.
+ * the body rule. Single quotes and unquoted names are both clean, and CSS
+ * treats the two quotings identically, so this costs nothing.
+ *
+ * It fails silently and reads as a font that never applied, so
+ * tests/Unit/MobileLayout.test.ts asserts no preflight entry contains one.
  */
 const SANS = 'ui-sans-serif, -apple-system, BlinkMacSystemFont, \'Segoe UI\', sans-serif'
 const SERIF = '\'Iowan Old Style\', \'Palatino Linotype\', Palatino, Georgia, serif'
 
 /*
- * One entry per rule, and that is not organisational taste.
+ * One entry per rule, kept for readability rather than necessity.
  *
- * A single getCSS() returning the whole block silently loses rules. With all
- * ten in one string, h1-h3 and the opening half of @keyframes reveal vanished
- * and `transform:translateY(18px)}to{...` was spliced into the body rule,
- * whose font-family had been replaced by the engine's own default stack.
- * Measured at both minify settings, and every rule survives once split. Keep
- * them one per entry; a future rule added to an existing string may not
- * survive the trip.
+ * An earlier version of this comment said the split was load-bearing, on the
+ * strength of a measurement taken against @cwcss/crosswind -- which this file
+ * imports its TYPES from and which does not render the app. stx loads
+ * @stacksjs/ts-css on every path, and that engine keeps every rule in a
+ * multi-rule getCSS().
+ *
+ * The corruption that prompted the split was real, and the cause was the
+ * QUOTING below rather than the structure. See the note on SANS and SERIF.
  */
 const PREFLIGHT_RULES: string[] = [
   `:root{${LIGHT}}`,
@@ -127,13 +135,14 @@ export default {
      * `.field:focus` in @layer cw-base loses to an unlayered `.field`, which is
      * a mistake bughq already made and recorded.
      *
-     * The font shorthand is decomposed instead of carried as
-     * `[font:400_16px/1.4_...]`, because this engine resolves an arbitrary
-     * property named after a utility family to the family's longhand: that
-     * class emits `font-weight: 400 16px/1.4 ...`, which is not a declaration
-     * at all. Same defect as #37 and fixed in the same ts-css release; it also
-     * rules out [outline:...] and [border:...] here, which is why the focus
-     * ring is spelled as four separate utilities.
+     * The font shorthand is decomposed rather than carried as
+     * `[font:400_16px/1.4_...]`. That spelling WORKS on the engine that renders
+     * this app -- ts-css fixed arbitrary properties named after a utility
+     * family in 0.3.14, and 0.3.15 is installed -- so this is a readability
+     * choice, not a workaround; an earlier note here claimed otherwise after
+     * measuring @cwcss/crosswind, which only supplies this file's types. The
+     * decomposed form emits the same four declarations, and the focus ring is
+     * four utilities for the same reason.
      */
     'field': 'w-full box-border py-[0.65rem] px-[0.8rem] border border-solid border-line '
       + 'rounded-control bg-page text-fg font-normal text-[16px]/[1.4] '
