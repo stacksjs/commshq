@@ -97,21 +97,33 @@ describe('mobile layout contracts', () => {
     expect(has(await generate('block'), '.feature-summary::-webkit-details-marker{display:none}')).toBe(true)
   })
 
-  it('no preflight entry quotes a font family with double quotes', () => {
+  it('every preflight font stack reaches the sheet unchanged', async () => {
     /*
-     * The one real preflight hazard here, and it is quoting rather than
-     * structure. A double-quoted family name makes ts-css replace the stack
-     * with its own default AND swallow everything up to the next `transform`,
-     * which ate all of h1-h3 and the opening half of @keyframes reveal and
-     * spliced the leftovers into the body rule. Single quotes are clean and
-     * mean the same thing in CSS.
+     * This used to assert that no preflight double-quoted a family name, on
+     * the belief that quoting was what made ts-css replace the stack with its
+     * own default and swallow the rules after it. Both halves were wrong.
+     * Measured against the installed engine:
      *
-     * It fails silently and reads as a font that never applied, so the shape is
-     * pinned rather than the symptom.
+     *   body { font-family: ui-sans-serif, -apple-system, 'Segoe UI', sans-serif; }
+     *     -> font-family: ui-sans-serif, system-ui, sans-serif
+     *   body { font-family: ui-sans-serif, -apple-system, "Segoe UI", sans-serif; }
+     *     -> the same substitution
+     *   body{font-family:ui-sans-serif, -apple-system, 'Segoe UI', sans-serif}
+     *     -> unchanged
+     *
+     * The trigger is the SPACED rule form with a stack beginning
+     * `ui-sans-serif`; quoting is irrelevant and nothing is swallowed. What
+     * protects this app is that PREFLIGHT_RULES is written tight.
+     *
+     * So the assertion is the outcome and not the shape: whatever the config
+     * declares is what the generated sheet carries. That holds whichever form
+     * a future edit uses, and fails the moment one is substituted.
      */
-    for (const preflight of (theme as any).preflights as { getCSS: () => string }[]) {
-      const css = preflight.getCSS()
-      expect([...css.matchAll(/font-family\s*:[^;}]*"/g)].map(m => m[0])).toEqual([])
-    }
+    const generatedCss = await generate()
+    const declared = ((theme as any).preflights as { getCSS: () => string }[])
+      .flatMap(p => [...p.getCSS().matchAll(/font-family\s*:\s*([^;}]+)/g)].map(m => m[1].trim()))
+    expect(declared.length).toBeGreaterThan(0)
+    for (const stack of declared)
+      expect({ stack, inSheet: generatedCss.includes(stack) }).toEqual({ stack, inSheet: true })
   })
 })

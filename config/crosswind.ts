@@ -33,19 +33,35 @@ const DARK = `--paper:#191715;--ink:#f8f0e8;--muted:#b9aca1;--coral:#ff8a78;`
   + `--coral-ink:#191715;--line:#403a35;--panel:#24211e;color-scheme:dark;`
 
 /*
- * Single quotes, not double, and this one IS load-bearing. Re-measured against
- * @stacksjs/ts-css, the engine stx actually loads.
+ * ## Why these stacks survive, which is not the reason this comment used to give
  *
- * A double-quoted family name inside a preflight corrupts the emitted sheet
- * two ways at once: the stack is replaced by the engine's own default
- * (`ui-sans-serif, system-ui, sans-serif`), and everything from the quote up to
- * the next `transform` is swallowed -- which ate all of h1-h3 and the opening
- * half of @keyframes reveal, splicing `transform:translateY(18px)}to{...` into
- * the body rule. Single quotes and unquoted names are both clean, and CSS
- * treats the two quotings identically, so this costs nothing.
+ * It said the single quotes were load-bearing -- that a double-quoted family
+ * name made the engine replace the stack with its own default and swallow the
+ * rules after it. Both halves are wrong, and the measurement that disproves
+ * them is three lines against the installed @stacksjs/ts-css:
  *
- * It fails silently and reads as a font that never applied, so
- * tests/Unit/MobileLayout.test.ts asserts no preflight entry contains one.
+ *   body { font-family: ui-sans-serif, -apple-system, 'Segoe UI', sans-serif; }
+ *     -> font-family: ui-sans-serif, system-ui, sans-serif
+ *   body { font-family: ui-sans-serif, -apple-system, "Segoe UI", sans-serif; }
+ *     -> the same substitution
+ *   body{font-family:ui-sans-serif, -apple-system, 'Segoe UI', sans-serif}
+ *     -> unchanged
+ *
+ * The trigger is the SPACED rule form -- `sel { prop: value; }` -- with a stack
+ * that begins with `ui-sans-serif`. Quoting is irrelevant, and nothing is
+ * swallowed: a rule written after the substituted one survives intact.
+ *
+ * What protects this file is that every PREFLIGHT_RULES entry below is written
+ * TIGHT, `body{margin:0;...}`, which the engine passes through as text. The
+ * quoting is a style choice and the two forms mean the same thing in CSS, so
+ * keeping single quotes costs nothing -- but it is not what makes this work,
+ * and writing one of these rules spaced would silently repaint the body.
+ *
+ * A stack that does not start with `ui-sans-serif` is never touched, which is
+ * why SERIF below would be safe either way. Anything behind `var()` or
+ * declared as a custom property is never touched either, and that is the only
+ * form that does not depend on remembering any of this -- see bughq's
+ * `--sans-system`.
  */
 const SANS = 'ui-sans-serif, -apple-system, BlinkMacSystemFont, \'Segoe UI\', sans-serif'
 const SERIF = '\'Iowan Old Style\', \'Palatino Linotype\', Palatino, Georgia, serif'
