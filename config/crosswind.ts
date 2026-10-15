@@ -27,10 +27,45 @@ import type { CrosswindConfig, Theme } from '@cwcss/crosswind'
  * unaffected -- nothing competes with them -- which is why `.field` is a
  * shortcut below rather than another line in here.
  */
+/*
+ * ## public/component-tokens.css is gone, and it had been winning
+ *
+ * That file declared these same seven names, plus --comms-success and
+ * --comms-danger, under `:where(:root)` and `:where(:root.dark)`. Its own
+ * header said why: "Zero specificity lets marketing/auth's existing :root
+ * palettes win regardless of stylesheet order." The note below said the other
+ * half: component-tokens "supplies dashboard defaults where no palette is
+ * declared."
+ *
+ * Neither was true. :where() removes specificity, and specificity was not what
+ * decided it: these rules are a preflight and land in @layer tc-base, while a
+ * linked stylesheet is UNLAYERED, and an unlayered rule beats a layered one at
+ * any specificity INCLUDING zero. So the file won everywhere, on marketing and
+ * auth too, and this palette -- the one the ninety-odd `colors` roles below are
+ * written against -- reached no page at all.
+ *
+ * Measured on the built site before removing it, light and dark:
+ *
+ *            config (here)   component-tokens   computed
+ *   --paper    #f7f1ea          #f6f3ee          #f6f3ee
+ *   --panel    #fffaf5          #ffffff          #ffffff
+ *   --paper    #191715          #111210          #111210   (dark)
+ *   --panel    #24211e          #1b1c1a          #1b1c1a   (dark)
+ *
+ * Visible as panels painting pure white instead of warm off-white, and the
+ * whole app reading cooler and flatter than the editorial palette intends.
+ *
+ * Resolved in favour of this file, which is also stx-standards §11.2: one
+ * declaration site. The two tokens that were only ever in component-tokens.css
+ * are folded in below at the values it used, so the success and danger roles
+ * are unchanged.
+ */
 const LIGHT = `--paper:#f7f1ea;--ink:#201d1a;--muted:#6f665e;--coral:#bd3e2e;`
   + `--coral-ink:#ffffff;--line:#d9cec3;--panel:#fffaf5;color-scheme:light;`
+  + `--comms-success:#466833;--comms-danger:#8f3025;`
 const DARK = `--paper:#191715;--ink:#f8f0e8;--muted:#b9aca1;--coral:#ff8a78;`
   + `--coral-ink:#191715;--line:#403a35;--panel:#24211e;color-scheme:dark;`
+  + `--comms-success:#acd294;--comms-danger:#ffab9a;`
 
 /*
  * ## Why these stacks survive, which is not the reason this comment used to give
@@ -121,8 +156,10 @@ const PREFLIGHT_RULES: string[] = [
 ]
 
 /**
- * Component roles use the existing editorial palette on marketing/auth pages.
- * component-tokens.css supplies dashboard defaults where no palette is declared.
+ * Component roles use the editorial palette above, on every page. They used to
+ * be documented as using it "on marketing/auth pages", with
+ * component-tokens.css supplying "dashboard defaults where no palette is
+ * declared" -- see the note on LIGHT for why that split never happened.
  * Use theme entries rather than layered preflight overrides of library tokens.
  */
 export default {

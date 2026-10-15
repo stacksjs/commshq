@@ -35,11 +35,12 @@ export default {
 
   partialsDir: 'partials',
 
-  app: {
-    head: {
-      link: [{ rel: 'stylesheet', href: '/component-tokens.css' }],
-    },
-  },
+  /*
+   * No `app.head.link`. It carried /component-tokens.css, which declared a
+   * second copy of the palette and, being unlayered, beat the one in
+   * config/crosswind.ts on every page. The file is deleted and its two
+   * extra tokens are folded into that palette (stx-standards rule 3, §11.2).
+   */
 
   /*
    * stx's client-script DOM guard: 25 rules at script-validation.js:1-127,
