@@ -86,13 +86,18 @@ describe('mobile layout contracts', () => {
     expect(has(await generate('block'), 'body:has(.mobile-menu[open]){overflow:hidden}')).toBe(true)
   })
 
-  it('hides the details marker, which an arbitrary-variant utility would not', async () => {
+  it('hides the details marker, wherever the rule lives', async () => {
     /*
-     * [&::-webkit-details-marker]:hidden is the obvious spelling and emits
-     * nothing here: the extractor drops any class whose variant is an
-     * arbitrary selector, so it never reaches the generator (same defect as
-     * stacksjs/ts-css#37). Hence a preflight rule, and hence this assertion --
-     * without it the twin arrows come back and nothing fails.
+     * [&::-webkit-details-marker]:hidden is the obvious spelling and used to
+     * emit nothing: the extractor dropped any class whose variant is an
+     * arbitrary selector, so it never reached the generator (stacksjs/ts-css#37).
+     * Fixed in 0.3.16, which this app now resolves -- measured through the same
+     * loader this file uses, that class emits its ::-webkit-details-marker rule.
+     *
+     * The rule stays a preflight anyway, with the two selectors it belongs
+     * with (see config/crosswind.ts), so this assertion is deliberately about
+     * the OUTPUT and not the spelling: without it the twin arrows come back
+     * and nothing fails.
      */
     expect(has(await generate('block'), '.feature-summary::-webkit-details-marker{display:none}')).toBe(true)
   })

@@ -93,13 +93,27 @@ const PREFLIGHT_RULES: string[] = [
    * state, and the scroll lock is on <body> while the trigger is in the
    * component.
    *
-   * The marker reset looks like it could be an arbitrary-variant utility,
-   * [&::-webkit-details-marker]:hidden, and cannot: this engine's extractor
-   * rejects any class whose variant is an arbitrary selector, so the class
-   * never reaches the generator and emits nothing at all. [&>p]:underline is
-   * dropped the same way. Same extractor defect as stacksjs/ts-css#37, which
-   * ts-css 0.3.16 fixes and @cwcss/crosswind does not. Tried, measured,
-   * reverted -- revisit when this app moves engines.
+   * The marker reset also looked like it could be an arbitrary-variant
+   * utility, [&::-webkit-details-marker]:hidden, and once could not: the
+   * extractor rejected any class whose variant is an arbitrary selector, so
+   * the class never reached the generator and emitted nothing at all.
+   * [&>p]:underline was dropped the same way.
+   *
+   * **That is fixed** (stacksjs/ts-css#37, in 0.3.16, which this app now
+   * resolves). No engine move is needed or pending: @cwcss/crosswind supplies
+   * this project's config TYPES and nothing else, and stx loads
+   * @stacksjs/ts-css on every path -- see the note in
+   * tests/Unit/MobileLayout.test.ts. Measured through that same loader and
+   * merge on 0.3.16, with this config:
+   *
+   *   [&::-webkit-details-marker]:hidden
+   *     -> .…::-webkit-details-marker { display: none }
+   *   [&>p]:underline  -> .…>p { text-decoration-line: underline }
+   *
+   * So the marker reset COULD be a utility now. It stays a preflight for the
+   * reason the first paragraph gives, which never depended on the defect: it
+   * is one of three rules that belong together, and the other two cannot be
+   * utilities at all.
    */
   `.feature-summary::-webkit-details-marker{display:none}`,
   `.feature-menu[open] > .feature-summary .feature-chevron{transform:rotate(180deg)}`,
@@ -137,10 +151,12 @@ export default {
     'border-tone': 'border-line',
 
     // index.stx's two editorial treatments. `reveal`'s reduced-motion guard is
-    // `motion-reduce:animate-none` and NOT `motion-reduce:[animation:none]`:
-    // this engine drops a variant on an arbitrary property entirely
-    // (stacksjs/ts-css#37, fixed in ts-css 0.3.16, not in @cwcss/crosswind),
-    // so the idiomatic spelling is also the only one that emits.
+    // `motion-reduce:animate-none` and not `motion-reduce:[animation:none]`,
+    // which is a choice now rather than a constraint: the engine used to drop
+    // a variant on an arbitrary property entirely, and 0.3.16 fixes that
+    // (stacksjs/ts-css#37 after #36). Measured through this app's own loader:
+    // the arbitrary spelling emits the right @media block today. `animate-none`
+    // stays because it is the idiomatic one, not because it is the only one.
     'editorial-grid': '[background-image:linear-gradient(to_right,color-mix(in_srgb,var(--line)_45%,transparent)_1px,transparent_1px)] '
       + '[background-size:min(8vw,6rem)_100%]',
     'reveal': '[animation:reveal_700ms_both] [animation-timeline:view()] '
