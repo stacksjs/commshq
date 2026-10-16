@@ -107,7 +107,7 @@ async function handleVerify(e: SubmitEvent): Promise<void> {
 @section('content')
 <div class="max-w-sm w-full">
   <div class="mb-8 text-center">
-    <StxLink to="/" class="font-bold text-2xl ink" style="text-decoration: none">CommsHQ</StxLink>
+    <StxLink to="/" class="font-bold text-2xl no-underline ink">CommsHQ</StxLink>
     <p class="mt-2 text-sm muted">Sign in to your workspace</p>
   </div>
 
@@ -122,7 +122,7 @@ async function handleVerify(e: SubmitEvent): Promise<void> {
         <input id="password" name="password" type="password" required autocomplete="current-password" class="field" :aria-invalid="error() ? 'true' : 'false'" :aria-describedby="error() ? 'login-error' : ''">
       </div>
 
-      <label for="remember" class="flex items-center gap-2 text-xs muted" style="cursor: pointer">
+      <label for="remember" class="flex items-center gap-2 text-xs cursor-pointer muted">
         <input id="remember" name="remember" type="checkbox" class="rounded border-tone">
         Keep me signed in for 30 days
       </label>
@@ -130,7 +130,7 @@ async function handleVerify(e: SubmitEvent): Promise<void> {
       {{-- The label is static and the busy state rides on :disabled, an
           attribute binding. A reactive expression in the button's own text
           would make stx cloak it, and this button is the whole page. --}}
-      <button type="submit" :disabled="loading()" class="px-4 py-2.5 w-full font-semibold text-sm text-[var(--coral-ink)] rounded-xl border-0 bg-coral" style="cursor: pointer">Sign in</button>
+      <button type="submit" :disabled="loading()" class="px-4 py-2.5 w-full font-semibold text-sm text-[var(--coral-ink)] cursor-pointer rounded-xl border-0 bg-coral">Sign in</button>
     </form>
 
     {{-- Second step for TOTP accounts. Hidden until step one reports
@@ -142,7 +142,7 @@ async function handleVerify(e: SubmitEvent): Promise<void> {
         <input id="code" name="code" type="text" inputmode="numeric" autocomplete="one-time-code" maxlength="6" pattern="[0-9]*" placeholder="123456" class="field" :aria-invalid="error() ? 'true' : 'false'" :aria-describedby="error() ? 'login-error' : ''">
         <p class="mt-1 text-xs muted">Enter the 6-digit code from your authenticator app.</p>
       </div>
-      <button type="submit" :disabled="loading()" class="px-4 py-2.5 w-full font-semibold text-sm text-[var(--coral-ink)] rounded-xl border-0 bg-coral" style="cursor: pointer">Verify</button>
+      <button type="submit" :disabled="loading()" class="px-4 py-2.5 w-full font-semibold text-sm text-[var(--coral-ink)] cursor-pointer rounded-xl border-0 bg-coral">Verify</button>
     </form>
 
     <p role="status" class="mt-4 text-center text-xs muted" :show="loading()" style="display:none">Signing you in...</p>

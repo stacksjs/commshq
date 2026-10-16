@@ -70,7 +70,7 @@ async function handleSubmit(e: SubmitEvent): Promise<void> {
 @section('content')
 <div class="max-w-sm w-full">
   <div class="mb-8 text-center">
-    <StxLink to="/" class="font-bold text-2xl ink" style="text-decoration: none">CommsHQ</StxLink>
+    <StxLink to="/" class="font-bold text-2xl no-underline ink">CommsHQ</StxLink>
     <p class="mt-2 text-sm muted">Create your workspace</p>
   </div>
 
@@ -90,7 +90,7 @@ async function handleSubmit(e: SubmitEvent): Promise<void> {
         <p class="mt-1 text-xs muted">At least 8 characters.</p>
       </div>
 
-      <button type="submit" :disabled="loading()" class="px-4 py-2.5 w-full font-semibold text-sm text-[var(--coral-ink)] rounded-xl border-0 bg-coral" style="cursor: pointer">Create workspace</button>
+      <button type="submit" :disabled="loading()" class="px-4 py-2.5 w-full font-semibold text-sm text-[var(--coral-ink)] cursor-pointer rounded-xl border-0 bg-coral">Create workspace</button>
       <p role="status" class="text-center text-xs muted" :show="loading()" style="display:none">Creating your workspace...</p>
       <p id="form-error" role="alert" class="px-3 py-2 text-sm text-center rounded-lg coral" :show="error()" style="display:none">{{ error() }}</p>
     </form>
