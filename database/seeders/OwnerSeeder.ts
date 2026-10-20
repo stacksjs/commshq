@@ -6,6 +6,26 @@ import { makeHash } from '@stacksjs/security'
 
 const OWNER_WORKSPACE = 'CommsHQ'
 
+/**
+ * The local fallback, matching the other five HQ apps. `.localhost` is
+ * reserved by RFC 6761 and resolves nowhere but this machine, so the address
+ * cannot be mistaken for a real mailbox or receive a stray notification --
+ * which is why the fallback is not the production default below.
+ */
+const DEV_EMAIL = 'owner@commshq.localhost'
+/** What config/env.ts defaults COMMSHQ_OWNER_EMAIL to, and what a deploy gets. */
+const PRODUCTION_DEFAULT_EMAIL = 'chris@stacksjs.com'
+const DEV_PASSWORD = 'stacks-dev-only'
+
+/**
+ * APP_ENV values that may use the fallback above. config/env.ts types APP_ENV
+ * as local|development|dev|staging|stage|production|prod|test|testing, so all
+ * four local spellings are listed; `staging`/`stage` deliberately are not, and
+ * fall through to the branch that requires the password to be supplied.
+ */
+const LOCAL_ENVS = new Set(['local', 'development', 'dev', 'test', 'testing'])
+const PRODUCTION_ENVS = new Set(['production', 'prod'])
+
 interface IdentifiedRow {
   id: number
 }
@@ -61,15 +81,43 @@ async function ensureOwnerUsageMeters(teamId: number): Promise<void> {
 
 export default class OwnerSeeder extends Seeder {
   async run(): Promise<void> {
-    const email = String(env.COMMSHQ_OWNER_EMAIL || 'chris@stacksjs.com').trim().toLowerCase()
-    const password = String(env.COMMSHQ_OWNER_PASSWORD || '')
-    const isProduction = ['prod', 'production'].includes(String(env.APP_ENV || '').toLowerCase())
+    const appEnv = String(env.APP_ENV || '').toLowerCase()
+    const isLocal = LOCAL_ENVS.has(appEnv)
+    const isProduction = PRODUCTION_ENVS.has(appEnv)
+
+    const envEmail = String(env.COMMSHQ_OWNER_EMAIL || '').trim().toLowerCase()
+    const envPassword = String(env.COMMSHQ_OWNER_PASSWORD || '')
+
+    /*
+     * A local environment falls back to the pair above, so a fresh clone can
+     * sign in after one `./buddy seed` with nothing to configure -- the
+     * behaviour the other five HQ apps already have, and the reason this one
+     * was the odd app out with no local credential at all.
+     *
+     * The fallback is deliberately all-or-nothing, and that is the whole
+     * subtlety. `env.COMMSHQ_OWNER_EMAIL` cannot report "unset": config/env.ts
+     * gives it the default 'chris@stacksjs.com', so a seeder that fell back on
+     * the password alone would pair a real address with a password committed
+     * to this repository, and create exactly that account on any machine that
+     * ran the seeder. It did, once, before this was written this way.
+     *
+     * So the password decides. Supply one and the email behaves as it always
+     * did -- yours, or the configured default. Supply none and, locally, both
+     * come from the pair above. Outside a local APP_ENV nothing changed:
+     * the password is still required, production still refuses without it, and
+     * the configured default is still what a deploy gets.
+     */
+    const email = envPassword
+      ? (envEmail || PRODUCTION_DEFAULT_EMAIL)
+      : (isLocal ? DEV_EMAIL : (envEmail || PRODUCTION_DEFAULT_EMAIL))
+    const password = envPassword || (isLocal ? DEV_PASSWORD : '')
+    const usedFallback = !envPassword && isLocal
 
     if (!password) {
       if (isProduction)
         throw new Error('COMMSHQ_OWNER_PASSWORD is required for the production owner bootstrap.')
 
-      log.info('[OwnerSeeder] Skipped owner bootstrap because COMMSHQ_OWNER_PASSWORD is not set.')
+      log.info(`[OwnerSeeder] Skipped: COMMSHQ_OWNER_PASSWORD is not set and APP_ENV="${appEnv}" is not a local environment.`)
       return
     }
 
@@ -132,6 +180,8 @@ export default class OwnerSeeder extends Seeder {
     await assignRole(userId, 'admin')
     await ensureOwnerUsageMeters(teamId)
     log.info(`[OwnerSeeder] Owner workspace is ready for ${email}.`)
+    if (usedFallback)
+      log.info(`[OwnerSeeder] Local fallback credentials in use: ${email} / ${DEV_PASSWORD}`)
   }
 }
 
