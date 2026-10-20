@@ -107,8 +107,12 @@ async function assertSignInWorks(): Promise<boolean> {
   const email = process.env.SMOKE_EMAIL
   const password = process.env.SMOKE_PASSWORD
 
+  // LOUD, not a quiet log line. This leg has been here a while with the
+  // credentials never set on the repository, so it printed "skipped" into a
+  // passing run and nobody saw it: a check that cannot fail reads exactly like
+  // a check that passed. ::warning:: puts it on the job summary instead.
   if (!email || !password) {
-    console.log('  sign-in leg skipped: SMOKE_EMAIL and SMOKE_PASSWORD are not set.')
+    console.log(`::warning title=Sign-in not verified::${baseUrl} deployed without exercising sign-in. Set the SMOKE_EMAIL and SMOKE_PASSWORD repository secrets to turn this leg on.`)
     return false
   }
 
