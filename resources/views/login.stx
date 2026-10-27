@@ -118,7 +118,10 @@ async function handleVerify(e: SubmitEvent): Promise<void> {
         <input id="email" name="email" type="email" required autocomplete="email" class="field" placeholder="you@example.com" :aria-invalid="error() ? 'true' : 'false'" :aria-describedby="error() ? 'login-error' : ''">
       </div>
       <div>
-        <label for="password" class="block mb-1.5 font-medium text-xs ink">Password</label>
+        <div class="flex items-baseline justify-between mb-1.5">
+          <label for="password" class="font-medium text-xs ink">Password</label>
+          <StxLink to="/forgot-password" class="text-xs muted">Forgot?</StxLink>
+        </div>
         <input id="password" name="password" type="password" required autocomplete="current-password" class="field" :aria-invalid="error() ? 'true' : 'false'" :aria-describedby="error() ? 'login-error' : ''">
       </div>
 

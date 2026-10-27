@@ -155,5 +155,15 @@ export default {
      * @default 60
      */
     throttle: env.AUTH_PASSWORD_RESET_THROTTLE ||60,
+
+    /**
+     * Where the emailed link points.
+     *
+     * Must match the page that exists. Stated explicitly rather than left to
+     * the framework default because the two have to change together: a URL
+     * naming a page that is not there delivers a valid token to a 404, which
+     * reads as a broken token rather than a misrouted link.
+     */
+    url: '/reset-password?token={token}&email={email}',
   },
 } satisfies AuthConfig
