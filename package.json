@@ -74,10 +74,10 @@
     "serve:validate": "bun scripts/validate-serve.ts"
   },
   "dependencies": {
-    "@stacksjs/components": "0.2.532",
+    "@stacksjs/components": "0.2.736",
     "@stacksjs/stx": "0.2.532",
     "bun-plugin-stx": "0.2.532",
-    "@stacksjs/ts-cloud": "^0.16.15",
+    "@stacksjs/ts-cloud": "^0.16.70",
     "stacks": "^0.75.17"
   },
   "workspaces": [
