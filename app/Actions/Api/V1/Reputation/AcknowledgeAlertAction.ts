@@ -6,7 +6,7 @@ import ReputationAlert from '../../../../Models/ReputationAlert'
 import { canTriageReputation } from '../../../../Support/reputationPolicy'
 import { activeTeam } from '../../../../Support/activeTeam'
 
-const DECISIONS = ['acknowledged', 'resolved']
+const DECISIONS: readonly string[] = ['acknowledged', 'resolved']
 
 export default new Action({
   name: 'Acknowledge Reputation Alert',
@@ -23,7 +23,7 @@ export default new Action({
     const id = Number(request.getParam('id'))
     if (!Number.isSafeInteger(id) || id < 1) return response.json({ error: 'Alert id must be a positive integer' }, 422)
 
-    const decision = String(request.get('decision') || '').toLowerCase()
+    const decision = String(request.get('decision') || '').toLowerCase() as 'acknowledged' | 'resolved'
     if (!DECISIONS.includes(decision)) return response.json({ error: 'decision must be acknowledged or resolved' }, 422)
 
     const alert = await ReputationAlert.where('id', id).where('team_id', teamId).first()

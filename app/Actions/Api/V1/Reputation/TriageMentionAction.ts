@@ -6,7 +6,7 @@ import ReputationMention from '../../../../Models/ReputationMention'
 import { canTriageReputation } from '../../../../Support/reputationPolicy'
 import { activeTeam } from '../../../../Support/activeTeam'
 
-const STATUSES = ['triaged', 'responded', 'ignored']
+const STATUSES: readonly string[] = ['triaged', 'responded', 'ignored']
 
 export default new Action({
   name: 'Triage Reputation Mention',
@@ -23,7 +23,7 @@ export default new Action({
     const id = Number(request.getParam('id'))
     if (!Number.isSafeInteger(id) || id < 1) return response.json({ error: 'Mention id must be a positive integer' }, 422)
 
-    const status = String(request.get('status') || '').toLowerCase()
+    const status = String(request.get('status') || '').toLowerCase() as 'triaged' | 'responded' | 'ignored'
     if (!STATUSES.includes(status)) return response.json({ error: 'status must be triaged, responded, or ignored' }, 422)
 
     const mention = await ReputationMention.where('id', id).where('team_id', teamId).first()

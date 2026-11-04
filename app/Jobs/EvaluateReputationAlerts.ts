@@ -100,7 +100,7 @@ export default new Job({
             team_id: teamId,
             reputation_alert_rule_id: Number(rule.id),
             fingerprint,
-            metric: String(rule.metric),
+            metric: rule.metric,
             severity,
             observedValue: Number(result.value),
             thresholdValue: Number(rule.threshold),

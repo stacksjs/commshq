@@ -7,6 +7,7 @@ import ReputationAlertRule from '../../../../Models/ReputationAlertRule'
 import { ALERT_CHANNELS } from '../../../../Support/notifyReputationAlert'
 import { parsePlatform } from '../../../../Support/reputationPlatforms'
 import { canManageReputation } from '../../../../Support/reputationPolicy'
+import type { Severity } from '../../../../Support/reputationThresholds'
 import { parseComparator, parseMetric } from '../../../../Support/reputationThresholds'
 import { activeTeam } from '../../../../Support/activeTeam'
 
@@ -51,7 +52,7 @@ export default new Action({
     if (minimumSampleSize === null) return response.json({ error: 'minimumSampleSize must be an integer between 1 and 10000' }, 422)
     if (cooldownMinutes === null) return response.json({ error: 'cooldownMinutes must be an integer between 15 and 43200' }, 422)
 
-    const severity = String(request.get('severity') || 'warning').toLowerCase()
+    const severity = String(request.get('severity') || 'warning').toLowerCase() as Severity
     if (!SEVERITIES.includes(severity)) return response.json({ error: 'severity must be info, warning, or critical' }, 422)
 
     const rawPlatforms = request.get('platforms')
@@ -82,7 +83,7 @@ export default new Action({
       severity,
       channels: JSON.stringify(channels),
       cooldownMinutes,
-      status: String(request.get('status') || 'active').toLowerCase() === 'paused' ? 'paused' : 'active',
+      status: (String(request.get('status') || 'active').toLowerCase() === 'paused' ? 'paused' : 'active') as 'paused' | 'active',
     }
 
     // Rule names are unique per team, which makes the name the natural upsert key.

@@ -20,7 +20,7 @@ export default new Action({
 
     const id = Number(request.getParam('id'))
     if (!Number.isSafeInteger(id) || id < 1) return response.json({ error: 'AI generation id must be a positive integer' }, 422)
-    const decision = String(request.get('decision') || '').toLowerCase()
+    const decision = String(request.get('decision') || '').toLowerCase() as 'approved' | 'rejected'
     if (!['approved', 'rejected'].includes(decision)) return response.json({ error: 'Decision must be approved or rejected' }, 422)
 
     const generation = await AiGeneration.where('id', id).where('team_id', teamId).first()
