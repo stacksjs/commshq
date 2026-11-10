@@ -5,6 +5,24 @@ interface AppContract {
   domain: string
   minPages: number
   routes: Record<string, string[]>
+  /**
+   * Routes that must NOT be in the production artifact, because they are
+   * behind a page gate.
+   *
+   * The SSG runs each page's `definePageMeta` middleware at build time and
+   * fails a guard closed when it cannot resolve one, so a page declaring
+   * `middleware: ['auth']` is aborted rather than rendered. That is the
+   * correct outcome: a signed-in page has no business being prerendered into
+   * a static artifact, where it would be served to anyone with the URL.
+   *
+   * It is asserted rather than left implicit because the failure is silent in
+   * both directions. A gate removed by accident puts a whole application's
+   * signed-in surface into `dist/` and nothing else notices, and a gate added
+   * to a route still listed in `routes` above fails the build with "production
+   * artifact is missing", which reads like a build fault rather than the
+   * contract disagreeing with the page.
+   */
+  gatedRoutes?: string[]
 }
 
 const CONTRACTS: Record<string, AppContract> = {
@@ -32,8 +50,12 @@ const CONTRACTS: Record<string, AppContract> = {
     routes: {
       '/': ['Grow an audience worth knowing.', 'From first hello to favorite customer.'],
       '/login': ['CommsHQ'],
-      '/dashboard/commshq': ['CommsHQ'],
+      '/pricing': ['CommsHQ'],
     },
+    // `/dashboard/commshq` was the third smoke route, from when the dashboard
+    // was readable signed out. It is gated now, so the artifact it was
+    // asserting no longer exists and must not.
+    gatedRoutes: ['/dashboard/commshq', '/dashboard/commshq/audience'],
   },
   loghq: {
     domain: 'loghq.org',
@@ -150,6 +172,11 @@ for (const [route, expectedText] of Object.entries(contract.routes)) {
     if (!local.startsWith(`${publicRoot}/`) || !existsSync(local))
       failures.push(`${route}: referenced asset is missing: ${assetPath}`)
   }
+}
+
+for (const route of contract.gatedRoutes ?? []) {
+  if (routeArtifact(route))
+    failures.push(`${route}: is gated, but a production artifact was emitted for it`)
 }
 
 for (const metadataFile of ['sitemap.xml', 'robots.txt']) {
