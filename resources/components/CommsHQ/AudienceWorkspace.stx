@@ -1,69 +1,354 @@
 <script server>
-const contacts = [
-  { name: 'Maya Alvarez', address: 'maya@example.com', source: 'Referral', state: 'Subscribed', value: '$428' },
-  { name: 'Elliot Chen', address: '+1 415 555 0184', source: 'Checkout', state: 'SMS consented', value: '$186' },
-  { name: 'Priya Shah', address: 'priya@example.com', source: 'Field Notes', state: 'Subscribed', value: '$96' },
-  { name: 'Noah Williams', address: 'noah@example.com', source: 'Import', state: 'Pending', value: '$0' },
-]
+/* The status filter's options are a fixed list from the model's own enum, so
+ * they are rendered here rather than looped in the browser: the select is then
+ * usable in the first paint, and there is nothing for hydration to rebuild. */
+import { CONTACT_STATUSES } from '../../data/contacts-query'
+
+export const statusOptions = CONTACT_STATUSES
 </script>
 
-<main class="p-5 sm:p-8 min-h-screen text-[#171916] dark:text-[#f5f2ec] bg-[#f6f3ee] dark:bg-[#111210]">
+<script client>
+/**
+ * The contacts workspace, reading the application's own API.
+ *
+ * This page used to be four hard-coded people and three invented percentages.
+ * Everything below now comes from `GET /api/v1/contacts`, which already
+ * existed: `Contact`'s `useApi` trait publishes it behind the `auth` and `team`
+ * middleware, and the auto-CRUD layer scopes every row to the caller's team
+ * from the model's `belongsTo: ['Team']`. So there is no new endpoint here, and
+ * no team id is sent from the browser: asking for someone else's contacts is
+ * not something this page can express.
+ *
+ * Fetched from the browser rather than rendered on the server, which is the
+ * pattern the dashboard guidance names: the document is a shell derived from
+ * source, and the records arrive after hydration. The auth cookie is HttpOnly
+ * and `SameSite=Lax`, so `credentials: 'same-origin'` is all that is needed to
+ * authenticate these calls, and the page gate has already proved there is a
+ * session before any of this runs.
+ *
+ * Writes carry the CSRF token explicitly. The middleware is a stateless
+ * double-submit: the API sets a non-HttpOnly `X-CSRF-Token` cookie on every
+ * safe response and compares it to the `X-CSRF-Token` header on unsafe ones.
+ * The first listing below is that safe response, so by the time anyone can
+ * press Add contact the cookie exists. It is read with `useCookie` rather than
+ * off the document, which is a prohibited DOM call in a client script.
+ */
+import {
+  CONTACTS_PER_PAGE,
+  contactsUrl,
+  listErrorMessage,
+  toContactViews,
+} from '../../data/contacts-query'
+
+const contacts = state([])
+const total = state(null)
+const hasMore = state(false)
+const page = state(1)
+const search = state('')
+const status = state('')
+const loading = state(true)
+const errorText = state('')
+/* Which control the in-flight load belongs to. One shared `loading()` drove
+ * aria-busy on Refresh, Previous and Next, which are visible together, so a
+ * screen reader was told three controls were updating when one was. */
+const busySource = state('refresh')
+
+const addOpen = state(false)
+const addEmail = state('')
+const addFirstName = state('')
+const addLastName = state('')
+const saving = state(false)
+const addError = state('')
+
+const csrfToken = useCookie('X-CSRF-Token')
+
+const refreshBusy = derived(() => loading() && busySource() === 'refresh')
+const prevBusy = derived(() => loading() && busySource() === 'prev')
+const nextBusy = derived(() => loading() && busySource() === 'next')
+const showEmpty = derived(() => !loading() && !errorText() && contacts().length === 0)
+const showTable = derived(() => !loading() && !errorText() && contacts().length > 0)
+/* The count line says what is on screen, and the workspace total only when the
+ * paginator supplied one: `total` is optional on the envelope, and printing a
+ * zero we were never told would be a lie about an empty workspace. */
+const countLabel = derived(() => {
+  const shown = contacts().length
+  const all = total()
+  if (typeof all === 'number')
+    return `${shown} of ${all}`
+  return String(shown)
+})
+
+async function load(source = 'refresh') {
+  busySource.set(source)
+  loading.set(true)
+  errorText.set('')
+  try {
+    const response = await fetch(contactsUrl({
+      page: page(),
+      perPage: CONTACTS_PER_PAGE,
+      search: search(),
+      status: status(),
+    }), { credentials: 'same-origin', headers: { Accept: 'application/json' } })
+
+    if (!response.ok) {
+      errorText.set(listErrorMessage(response.status))
+      contacts.set([])
+      return
+    }
+
+    const body = await response.json()
+    contacts.set(toContactViews(body))
+    total.set(typeof body?.total === 'number' ? body.total : null)
+    hasMore.set(body?.has_more_pages === true)
+  }
+  catch {
+    // A network failure, not a refusal: there is no status to explain.
+    errorText.set('Contacts could not be loaded. Check your connection and try again.')
+    contacts.set([])
+  }
+  finally {
+    loading.set(false)
+  }
+}
+
+/* Typing is debounced so a six-letter name is one request, not six. The delay
+ * is deliberately below the ~400ms where a list stops feeling attached to the
+ * keyboard. `useDebounceFn` rather than setTimeout, which rule 8 prohibits. */
+const runSearch = useDebounceFn(() => {
+  page.set(1)
+  void load()
+}, 250)
+
+function onSearchInput() {
+  runSearch()
+}
+
+function onStatusChange() {
+  page.set(1)
+  void load()
+}
+
+function nextPage() {
+  if (!hasMore() || loading())
+    return
+  page.update(value => value + 1)
+  void load('next')
+}
+
+function previousPage() {
+  if (page() <= 1 || loading())
+    return
+  page.update(value => value - 1)
+  void load('prev')
+}
+
+function toggleAdd() {
+  addOpen.update(value => !value)
+  addError.set('')
+}
+
+async function addContact() {
+  const email = addEmail().trim()
+  if (!email) {
+    addError.set('An email address is required.')
+    return
+  }
+
+  saving.set(true)
+  addError.set('')
+  try {
+    const response = await fetch('/api/v1/contacts', {
+      method: 'POST',
+      credentials: 'same-origin',
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+        'X-CSRF-Token': csrfToken() || '',
+      },
+      body: JSON.stringify({
+        email,
+        first_name: addFirstName().trim() || null,
+        last_name: addLastName().trim() || null,
+        source: 'dashboard',
+      }),
+    })
+
+    if (response.status === 201 || response.ok) {
+      addEmail.set('')
+      addFirstName.set('')
+      addLastName.set('')
+      addOpen.set(false)
+      page.set(1)
+      await load()
+      return
+    }
+
+    /* 409 is the auto-CRUD layer's unique-constraint answer, and `contacts`
+     * carries a unique index on (team_id, email). Saying so is more use than
+     * a generic failure, because the fix is to search for the person instead. */
+    if (response.status === 409)
+      addError.set('That email address is already a contact in this workspace.')
+    else if (response.status === 422)
+      addError.set('That email address was rejected as invalid.')
+    else if (response.status === 403)
+      addError.set('That request was refused. Reload the page and try again.')
+    else
+      addError.set(`The contact could not be saved (${response.status}).`)
+  }
+  catch {
+    addError.set('The contact could not be saved. Check your connection and try again.')
+  }
+  finally {
+    saving.set(false)
+  }
+}
+
+onMount(() => {
+  void load()
+})
+</script>
+
+<main id="main" class="p-5 sm:p-8 min-h-screen text-fg bg-page">
   <div class="mx-auto max-w-[1500px]">
     <header class="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between mb-7">
       <div>
-        <p class="font-bold text-[#b8402f] text-[11px] tracking-[0.2em] uppercase dark:text-[#ff8c79]">Audience</p>
+        <p class="font-bold text-[11px] text-accent tracking-[0.2em] uppercase">Audience</p>
         <h1 class="mt-2 font-semibold text-4xl tracking-[-0.04em]">People, not rows.</h1>
-        <p class="mt-2 max-w-2xl text-[#666a63] text-sm dark:text-[#aaa9a3]">One profile across email, SMS, purchases, consent, and publication membership.</p>
+        <p class="mt-2 max-w-2xl text-fg-muted text-sm">One profile across email, SMS, purchases, consent, and publication membership. Scoped to this workspace, with suppression enforced by the delivery path.</p>
       </div>
       <div class="flex gap-2">
-        <button type="button" class="px-5 min-h-11 font-bold text-sm bg-white dark:bg-white/5 border border-[#171916]/15 rounded-full dark:border-white/15">Import</button>
-        <button type="button" class="px-5 min-h-11 font-bold text-sm text-white bg-[#bf4936] rounded-full">Add contact</button>
+        <button type="button" @click="load()" :disabled="refreshBusy()" :aria-busy="refreshBusy()" class="px-5 min-h-11 font-bold text-fg text-sm bg-panel hover:bg-surface-hover border border-line rounded-pill focus-visible:outline focus-visible:outline-[var(--coral)] focus-visible:outline-2 focus-visible:outline-offset-2 disabled:opacity-60">Refresh</button>
+        <button type="button" @click="toggleAdd()" class="px-5 min-h-11 font-bold text-[var(--coral-ink)] text-sm bg-accent rounded-pill focus-visible:outline focus-visible:outline-[var(--coral)] focus-visible:outline-2 focus-visible:outline-offset-2">Add contact</button>
       </div>
     </header>
 
-    <section class="grid gap-3 sm:grid-cols-3">
-      <article class="p-6 text-white bg-[#1c201b] rounded-3xl"><p class="text-white/75 text-xs">Marketable contacts</p><p class="mt-4 font-semibold text-4xl tracking-[-0.04em]">24,816</p><p class="mt-2 text-[#91c877] text-xs">+8.2% this month</p></article>
-      <article class="p-6 bg-white/70 dark:bg-white/5 border border-[#171916]/10 rounded-3xl dark:border-white/10"><p class="text-[#5f635d] text-xs dark:text-[#bcbab5]">Email consent</p><p class="mt-4 font-semibold text-4xl tracking-[-0.04em]">96.4%</p><p class="mt-2 text-xs">23,923 confirmed</p></article>
-      <article class="p-6 bg-white/70 dark:bg-white/5 border border-[#171916]/10 rounded-3xl dark:border-white/10"><p class="text-[#5f635d] text-xs dark:text-[#bcbab5]">SMS consent</p><p class="mt-4 font-semibold text-4xl tracking-[-0.04em]">18.7%</p><p class="mt-2 text-xs">4,641 explicit opt-ins</p></article>
+    <section :if="addOpen()" class="mb-5 p-5 bg-panel border border-line rounded-panel" aria-labelledby="add-contact-title">
+      <h2 id="add-contact-title" class="font-bold text-sm">Add a contact</h2>
+      <p class="mt-1 text-fg-muted text-xs">They are added with no consent recorded, so nothing will send to them until consent arrives through a form, an import, or the preference centre.</p>
+      <div class="grid gap-3 sm:grid-cols-3 mt-4">
+        <label class="block font-bold text-xs">
+          Email address
+          <input x-model.trim="addEmail" type="email" autocomplete="off" class="mt-1 field" placeholder="person@example.com">
+        </label>
+        <label class="block font-bold text-xs">
+          First name
+          <input x-model.trim="addFirstName" type="text" autocomplete="off" class="mt-1 field">
+        </label>
+        <label class="block font-bold text-xs">
+          Last name
+          <input x-model.trim="addLastName" type="text" autocomplete="off" class="mt-1 field">
+        </label>
+      </div>
+      <p :if="addError()" class="mt-3 font-bold text-danger text-xs" role="alert">{{ addError() }}</p>
+      <div class="flex gap-2 mt-4">
+        <button type="button" @click="addContact()" :disabled="saving()" :aria-busy="saving()" class="px-5 min-h-11 font-bold text-[var(--coral-ink)] text-sm bg-accent rounded-pill focus-visible:outline focus-visible:outline-[var(--coral)] focus-visible:outline-2 focus-visible:outline-offset-2 disabled:opacity-60">Save contact</button>
+        <button type="button" @click="toggleAdd()" class="px-5 min-h-11 font-bold text-fg text-sm bg-panel hover:bg-surface-hover border border-line rounded-pill focus-visible:outline focus-visible:outline-[var(--coral)] focus-visible:outline-2 focus-visible:outline-offset-2">Cancel</button>
+      </div>
     </section>
 
-    <section class="overflow-hidden mt-5 bg-white/80 dark:bg-white/[0.04] border border-[#171916]/10 rounded-3xl dark:border-white/10" aria-label="Recent contacts">
-      <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between p-5 border-[#171916]/10 border-b dark:border-white/10">
-        <div><h2 class="font-bold">Recent contacts</h2><p class="text-[#5f635d] text-xs dark:text-[#bcbab5]">Active team only, suppression enforced</p></div>
-        <label class="relative"><span class="sr-only">Search contacts</span><span aria-hidden="true" class="absolute left-3 top-3 h-4 w-4 text-[#5f635d] dark:text-[#bcbab5] i-hugeicons-search-01"></span><input type="search" class="pl-9 pr-4 min-h-11 w-full sm:w-auto text-sm bg-transparent border border-[#171916]/12 rounded-full dark:border-white/15 focus:border-[#bf4936] focus:outline-none" placeholder="Search people"></label>
+    <section class="overflow-hidden bg-panel border border-line rounded-panel" aria-labelledby="contacts-title">
+      <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between p-5 border-b border-line">
+        <div>
+          <h2 id="contacts-title" class="font-bold">Contacts</h2>
+          <p class="text-fg-muted text-xs">Showing {{ countLabel() }}</p>
+        </div>
+        <div class="flex flex-col gap-2 sm:flex-row sm:items-center">
+          <label class="block relative">
+            <span class="sr-only">Search contacts</span>
+            <span aria-hidden="true" class="absolute left-3 top-3 h-4 w-4 text-fg-muted i-hugeicons-search-01"></span>
+            <input x-model.trim="search" @input="onSearchInput()" type="search" class="pl-9 field" placeholder="Search name or email">
+          </label>
+          <label class="block">
+            <span class="sr-only">Filter by status</span>
+            <select x-model="status" @change="onStatusChange()" class="field">
+              <option value="">Every status</option>
+              @foreach(statusOptions as option)
+                <option value="{{ option.value }}">{{ option.label }}</option>
+              @endforeach
+            </select>
+          </label>
+        </div>
       </div>
 
-      <div class="sm:hidden divide-[#171916]/10 divide-y dark:divide-white/10">
-        @foreach(contacts as contact)
+      {{-- Loading. A row-shaped skeleton rather than a spinner, so the table
+           does not jump height when the rows land. --}}
+      <div :if="loading()" class="p-5 space-y-3" aria-hidden="true">
+        <div class="h-10 bg-surface-sunken rounded-control"></div>
+        <div class="h-10 bg-surface-sunken rounded-control"></div>
+        <div class="h-10 bg-surface-sunken rounded-control"></div>
+      </div>
+      <p :if="loading()" class="sr-only" role="status">Loading contacts</p>
+
+      <div :if="errorText()" class="p-8 text-center" role="alert">
+        <span aria-hidden="true" class="inline-block h-6 w-6 text-danger i-hugeicons-alert-02"></span>
+        <p class="mt-3 font-bold text-sm">{{ errorText() }}</p>
+        <button type="button" @click="load()" :disabled="refreshBusy()" :aria-busy="refreshBusy()" class="mt-4 px-5 min-h-11 font-bold text-fg text-sm bg-panel hover:bg-surface-hover border border-line rounded-pill focus-visible:outline focus-visible:outline-[var(--coral)] focus-visible:outline-2 disabled:opacity-60">Try again</button>
+      </div>
+
+      <div :if="showEmpty()" class="p-10 text-center">
+        <span aria-hidden="true" class="inline-block h-7 w-7 text-fg-muted i-hugeicons-user-multiple-02"></span>
+        <p class="mt-3 font-bold">No contacts match this view.</p>
+        <p class="mt-1 text-fg-muted text-sm">Clear the search and the status filter to see everyone, or add the first contact to this workspace.</p>
+      </div>
+
+      {{-- Phone: one card per person. The table below carries five columns,
+           which cannot be read at 390px without horizontal scrolling. --}}
+      <div :if="showTable()" class="sm:hidden divide-line divide-y">
+        <template :for="contact in contacts()">
           <article class="p-5">
-            <div class="flex gap-3 items-start justify-between">
-              <div class="min-w-0"><h3 class="font-bold text-sm">{{ contact.name }}</h3><p class="mt-0.5 break-all text-[#5f635d] text-xs dark:text-[#bcbab5]">{{ contact.address }}</p></div>
-              <button type="button" aria-label="Open contact menu for {{ contact.name }}" class="inline-flex items-center justify-center shrink-0 h-11 w-11 hover:bg-black/5 dark:hover:bg-white/10 rounded-full"><span aria-hidden="true" class="block h-4 w-4 i-hugeicons-more-horizontal"></span></button>
-            </div>
+            <h3 class="font-bold text-sm">{{ contact.name }}</h3>
+            <p class="mt-0.5 break-all text-fg-muted text-xs">{{ contact.address }}</p>
             <dl class="grid gap-3 grid-cols-2 mt-4 text-xs">
-              <div><dt class="text-[#5f635d] dark:text-[#bcbab5]">Source</dt><dd class="mt-1 font-medium">{{ contact.source }}</dd></div>
-              <div><dt class="text-[#5f635d] dark:text-[#bcbab5]">Revenue</dt><dd class="mt-1 font-bold">{{ contact.value }}</dd></div>
-              <div class="col-span-2"><dt class="sr-only">Consent</dt><dd><Badge size="sm" className="audience-consent-badge">{{ contact.state }}</Badge></dd></div>
+              <div>
+                <dt class="text-fg-muted">Source</dt>
+                <dd class="mt-1 font-medium">{{ contact.source }}</dd>
+              </div>
+              <div>
+                <dt class="text-fg-muted">Last engaged</dt>
+                <dd class="mt-1 font-medium">{{ contact.lastSeen }}</dd>
+              </div>
+              <div class="col-span-2">
+                <dt class="sr-only">Consent</dt>
+                <dd><span class="audience-consent-badge">{{ contact.statusLabel }}</span></dd>
+              </div>
             </dl>
           </article>
-        @endforeach
+        </template>
       </div>
 
-      <div class="hidden sm:block overflow-x-auto">
+      <div :if="showTable()" class="hidden sm:block overflow-x-auto">
         <table class="min-w-[760px] w-full text-left">
-          <thead class="text-[#5f635d] text-[10px] tracking-[0.14em] uppercase dark:text-[#bcbab5] bg-[#f0ece5] dark:bg-white/5"><tr><th class="px-5 py-3">Contact</th><th class="px-5 py-3">Source</th><th class="px-5 py-3">Consent</th><th class="px-5 py-3">Revenue</th><th class="px-5 py-3"><span class="sr-only">Actions</span></th></tr></thead>
+          <caption class="sr-only">Contacts in this workspace</caption>
+          <thead class="text-[10px] text-fg-muted tracking-[0.14em] uppercase bg-surface-sunken">
+            <tr>
+              <th scope="col" class="px-5 py-3">Contact</th>
+              <th scope="col" class="px-5 py-3">Source</th>
+              <th scope="col" class="px-5 py-3">Status</th>
+              <th scope="col" class="px-5 py-3">Last engaged</th>
+            </tr>
+          </thead>
           <tbody>
-            @foreach(contacts as contact)
-              <tr class="border-[#171916]/8 border-t dark:border-white/8">
-                <td class="px-5 py-4"><p class="font-bold text-sm">{{ contact.name }}</p><p class="mt-0.5 text-[#5f635d] text-xs dark:text-[#bcbab5]">{{ contact.address }}</p></td>
+            <template :for="contact in contacts()">
+              <tr class="hover:bg-surface-hover border-line border-t">
+                <td class="px-5 py-4">
+                  <p class="font-bold text-sm">{{ contact.name }}</p>
+                  <p class="mt-0.5 text-fg-muted text-xs">{{ contact.address }}</p>
+                </td>
                 <td class="px-5 py-4 text-sm">{{ contact.source }}</td>
-                <td class="px-5 py-4"><Badge size="sm" className="audience-consent-badge">{{ contact.state }}</Badge></td>
-                <td class="px-5 py-4 font-bold text-sm">{{ contact.value }}</td>
-                <td class="px-5 py-4 text-right"><button type="button" aria-label="Open contact menu for {{ contact.name }}" class="inline-flex items-center justify-center h-11 w-11 hover:bg-black/5 dark:hover:bg-white/10 rounded-full"><span aria-hidden="true" class="block h-4 w-4 i-hugeicons-more-horizontal"></span></button></td>
+                <td class="px-5 py-4"><span class="audience-consent-badge">{{ contact.statusLabel }}</span></td>
+                <td class="px-5 py-4 text-sm">{{ contact.lastSeen }}</td>
               </tr>
-            @endforeach
+            </template>
           </tbody>
         </table>
+      </div>
+
+      <div :if="showTable()" class="flex items-center justify-between p-4 border-line border-t">
+        <p class="m-0 text-fg-muted text-xs">Page {{ page() }}</p>
+        <div class="flex gap-2">
+          <button type="button" @click="previousPage()" :disabled="page() <= 1 || prevBusy()" :aria-busy="prevBusy()" class="px-4 min-h-11 font-bold text-fg text-sm bg-panel hover:bg-surface-hover border border-line rounded-pill focus-visible:outline focus-visible:outline-[var(--coral)] focus-visible:outline-2 disabled:opacity-50">Previous</button>
+          <button type="button" @click="nextPage()" :disabled="!hasMore() || nextBusy()" :aria-busy="nextBusy()" class="px-4 min-h-11 font-bold text-fg text-sm bg-panel hover:bg-surface-hover border border-line rounded-pill focus-visible:outline focus-visible:outline-[var(--coral)] focus-visible:outline-2 disabled:opacity-50">Next</button>
+        </div>
       </div>
     </section>
   </div>

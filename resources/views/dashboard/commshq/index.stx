@@ -1,6 +1,11 @@
-@extends('default')
+<script server>
+definePageMeta({ middleware: ['auth'] })
+</script>
+
+@extends('dashboard')
+
+@section('title', 'CommsHQ - Command center')
 
 @section('content')
-@title('CommsHQ - Command center')
 <CommandCenter />
 @endsection

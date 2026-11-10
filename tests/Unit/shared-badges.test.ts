@@ -31,27 +31,44 @@ describe('shared workspace badges', () => {
     })
   }
 
-  test('audience consent renders through Badge without becoming a live announcement', async () => {
+  /*
+   * This used to render AudienceWorkspace's two consent pills through <Badge>
+   * and assert the component resolved. It cannot any more, and the reason is
+   * the point of the change rather than a regression: the contacts there are
+   * no longer four literals in a server script, they arrive from
+   * `/api/v1/contacts` and are rendered by a client `:for`. <Badge> is a
+   * server component, so it cannot be the markup inside a loop whose items
+   * only exist in the browser.
+   *
+   * What the test was protecting survives, and is what is asserted instead:
+   * the pill carries the one shared `audience-consent-badge` treatment rather
+   * than a bespoke pill rebuilt inline, it still sits in the <dd> of the
+   * mobile card's consent row, and it is still QUIET - no role="status", no
+   * aria-live, no button inside a cell. A status that announces itself on
+   * every row would talk over a table of twenty-five people.
+   *
+   * The palette itself is locked by the sibling test below, which generates
+   * the shortcut's CSS and is indifferent to which element wears it.
+   */
+  test('audience consent keeps the shared badge treatment and stays quiet', () => {
     const file = resolve(root, 'resources/components/CommsHQ/AudienceWorkspace.stx')
     const source = readFileSync(file, 'utf8')
-    const badges = source.match(/<Badge\b[^]*?<\/Badge>/g) || []
-    expect(badges).toHaveLength(2)
-    for (const badge of badges) {
-      const dependencies = new Set<string>()
-      const html = await processComponents(badge, {
-        contact: { state: 'SMS consented' },
-        __importedComponents: new Map([['badge', resolve(root, 'node_modules/@stacksjs/components/src/ui/badge/Badge.stx')]]),
-      }, file, { componentsDir: resolve(root, 'resources/components') }, dependencies)
-      expect([...dependencies]).toContain(resolve(root, 'node_modules/@stacksjs/components/src/ui/badge/Badge.stx'))
-      expect(html).toContain('SMS consented')
-      expect(html).toContain('audience-consent-badge')
-      expect(html).not.toContain('<Badge')
-      expect(html).not.toContain('[Component Error')
-      expect(html).not.toContain('role="status"')
-      expect(html).not.toContain('aria-live=')
-      expect(html).not.toContain('<button')
+
+    // One for the phone card, one for the table cell, as before.
+    const pills = source.match(/<span class="audience-consent-badge">[^]*?<\/span>/g) || []
+    expect(pills).toHaveLength(2)
+    for (const pill of pills) {
+      expect(pill).toContain('{{ contact.statusLabel }}')
+      expect(pill).not.toContain('role="status"')
+      expect(pill).not.toContain('aria-live=')
+      expect(pill).not.toContain('<button')
     }
-    expect(source).toMatch(/<dd>\s*<Badge[^]*?<\/Badge>\s*<\/dd>/)
+
+    // The consent row of the mobile card still carries it as the <dd>.
+    expect(source).toMatch(/<dd><span class="audience-consent-badge">[^]*?<\/span><\/dd>/)
+
+    // And nothing reintroduced a hand-rolled pill beside the shared one.
+    expect(source).not.toMatch(/class="[^"]*\bbg-\[#edf5e8\]/)
   })
 
   test('audience badge utilities preserve the existing light and dark consent palette', async () => {

@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#f7f1ea">
+    {{-- The dashboard is signed-in surface: there is nothing here for a
+         crawler, and a page it indexed would be a sign-in redirect. --}}
+    <meta name="robots" content="noindex, nofollow">
+    <title>@yield('title')</title>
+    {{-- The twenty dashboard pages extended `default`, which is three @yields
+         and no document at all: no doctype, no viewport, and crucially no
+         appearance bootstrap. So every one of them rendered light until a
+         stylesheet with a `dark:` variant happened to apply, and a phone user
+         got desktop metrics. The storage key and the allowed values are the
+         same three lines the auth and marketing layouts carry, kept as a copy
+         for the reason auth.stx records: these are the only places the palette
+         is spelled out, and a divergence between them should be a decision. --}}
+    @appearanceBootstrap({ storageKey: 'commshq-appearance', appearance: { key: 'theme', attribute: 'appearance', allowed: ['editorial'], default: 'editorial' }, colorMode: { key: 'colorMode', attribute: 'color-mode', default: 'system' } })
+    @stack('head')
+  </head>
+  <body class="text-fg bg-page">
+    <a href="#main" class="focus:fixed focus:left-4 focus:top-4 focus:z-50 focus:px-4 focus:py-3 focus:text-white focus:bg-black focus:rounded-md sr-only focus:not-sr-only">Skip to content</a>
+
+    <DashboardNavigation />
+
+    {{-- A div, not a <main>. Each of the five page components already opens
+         its own <main>, and wrapping them in a second one would give every
+         dashboard page two main landmarks, which is invalid and leaves a
+         screen reader's "skip to main" ambiguous. They carry `id="main"` so
+         the skip link above still has its target. --}}
+    <div class="lg:pl-[17rem]">
+      @yield('content')
+    </div>
+
+    @stack('scripts')
+  </body>
+</html>
