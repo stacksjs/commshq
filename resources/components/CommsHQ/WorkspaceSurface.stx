@@ -115,7 +115,7 @@ const page = computed(() => pages[area()] || pages.onboarding)
 const viewState = state('populated')
 </script>
 
-<main class="px-4 py-5 sm:px-6 lg:px-9 lg:py-8 min-h-screen text-[#171916] dark:text-[#f5f2ec] bg-[#f6f3ee] dark:bg-[#111210]">
+<main id="main" class="px-4 py-5 sm:px-6 lg:px-9 lg:py-8 min-h-screen text-[#171916] dark:text-[#f5f2ec] bg-[#f6f3ee] dark:bg-[#111210]">
   <div class="mx-auto max-w-[1500px]">
     <header class="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between pb-7 border-[#171916]/10 border-b dark:border-white/10">
       <div class="max-w-4xl">
