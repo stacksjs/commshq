@@ -1,12 +1,24 @@
 import { defineModel } from '@stacksjs/orm'
 import { schema } from '@stacksjs/validation'
+import { cycleName } from '../Support/seedNames'
+
+/**
+ * The six templates a new workspace starts with, one per seeded row.
+ *
+ * Walked by position rather than drawn: `message_templates_team_name_unique`
+ * spans (team_id, name), so a repeated draw is a failed insert once a
+ * workspace owns these. See `cycleName`.
+ */
+const TEMPLATE_NAMES = ['Sunday dispatch', 'Product drop', 'Founder note', 'Order follow-up', 'Event invite', 'Weekly edit'] as const
+
+let nameRow = 0
 
 export default defineModel({
   name: 'MessageTemplate', table: 'message_templates', belongsTo: ['Team'], hasMany: ['MessageBlock'],
   indexes: [{ name: 'message_templates_team_name_unique', columns: ['team_id', 'name'], unique: true }],
   traits: { useUuid: true, useTimestamps: true, useApi: { prefix: 'v1', uri: 'message-templates', routes: ['index', 'store', 'show', 'update', 'destroy'], middleware: ['auth', 'team'] }, useSeeder: { count: 6 } },
   attributes: {
-    name: { required: true, fillable: true, validation: { rule: schema.string().max(120) }, factory: faker => faker.helpers.arrayElement(['Sunday dispatch', 'Product drop', 'Founder note', 'Order follow-up', 'Event invite', 'Weekly edit']) },
+    name: { required: true, fillable: true, validation: { rule: schema.string().max(120) }, factory: () => cycleName(TEMPLATE_NAMES, nameRow++) },
     channel: { required: true, fillable: true, validation: { rule: schema.enum(['email', 'sms', 'landing_page']) }, factory: () => 'email' },
     subject: { required: false, fillable: true, validation: { rule: schema.string().max(255) }, factory: faker => faker.lorem.sentence(5) },
     document: { required: true, fillable: true, validation: { rule: schema.json() }, factory: () => JSON.stringify({ version: 1, blocks: [] }) },
