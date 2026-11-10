@@ -1,6 +1,11 @@
-@extends('default')
+<script server>
+definePageMeta({ middleware: ['auth'] })
+</script>
+
+@extends('dashboard')
+
+@section('title', 'CommsHQ - Teams')
 
 @section('content')
-@title('CommsHQ - Teams')
 <WorkspaceSurface area="teams" />
 @endsection

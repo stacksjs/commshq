@@ -1,6 +1,11 @@
-@extends('default')
+<script server>
+definePageMeta({ middleware: ['auth'] })
+</script>
+
+@extends('dashboard')
+
+@section('title', 'CommsHQ - Settings')
 
 @section('content')
-@title('CommsHQ - Settings')
 <WorkspaceSurface area="settings" />
 @endsection

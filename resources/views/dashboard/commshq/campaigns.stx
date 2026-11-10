@@ -1,6 +1,11 @@
-@extends('default')
+<script server>
+definePageMeta({ middleware: ['auth'] })
+</script>
+
+@extends('dashboard')
+
+@section('title', 'CommsHQ - Campaign composer')
 
 @section('content')
-@title('CommsHQ - Campaign composer')
 <CampaignComposer />
 @endsection
