@@ -1,0 +1,144 @@
+<script server>
+/**
+ * The dashboard's primary navigation: a rail on desktop, a drawer on phones.
+ *
+ * The current row is resolved HERE, on the server, from `requestContext.path()`
+ * rather than from the browser's own location object in a client script. Two
+ * reasons, and the first is not style: reading that object is a prohibited DOM
+ * call under rule 8 (tests/Unit/no-vanilla-js.test.ts), so a client-side
+ * answer is not available to this app at all. The second is that the server
+ * already knows: the row is correct in the first paint, with no hydration step
+ * that briefly highlights nothing.
+ *
+ * `requestContext` is scoped per request and reaches a component's server
+ * script, so this is the layout's own URL and never a neighbour's. Outside any
+ * request scope every accessor answers an empty value instead of throwing,
+ * which is what keeps a standalone render of this component working.
+ *
+ * The drawer is a <details>, not a signal. config/crosswind.ts already carries
+ * the `body:has(.mobile-menu[open])` scroll lock the marketing nav relies on,
+ * so reusing the element reuses that rule, and a disclosure a browser opens
+ * itself needs no script and survives a failed hydration.
+ */
+import { dashboardLinkFor, dashboardSections } from '../../data/dashboard-navigation'
+
+const path = typeof requestContext !== 'undefined' ? requestContext.path() : ''
+const current = dashboardLinkFor(path)
+
+export const sections = dashboardSections
+export const currentId = current?.id || ''
+export const currentLabel = current?.label || 'Dashboard'
+
+/*
+ * Precomputed per row rather than written as a ternary in the class attribute.
+ * A nested component re-parses attributes it is handed and can serve an inline
+ * expression verbatim (the note in @stacksjs/components' SidebarSection records
+ * the same hazard), and a class list that reaches the browser unexpanded is an
+ * unstyled row rather than a visibly broken one. A bare identifier survives.
+ */
+const ROW = 'flex gap-3 items-center px-3 min-h-11 font-semibold text-sm rounded-control '
+  + 'focus-visible:outline focus-visible:outline-[var(--coral)] focus-visible:outline-2 focus-visible:outline-offset-2 transition-colors'
+
+export const rows = sections.map(section => ({
+  ...section,
+  items: section.items.map((item) => {
+    const active = item.id === currentId
+    return {
+      ...item,
+      active,
+      rowClass: active
+        ? `${ROW} bg-surface-raised text-fg`
+        : `${ROW} text-fg-muted hover:bg-surface-hover hover:text-fg`,
+      iconClass: active ? `${item.icon} h-4 w-4 text-accent` : `${item.icon} h-4 w-4 text-fg-muted`,
+    }
+  }),
+}))
+</script>
+
+{{-- Desktop rail, fixed rather than a grid or flex column.
+     Deliberately: this component renders two siblings (the rail and the phone
+     header), and a parent that laid them out as grid or flex children would
+     depend on them arriving as direct children. stx wraps a component's output
+     when the component owns a client script, so that dependency is one future
+     edit away from silently collapsing the shell to one column. Fixed
+     positioning plus `lg:pl-[17rem]` on the layout's content wrapper needs
+     nothing of the parent at all. --}}
+<aside class="hidden lg:flex fixed left-0 top-0 z-30 flex-col h-screen w-[17rem] bg-panel border-line border-r">
+  <div class="flex gap-2 items-center px-5 min-h-16 border-b border-line">
+    <StxLink to="/" class="inline-flex gap-2 items-center font-bold text-fg text-lg tracking-tight focus-visible:outline focus-visible:outline-[var(--coral)] focus-visible:outline-2 focus-visible:outline-offset-2" aria-label="CommsHQ home">
+      <span class="h-3 w-3 bg-accent rounded-sm" aria-hidden="true"></span>
+      CommsHQ
+    </StxLink>
+  </div>
+
+  <nav class="overflow-y-auto flex-1 px-3 py-4" aria-label="Dashboard">
+    @foreach(rows as section)
+      <section class="pb-4" aria-labelledby="nav-{{ section.id }}">
+        <h2 id="nav-{{ section.id }}" class="mb-1 px-3 font-bold text-[11px] text-fg-muted tracking-[0.18em] uppercase">{{ section.label }}</h2>
+        <ul class="m-0 p-0 space-y-0.5 list-none">
+          @foreach(section.items as item)
+            <li>
+              <StxLink to="{{ item.href }}" class="{{ item.rowClass }}" @if(item.active)aria-current="page"@endif>
+                <span class="{{ item.iconClass }}" aria-hidden="true"></span>
+                {{ item.label }}
+              </StxLink>
+            </li>
+          @endforeach
+        </ul>
+      </section>
+    @endforeach
+  </nav>
+
+  <div class="px-3 py-3 border-line border-t">
+    {{-- A real POST, not a link: signing out is a state change, and
+         routes/auth.ts registers /logout with skipCsrf() precisely so a
+         server-rendered form can make it. --}}
+    <form method="POST" action="/logout">
+      <button type="submit" class="flex gap-3 items-center px-3 min-h-11 w-full font-semibold text-fg-muted text-left text-sm hover:text-fg hover:bg-surface-hover rounded-control focus-visible:outline focus-visible:outline-[var(--coral)] focus-visible:outline-2 focus-visible:outline-offset-2 transition-colors">
+        <span class="h-4 w-4 text-fg-muted i-hugeicons-arrow-left-02" aria-hidden="true"></span>
+        Sign out
+      </button>
+    </form>
+  </div>
+</aside>
+
+{{-- Phone and tablet. The same list, in a disclosure, above the content. --}}
+<header class="lg:hidden sticky top-0 z-40 bg-panel border-b border-line">
+  <div class="flex gap-3 items-center justify-between px-4 min-h-16">
+    <StxLink to="/dashboard/commshq" class="inline-flex gap-2 items-center font-bold text-base text-fg tracking-tight focus-visible:outline focus-visible:outline-[var(--coral)] focus-visible:outline-2" aria-label="Command center">
+      <span class="h-3 w-3 bg-accent rounded-sm" aria-hidden="true"></span>
+      CommsHQ
+    </StxLink>
+    <p class="flex-1 m-0 text-fg-muted text-sm truncate">{{ currentLabel }}</p>
+    <details class="relative mobile-menu">
+      <summary class="inline-flex items-center justify-center h-11 w-11 list-none text-fg border border-line rounded-control focus-visible:outline focus-visible:outline-[var(--coral)] focus-visible:outline-2 cursor-pointer" aria-label="Open dashboard navigation">
+        <span class="h-5 w-5 i-hugeicons-menu-01" aria-hidden="true"></span>
+      </summary>
+      <div class="absolute overflow-y-auto overscroll-contain right-0 top-[calc(100%+0.65rem)] p-3 max-h-[calc(100dvh-6rem)] w-[min(92vw,340px)] bg-panel border border-line rounded-panel shadow-[0_24px_70px_rgba(32,29,26,0.18)]">
+        <nav aria-label="Dashboard">
+          @foreach(rows as section)
+            <section class="py-2 border-line border-t first:border-0">
+              <h2 class="mb-1 px-3 font-bold text-[11px] text-fg-muted tracking-[0.18em] uppercase">{{ section.label }}</h2>
+              <ul class="m-0 p-0 space-y-0.5 list-none">
+                @foreach(section.items as item)
+                  <li>
+                    <StxLink to="{{ item.href }}" class="{{ item.rowClass }}" @if(item.active)aria-current="page"@endif>
+                      <span class="{{ item.iconClass }}" aria-hidden="true"></span>
+                      {{ item.label }}
+                    </StxLink>
+                  </li>
+                @endforeach
+              </ul>
+            </section>
+          @endforeach
+        </nav>
+        <form method="POST" action="/logout" class="mt-2 pt-3 border-line border-t">
+          <button type="submit" class="flex gap-3 items-center px-3 min-h-11 w-full font-semibold text-fg-muted text-left text-sm hover:text-fg hover:bg-surface-hover rounded-control focus-visible:outline focus-visible:outline-[var(--coral)] focus-visible:outline-2">
+            <span class="h-4 w-4 text-fg-muted i-hugeicons-arrow-left-02" aria-hidden="true"></span>
+            Sign out
+          </button>
+        </form>
+      </div>
+    </details>
+  </div>
+</header>
