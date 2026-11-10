@@ -1,6 +1,6 @@
 import { db, Seeder } from '@stacksjs/database'
-import { env } from '@stacksjs/env'
 import { log } from '@stacksjs/logging'
+import { appEnvName, isProductionEnv, OWNER_WORKSPACE, ownerWorkspaceId } from '../../app/Support/ownerWorkspace'
 
 /**
  * Give the seeded contacts an owner, and a history.
@@ -24,11 +24,6 @@ import { log } from '@stacksjs/logging'
  * keep them consistent, so the timeline is built here from the row's position
  * and nowhere else.
  */
-
-/** The workspace OwnerSeeder creates, matched by the name it uses. */
-const OWNER_WORKSPACE = 'CommsHQ'
-
-const PRODUCTION_ENVS = new Set(['production', 'prod'])
 
 /**
  * The status spread, as one cycle of twelve.
@@ -95,10 +90,6 @@ interface ContactRow {
   email: string | null
 }
 
-interface IdentifiedRow {
-  id: number
-}
-
 function isoDaysAgo(days: number): string {
   return new Date(Date.now() - Math.max(0, days) * DAY_MS).toISOString()
 }
@@ -137,8 +128,6 @@ export default class WorkspaceContactsSeeder extends Seeder {
   static tags = ['demo']
 
   async run(): Promise<void> {
-    const appEnv = String(env.APP_ENV || '').toLowerCase()
-
     /*
      * Production is the one environment where this is unsafe. Everywhere else
      * an invented audience is the point; there it would put 36 fabricated
@@ -146,28 +135,16 @@ export default class WorkspaceContactsSeeder extends Seeder {
      * being sent to. The addresses are on example.com and cannot receive it,
      * but a bounce rate built out of seed data is still a reputation.
      */
-    if (PRODUCTION_ENVS.has(appEnv)) {
-      log.info(`[WorkspaceContactsSeeder] Skipped: APP_ENV="${appEnv}" is production, which does not get an invented audience.`)
+    if (isProductionEnv()) {
+      log.info(`[WorkspaceContactsSeeder] Skipped: APP_ENV="${appEnvName()}" is production, which does not get an invented audience.`)
       return
     }
 
-    const team = await db.selectFrom('teams' as any)
-      .select(['id'] as any)
-      .where('name' as any, '=', OWNER_WORKSPACE)
-      .executeTakeFirst() as IdentifiedRow | undefined
-
-    /*
-     * No workspace means OwnerSeeder did not run or bailed out, which it does
-     * deliberately when COMMSHQ_OWNER_PASSWORD is unset outside a local
-     * APP_ENV. There is nobody to own these contacts, and inventing a team to
-     * hold them would create a workspace no account is a member of.
-     */
-    if (!team) {
+    const teamId = await ownerWorkspaceId()
+    if (!teamId) {
       log.info(`[WorkspaceContactsSeeder] Skipped: the ${OWNER_WORKSPACE} workspace does not exist yet, so there is no owner to claim contacts for.`)
       return
     }
-
-    const teamId = Number(team.id)
 
     const orphans = await db.selectFrom('contacts' as any)
       .select(['id', 'email'] as any)
