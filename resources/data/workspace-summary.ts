@@ -200,6 +200,32 @@ export interface UsageView {
 }
 
 /**
+ * One meter row as the page renders it.
+ *
+ * Shared by the command center, which shows the current period, and the
+ * billing page, which shows any period, so a meter reads the same in both.
+ */
+export function toUsageView(row: UsageMeterRow, locale?: string): UsageView {
+  const used = Math.max(0, Number(row?.quantity) || 0)
+  const rawIncluded = Number(row?.included_quantity)
+  const included = Number.isFinite(rawIncluded) && rawIncluded > 0 ? rawIncluded : null
+
+  return {
+    key: String(row?.key ?? ''),
+    label: meterLabel(row?.key),
+    used,
+    usedLabel: formatCount(used, locale),
+    included,
+    allowanceLabel: included === null
+      // Not "unlimited": the column is null, which records no allowance
+      // rather than permission to send forever.
+      ? 'No allowance recorded'
+      : `of ${formatCount(included, locale)}`,
+    percent: included === null ? null : Math.min(100, Math.round((used / included) * 100)),
+  }
+}
+
+/**
  * The meters for the period containing `now`, in a stable order.
  *
  * The endpoint returns every period it holds, newest first, which for a
@@ -223,25 +249,7 @@ export function toCurrentMeters(summary?: WorkspaceSummary | null, now: Date = n
         return false
       return start <= at && at < end
     })
-    .map((row) => {
-      const used = Math.max(0, Number(row?.quantity) || 0)
-      const rawIncluded = Number(row?.included_quantity)
-      const included = Number.isFinite(rawIncluded) && rawIncluded > 0 ? rawIncluded : null
-
-      return {
-        key: String(row?.key ?? ''),
-        label: meterLabel(row?.key),
-        used,
-        usedLabel: formatCount(used),
-        included,
-        allowanceLabel: included === null
-          // Not "unlimited": the column is null, which records no allowance
-          // rather than permission to send forever.
-          ? 'No allowance recorded'
-          : `of ${formatCount(included)}`,
-        percent: included === null ? null : Math.min(100, Math.round((used / included) * 100)),
-      }
-    })
+    .map(row => toUsageView(row))
     .sort((left, right) => left.label.localeCompare(right.label))
 }
 

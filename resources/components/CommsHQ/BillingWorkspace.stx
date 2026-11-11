@@ -1,0 +1,167 @@
+<script client>
+/**
+ * Billing and usage, reading the application's own API.
+ *
+ * This page was the `billing` area of `WorkspaceSurface`, which stated a
+ * Business plan at $99 monthly, 84,219 emails and 24,816 contacts used, an
+ * invoice address at a company in no table, and a Visa ending 4242. All of it
+ * was literal. Everything below comes from `GET /api/v1/usage-meters` and
+ * `GET /api/v1/subscriptions`, both published by `useApi` behind the `auth`
+ * and `team` middleware and scoped to the caller's team.
+ *
+ * Both endpoints are read-only on their models, so this page performs no
+ * writes and sends no CSRF token. There is no "Manage plan" button: nothing
+ * here can change a plan, and a button that does nothing is worse than none.
+ * There is no invoice, payment method or alert setting on any model either,
+ * so none is shown.
+ *
+ * The two requests are made together and the page waits for both. A plan
+ * panel that lands a moment before the usage beneath it reads as two pages.
+ */
+import {
+  billingErrorMessage,
+  defaultPeriodKey,
+  metersForPeriod,
+  subscriptionsUrl,
+  toSubscriptionViews,
+  toUsagePeriods,
+  usageMetersUrl,
+} from '../../data/billing-query'
+
+const meterRows = state([])
+const subscriptions = state([])
+const periodKey = state('')
+const loading = state(true)
+const errorText = state('')
+
+const periods = derived(() => toUsagePeriods(meterRows()))
+const meters = derived(() => metersForPeriod(meterRows(), periodKey()))
+const ready = derived(() => !loading() && !errorText())
+const showPlans = derived(() => ready() && subscriptions().length > 0)
+const showNoPlan = derived(() => ready() && subscriptions().length === 0)
+const showMeters = derived(() => ready() && meters().length > 0)
+const showNoMeters = derived(() => ready() && meters().length === 0)
+const showPeriods = derived(() => ready() && periods().length > 1)
+
+function selectPeriod(key) {
+  periodKey.set(key)
+}
+
+async function load() {
+  loading.set(true)
+  errorText.set('')
+  try {
+    const options = { credentials: 'same-origin', headers: { Accept: 'application/json' } }
+    const [usage, plans] = await Promise.all([
+      fetch(usageMetersUrl(), options),
+      fetch(subscriptionsUrl(), options),
+    ])
+
+    const failed = [usage, plans].find(response => !response.ok)
+    if (failed) {
+      errorText.set(billingErrorMessage(failed.status))
+      meterRows.set([])
+      subscriptions.set([])
+      return
+    }
+
+    const usageBody = await usage.json()
+    const rows = Array.isArray(usageBody?.data) ? usageBody.data : []
+    meterRows.set(rows)
+    subscriptions.set(toSubscriptionViews(await plans.json()))
+    /* Keep the reader's period across a refresh when it still exists, and
+     * otherwise open on the one containing today. */
+    const available = toUsagePeriods(rows)
+    if (!available.some(period => period.key === periodKey()))
+      periodKey.set(defaultPeriodKey(available))
+  }
+  catch {
+    // A network failure, not a refusal: there is no status to explain.
+    errorText.set('Billing could not be loaded. Check your connection and try again.')
+    meterRows.set([])
+    subscriptions.set([])
+  }
+  finally {
+    loading.set(false)
+  }
+}
+
+onMount(() => {
+  void load()
+})
+</script>
+
+<main id="main" class="p-5 sm:p-8 min-h-screen text-fg bg-page">
+  <div class="mx-auto max-w-[1500px]">
+    <header class="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between mb-7">
+      <div>
+        <p class="font-bold text-[11px] text-accent tracking-[0.2em] uppercase">Billing and usage</p>
+        <h1 class="mt-2 font-semibold text-4xl tracking-[-0.04em]">Know what you use before the invoice arrives.</h1>
+        <p class="mt-2 max-w-2xl text-fg-muted text-sm">The plan on record for this workspace and what its meters have counted, period by period.</p>
+      </div>
+      <div class="flex gap-2">
+        <button type="button" @click="load()" :disabled="loading()" :aria-busy="loading()" class="px-5 min-h-11 font-bold text-fg text-sm bg-panel hover:bg-surface-hover border border-line rounded-pill focus-visible:outline focus-visible:outline-[var(--coral)] focus-visible:outline-2 focus-visible:outline-offset-2 disabled:opacity-60">Refresh</button>
+      </div>
+    </header>
+
+    <div :if="loading()" class="space-y-3" aria-hidden="true">
+      <div class="h-24 bg-surface-sunken border border-line rounded-panel"></div>
+      <div class="h-64 bg-surface-sunken border border-line rounded-panel"></div>
+    </div>
+    <p :if="loading()" class="sr-only" role="status">Loading billing</p>
+
+    <div :if="errorText()" class="p-8 text-center bg-panel border border-line rounded-panel" role="alert">
+      <span aria-hidden="true" class="inline-block h-6 w-6 text-danger i-hugeicons-alert-02"></span>
+      <p class="mt-3 font-bold text-sm">{{ errorText() }}</p>
+      <button type="button" @click="load()" class="mt-4 px-5 min-h-11 font-bold text-fg text-sm bg-panel hover:bg-surface-hover border border-line rounded-pill focus-visible:outline focus-visible:outline-[var(--coral)] focus-visible:outline-2">Try again</button>
+    </div>
+
+    <section :if="ready()" class="overflow-hidden mb-5 bg-panel border border-line rounded-panel" aria-labelledby="plan-title">
+      <div class="p-5 border-b border-line">
+        <h2 id="plan-title" class="font-bold">Plan</h2>
+      </div>
+
+      <p :if="showNoPlan()" class="p-5 text-fg-muted text-sm">No subscription is recorded for this workspace. The allowances below are the ones its meters were created with.</p>
+
+      <dl :if="showPlans()" class="divide-line divide-y">
+        <template :for="plan in subscriptions()">
+          <div class="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between p-5">
+            <dt>
+              <p class="font-bold text-sm">{{ plan.plan }}</p>
+              <p class="mt-0.5 text-fg-muted text-xs">{{ plan.status }}</p>
+              <p :if="plan.note" class="mt-0.5 text-fg-muted text-xs">{{ plan.note }}</p>
+            </dt>
+            <dd class="font-semibold text-xl tracking-[-0.03em]">{{ plan.price }}</dd>
+          </div>
+        </template>
+      </dl>
+    </section>
+
+    <section :if="ready()" class="overflow-hidden bg-panel border border-line rounded-panel" aria-labelledby="usage-title">
+      <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between p-5 border-b border-line">
+        <h2 id="usage-title" class="font-bold">Usage</h2>
+        <div :if="showPeriods()" class="flex flex-wrap gap-2" role="group" aria-label="Usage period">
+          <template :for="period in periods()">
+            <button type="button" @click="selectPeriod(period.key)" :aria-pressed="period.key === periodKey()" class="px-4 min-h-11 font-bold text-sm border border-line rounded-pill focus-visible:outline focus-visible:outline-[var(--coral)] focus-visible:outline-2" :class="period.key === periodKey() ? 'bg-accent text-[var(--coral-ink)]' : 'bg-panel text-fg hover:bg-surface-hover'">{{ period.label }}</button>
+          </template>
+        </div>
+      </div>
+
+      <div :if="showMeters()" class="p-5 space-y-5">
+        <template :for="meter in meters()">
+          <div>
+            <div class="flex gap-3 items-baseline justify-between">
+              <p class="font-medium text-sm">{{ meter.label }}</p>
+              <p class="shrink-0 text-fg-muted text-xs"><span class="font-bold text-fg">{{ meter.usedLabel }}</span> {{ meter.allowanceLabel }}</p>
+            </div>
+            <div :if="meter.percent !== null" class="mt-2 h-1.5 w-full bg-surface-sunken rounded-pill" role="progressbar" aria-valuemin="0" aria-valuemax="100" :aria-valuenow="meter.percent" :aria-label="meter.label">
+              <div class="h-1.5 bg-accent rounded-pill" :style="'width: ' + meter.percent + '%'"></div>
+            </div>
+          </div>
+        </template>
+      </div>
+
+      <p :if="showNoMeters()" class="p-5 text-fg-muted text-sm">No usage has been metered for this workspace yet.</p>
+    </section>
+  </div>
+</main>
