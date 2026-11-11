@@ -1,0 +1,368 @@
+<script server>
+/* Fixed lists from the module, rendered here rather than looped in the
+ * browser, so both selects are usable in the first paint. */
+import { CONNECTOR_PLATFORMS, MENTION_SENTIMENTS } from '../../data/reputation-query'
+
+export const platformOptions = CONNECTOR_PLATFORMS
+export const sentimentOptions = MENTION_SENTIMENTS
+</script>
+
+<script client>
+/**
+ * Reputation monitoring, reading and acting through the application's own API.
+ *
+ * The backend behind this page was already complete: two connectors, jobs that
+ * poll profiles and evaluate alert rules, and write actions for adding a
+ * profile, triaging a mention and deciding an alert. The page in front of it
+ * was the `reputation` area of `WorkspaceSurface`, a set of literals, so none
+ * of that work could be reached from the dashboard.
+ *
+ * Three lists are read together and the page waits for all three, so the
+ * alerts do not land ahead of the mentions that caused them. Every route is
+ * scoped to the caller's team by the `team` middleware; no team id is sent.
+ *
+ * Writes carry the CSRF token explicitly, read with `useCookie`, the
+ * composable, since a client script may not reach for the DOM itself. After
+ * any write the lists are read again rather than patched in place: a triage
+ * can resolve an alert's cause and a decision changes what an alert offers,
+ * and re-reading is the only version of that which cannot drift.
+ */
+import {
+  actionErrorMessage,
+  alertsUrl,
+  decisionUrl,
+  listErrorMessage,
+  MENTIONS_PER_PAGE,
+  mentionsUrl,
+  profileDraftError,
+  profilePayload,
+  PROFILES_ENDPOINT,
+  profileSaveErrorMessage,
+  profilesUrl,
+  toAlertViews,
+  toMentionViews,
+  toProfileViews,
+  triageUrl,
+} from '../../data/reputation-query'
+
+const profiles = state([])
+const mentions = state([])
+const alerts = state([])
+const hasMore = state(false)
+const page = state(1)
+const sentiment = state('')
+const loading = state(true)
+const errorText = state('')
+const actionError = state('')
+/* The row a write is in flight for, as "mention:12" or "alert:3", so only its
+ * own buttons are disabled and announced busy. */
+const busyKey = state('')
+/* Which pager button the in-flight load belongs to, so that one is announced
+ * busy rather than both. */
+const pagerSource = state('')
+
+const addOpen = state(false)
+const addPlatform = state('google_business')
+const addName = state('')
+const addExternalId = state('')
+const saving = state(false)
+const addError = state('')
+
+const csrfToken = useCookie('X-CSRF-Token')
+
+const prevBusy = derived(() => loading() && pagerSource() === 'prev')
+const nextBusy = derived(() => loading() && pagerSource() === 'next')
+const ready = derived(() => !loading() && !errorText())
+const showNoProfiles = derived(() => ready() && profiles().length === 0)
+const showProfiles = derived(() => ready() && profiles().length > 0)
+const showNoAlerts = derived(() => ready() && alerts().length === 0)
+const showAlerts = derived(() => ready() && alerts().length > 0)
+const showNoMentions = derived(() => ready() && mentions().length === 0)
+const showMentions = derived(() => ready() && mentions().length > 0)
+
+async function load(source = '') {
+  pagerSource.set(source)
+  loading.set(true)
+  errorText.set('')
+  try {
+    const options = { credentials: 'same-origin', headers: { Accept: 'application/json' } }
+    const responses = await Promise.all([
+      fetch(profilesUrl(), options),
+      fetch(alertsUrl(), options),
+      fetch(mentionsUrl({ page: page(), perPage: MENTIONS_PER_PAGE, sentiment: sentiment() }), options),
+    ])
+
+    const failed = responses.find(response => !response.ok)
+    if (failed) {
+      errorText.set(listErrorMessage(failed.status))
+      profiles.set([])
+      alerts.set([])
+      mentions.set([])
+      return
+    }
+
+    const [profileBody, alertBody, mentionBody] = await Promise.all(responses.map(response => response.json()))
+    profiles.set(toProfileViews(profileBody))
+    alerts.set(toAlertViews(alertBody))
+    mentions.set(toMentionViews(mentionBody))
+    hasMore.set(mentionBody?.has_more_pages === true)
+  }
+  catch {
+    // A network failure, not a refusal: there is no status to explain.
+    errorText.set('Reputation monitoring could not be loaded. Check your connection and try again.')
+    profiles.set([])
+    alerts.set([])
+    mentions.set([])
+  }
+  finally {
+    loading.set(false)
+  }
+}
+
+function onSentimentChange() {
+  page.set(1)
+  void load()
+}
+
+function nextPage() {
+  if (!hasMore() || loading())
+    return
+  page.update(value => value + 1)
+  void load('next')
+}
+
+function previousPage() {
+  if (page() <= 1 || loading())
+    return
+  page.update(value => value - 1)
+  void load('prev')
+}
+
+async function send(key, url, body) {
+  if (busyKey())
+    return
+  busyKey.set(key)
+  actionError.set('')
+  try {
+    const response = await fetch(url, {
+      method: 'POST',
+      credentials: 'same-origin',
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+        'X-CSRF-Token': csrfToken() || '',
+      },
+      body: JSON.stringify(body),
+    })
+
+    if (!response.ok)
+      actionError.set(actionErrorMessage(response.status))
+    /* Read again either way. On a 409 or 404 the list on screen is the stale
+     * thing, and refreshing it is what makes the message true. */
+    await load()
+  }
+  catch {
+    actionError.set('That could not be saved. Check your connection and try again.')
+  }
+  finally {
+    busyKey.set('')
+  }
+}
+
+function triage(id, status) {
+  void send(`mention:${id}`, triageUrl(id), { status })
+}
+
+function decide(id, decision) {
+  void send(`alert:${id}`, decisionUrl(id), { decision })
+}
+
+function toggleAdd() {
+  addOpen.update(value => !value)
+  addError.set('')
+}
+
+async function addProfile() {
+  const draft = { platform: addPlatform(), displayName: addName(), externalId: addExternalId() }
+  const problem = profileDraftError(draft)
+  if (problem) {
+    addError.set(problem)
+    return
+  }
+
+  saving.set(true)
+  addError.set('')
+  try {
+    const response = await fetch(PROFILES_ENDPOINT, {
+      method: 'POST',
+      credentials: 'same-origin',
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+        'X-CSRF-Token': csrfToken() || '',
+      },
+      body: JSON.stringify(profilePayload(draft)),
+    })
+
+    if (response.status === 201 || response.ok) {
+      addName.set('')
+      addExternalId.set('')
+      addOpen.set(false)
+      await load()
+      return
+    }
+
+    addError.set(profileSaveErrorMessage(response.status))
+  }
+  catch {
+    addError.set('The profile could not be added. Check your connection and try again.')
+  }
+  finally {
+    saving.set(false)
+  }
+}
+
+onMount(() => {
+  void load()
+})
+</script>
+
+<main id="main" class="p-5 sm:p-8 min-h-screen text-fg bg-page">
+  <div class="mx-auto max-w-[1500px]">
+    <header class="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between mb-7">
+      <div>
+        <p class="font-bold text-[11px] text-accent tracking-[0.2em] uppercase">Reputation</p>
+        <h1 class="mt-2 font-semibold text-4xl tracking-[-0.04em]">Hear what is said before it becomes the story.</h1>
+        <p class="mt-2 max-w-2xl text-fg-muted text-sm">Reviews and mentions from the profiles this workspace monitors, the alerts its rules have raised, and what has been done about each.</p>
+      </div>
+      <div class="flex gap-2">
+        <button type="button" @click="load()" :disabled="loading()" :aria-busy="loading()" class="px-5 min-h-11 font-bold text-fg text-sm bg-panel hover:bg-surface-hover border border-line rounded-pill focus-visible:outline focus-visible:outline-[var(--coral)] focus-visible:outline-2 focus-visible:outline-offset-2 disabled:opacity-60">Refresh</button>
+        <button type="button" @click="toggleAdd()" class="px-5 min-h-11 font-bold text-[var(--coral-ink)] text-sm bg-accent rounded-pill focus-visible:outline focus-visible:outline-[var(--coral)] focus-visible:outline-2 focus-visible:outline-offset-2">Monitor a profile</button>
+      </div>
+    </header>
+
+    <section :if="addOpen()" class="mb-5 p-5 bg-panel border border-line rounded-panel" aria-labelledby="add-profile-title">
+      <h2 id="add-profile-title" class="font-bold text-sm">Monitor a profile</h2>
+      <p class="mt-1 text-fg-muted text-xs">Only platforms with a working connector are listed. A new profile waits for its first sync before it reports anything.</p>
+      <div class="grid gap-3 sm:grid-cols-3 mt-4">
+        <label class="block font-bold text-xs">
+          Platform
+          <select x-model="addPlatform" class="mt-1 field">
+            @foreach(platformOptions as option)
+              <option value="{{ option.value }}">{{ option.label }}</option>
+            @endforeach
+          </select>
+        </label>
+        <label class="block font-bold text-xs">
+          Name
+          <input x-model.trim="addName" type="text" autocomplete="off" maxlength="160" class="mt-1 field" placeholder="Harbor Cafe">
+        </label>
+        <label class="block font-bold text-xs">
+          Platform identifier
+          <input x-model.trim="addExternalId" type="text" autocomplete="off" maxlength="255" class="mt-1 field" placeholder="The id the platform uses for it">
+        </label>
+      </div>
+      <p :if="addError()" class="mt-3 font-bold text-danger text-xs" role="alert">{{ addError() }}</p>
+      <div class="flex gap-2 mt-4">
+        <button type="button" @click="addProfile()" :disabled="saving()" :aria-busy="saving()" class="px-5 min-h-11 font-bold text-[var(--coral-ink)] text-sm bg-accent rounded-pill focus-visible:outline focus-visible:outline-[var(--coral)] focus-visible:outline-2 focus-visible:outline-offset-2 disabled:opacity-60">Add profile</button>
+        <button type="button" @click="toggleAdd()" class="px-5 min-h-11 font-bold text-fg text-sm bg-panel hover:bg-surface-hover border border-line rounded-pill focus-visible:outline focus-visible:outline-[var(--coral)] focus-visible:outline-2 focus-visible:outline-offset-2">Cancel</button>
+      </div>
+    </section>
+
+    <div :if="loading()" class="space-y-3" aria-hidden="true">
+      <div class="h-24 bg-surface-sunken border border-line rounded-panel"></div>
+      <div class="h-24 bg-surface-sunken border border-line rounded-panel"></div>
+      <div class="h-64 bg-surface-sunken border border-line rounded-panel"></div>
+    </div>
+    <p :if="loading()" class="sr-only" role="status">Loading reputation monitoring</p>
+
+    <div :if="errorText()" class="p-8 text-center bg-panel border border-line rounded-panel" role="alert">
+      <span aria-hidden="true" class="inline-block h-6 w-6 text-danger i-hugeicons-alert-02"></span>
+      <p class="mt-3 font-bold text-sm">{{ errorText() }}</p>
+      <button type="button" @click="load()" class="mt-4 px-5 min-h-11 font-bold text-fg text-sm bg-panel hover:bg-surface-hover border border-line rounded-pill focus-visible:outline focus-visible:outline-[var(--coral)] focus-visible:outline-2">Try again</button>
+    </div>
+
+    <p :if="actionError()" class="mb-5 p-4 font-bold text-danger text-sm bg-panel border border-line rounded-panel" role="alert">{{ actionError() }}</p>
+
+    <section :if="ready()" class="overflow-hidden mb-5 bg-panel border border-line rounded-panel" aria-labelledby="alerts-title">
+      <div class="p-5 border-b border-line">
+        <h2 id="alerts-title" class="font-bold">Alerts</h2>
+      </div>
+      <p :if="showNoAlerts()" class="p-5 text-fg-muted text-sm">No alert rule has fired for this workspace.</p>
+      <div :if="showAlerts()" class="divide-line divide-y">
+        <template :for="alert in alerts()">
+          <article class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between p-5">
+            <div>
+              <h3 class="font-bold text-sm">{{ alert.title }}</h3>
+              <p class="mt-0.5 text-fg-muted text-xs">{{ alert.detail }}</p>
+              <p class="mt-1 text-fg-muted text-xs">{{ alert.severityLabel }}, {{ alert.statusLabel }}, raised {{ alert.raisedLabel }}</p>
+            </div>
+            <div class="flex gap-2 shrink-0">
+              <button :if="alert.status === 'open'" type="button" @click="decide(alert.id, 'acknowledged')" :disabled="busyKey() !== ''" :aria-busy="busyKey() === 'alert:' + alert.id" class="px-4 min-h-11 font-bold text-fg text-sm bg-panel hover:bg-surface-hover border border-line rounded-pill focus-visible:outline focus-visible:outline-[var(--coral)] focus-visible:outline-2 disabled:opacity-50">Acknowledge</button>
+              <button :if="alert.status !== 'resolved'" type="button" @click="decide(alert.id, 'resolved')" :disabled="busyKey() !== ''" :aria-busy="busyKey() === 'alert:' + alert.id" class="px-4 min-h-11 font-bold text-fg text-sm bg-panel hover:bg-surface-hover border border-line rounded-pill focus-visible:outline focus-visible:outline-[var(--coral)] focus-visible:outline-2 disabled:opacity-50">Resolve</button>
+            </div>
+          </article>
+        </template>
+      </div>
+    </section>
+
+    <section :if="ready()" class="overflow-hidden mb-5 bg-panel border border-line rounded-panel" aria-labelledby="mentions-title">
+      <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between p-5 border-b border-line">
+        <h2 id="mentions-title" class="font-bold">Reviews and mentions</h2>
+        <label class="block">
+          <span class="sr-only">Filter by sentiment</span>
+          <select x-model="sentiment" @change="onSentimentChange()" class="field">
+            <option value="">Every sentiment</option>
+            @foreach(sentimentOptions as option)
+              <option value="{{ option.value }}">{{ option.label }}</option>
+            @endforeach
+          </select>
+        </label>
+      </div>
+      <p :if="showNoMentions()" class="p-5 text-fg-muted text-sm">Nothing matches this view. Mentions arrive when a monitored profile syncs.</p>
+      <div :if="showMentions()" class="divide-line divide-y">
+        <template :for="mention in mentions()">
+          <article class="p-5">
+            <div class="flex flex-col gap-1 sm:flex-row sm:items-baseline sm:justify-between">
+              <h3 class="font-bold text-sm">{{ mention.author }}</h3>
+              <p class="text-fg-muted text-xs">{{ mention.kindLabel }} on {{ mention.platformLabel }}, {{ mention.postedLabel }}</p>
+            </div>
+            <p class="mt-2 max-w-3xl text-sm">{{ mention.body }}</p>
+            <p class="mt-2 text-fg-muted text-xs"><span :if="mention.ratingLabel">Rated {{ mention.ratingLabel }}. </span>{{ mention.sentimentLabel }}. {{ mention.statusLabel }}.</p>
+            <div class="flex flex-wrap gap-2 mt-3">
+              <button :if="mention.status !== 'triaged'" type="button" @click="triage(mention.id, 'triaged')" :disabled="busyKey() !== ''" :aria-busy="busyKey() === 'mention:' + mention.id" class="px-4 min-h-11 font-bold text-fg text-sm bg-panel hover:bg-surface-hover border border-line rounded-pill focus-visible:outline focus-visible:outline-[var(--coral)] focus-visible:outline-2 disabled:opacity-50">Mark triaged</button>
+              <button :if="mention.status !== 'responded'" type="button" @click="triage(mention.id, 'responded')" :disabled="busyKey() !== ''" :aria-busy="busyKey() === 'mention:' + mention.id" class="px-4 min-h-11 font-bold text-fg text-sm bg-panel hover:bg-surface-hover border border-line rounded-pill focus-visible:outline focus-visible:outline-[var(--coral)] focus-visible:outline-2 disabled:opacity-50">Mark responded</button>
+              <button :if="mention.status !== 'ignored'" type="button" @click="triage(mention.id, 'ignored')" :disabled="busyKey() !== ''" :aria-busy="busyKey() === 'mention:' + mention.id" class="px-4 min-h-11 font-bold text-fg text-sm bg-panel hover:bg-surface-hover border border-line rounded-pill focus-visible:outline focus-visible:outline-[var(--coral)] focus-visible:outline-2 disabled:opacity-50">Ignore</button>
+            </div>
+          </article>
+        </template>
+      </div>
+      <div :if="showMentions()" class="flex items-center justify-between p-4 border-line border-t">
+        <p class="m-0 text-fg-muted text-xs">Page {{ page() }}</p>
+        <div class="flex gap-2">
+          <button type="button" @click="previousPage()" :disabled="page() <= 1 || prevBusy()" :aria-busy="prevBusy()" class="px-4 min-h-11 font-bold text-fg text-sm bg-panel hover:bg-surface-hover border border-line rounded-pill focus-visible:outline focus-visible:outline-[var(--coral)] focus-visible:outline-2 disabled:opacity-50">Previous</button>
+          <button type="button" @click="nextPage()" :disabled="!hasMore() || nextBusy()" :aria-busy="nextBusy()" class="px-4 min-h-11 font-bold text-fg text-sm bg-panel hover:bg-surface-hover border border-line rounded-pill focus-visible:outline focus-visible:outline-[var(--coral)] focus-visible:outline-2 disabled:opacity-50">Next</button>
+        </div>
+      </div>
+    </section>
+
+    <section :if="ready()" class="overflow-hidden bg-panel border border-line rounded-panel" aria-labelledby="profiles-title">
+      <div class="p-5 border-b border-line">
+        <h2 id="profiles-title" class="font-bold">Monitored profiles</h2>
+      </div>
+      <p :if="showNoProfiles()" class="p-5 text-fg-muted text-sm">This workspace is not monitoring any profile yet. Add one to start collecting its reviews.</p>
+      <div :if="showProfiles()" class="divide-line divide-y">
+        <template :for="profile in profiles()">
+          <article class="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between p-5">
+            <div>
+              <h3 class="font-bold text-sm">{{ profile.name }}</h3>
+              <p class="mt-0.5 text-fg-muted text-xs">{{ profile.platformLabel }}<span :if="profile.detail">, {{ profile.detail }}</span></p>
+              <p :if="profile.error" class="mt-1 font-bold text-danger text-xs">{{ profile.error }}</p>
+            </div>
+            <p class="text-fg-muted text-xs sm:text-right">{{ profile.statusLabel }}. Last synced {{ profile.lastPolledLabel }}.</p>
+          </article>
+        </template>
+      </div>
+    </section>
+  </div>
+</main>
