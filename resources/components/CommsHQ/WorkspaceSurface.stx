@@ -25,12 +25,6 @@ const pages: Record<string, WorkspacePage> = {
     records: [{ name: 'Sunday Paper', detail: 'sundaypaper.co', status: 'Live', value: 'Primary' }, { name: 'Field Notes', detail: 'notes.sundaypaper.co', status: 'Live', value: 'Subdomain' }, { name: 'Spring launch', detail: 'Preview is team-only', status: 'Draft', value: 'Private' }],
     checklist: [{ label: 'Draft isolation', detail: 'Anonymous requests cannot resolve drafts', state: 'Locked' }, { label: 'Certificate renewal', detail: '42 days remaining', state: 'Healthy' }, { label: 'Canonical URLs', detail: 'All pages resolve one origin', state: 'Ready' }],
   },
-  forms: {
-    eyebrow: 'Forms and conversion', title: 'Make every signup feel like an invitation.', description: 'Create accessible forms, landing pages, link pages, and gated resources with consent proof attached.', primary: 'Build form', icon: 'i-hugeicons-note-add',
-    metrics: [{ label: 'Form views', value: '38,412', note: '+14.7%' }, { label: 'Completion rate', value: '42.8%', note: '+3.1 points' }, { label: 'Confirmed signups', value: '4,906', note: '92.4% confirmed' }],
-    records: [{ name: 'Field Notes signup', detail: 'Homepage embedded form', status: 'Live', value: '48.2%' }, { name: 'Spring collection waitlist', detail: 'Standalone landing page', status: 'Live', value: '39.4%' }, { name: 'Studio pricing guide', detail: 'Gated PDF resource', status: 'Draft', value: 'Preview' }],
-    checklist: [{ label: 'Proof capture', detail: 'IP metadata, policy, source, and purpose', state: 'On' }, { label: 'Double opt-in', detail: 'Confirmation expires in 48 hours', state: 'On' }, { label: 'Rate limits', detail: 'Adaptive abuse protection', state: 'Healthy' }],
-  },
   publications: {
     eyebrow: 'Publishing', title: 'Publish the archive people return to.', description: 'Run newsletters, blogs, gated posts, podcasts, feeds, menus, revisions, and scheduled releases together.', primary: 'Create post', icon: 'i-hugeicons-news-01',
     metrics: [{ label: 'Published posts', value: '148', note: '12 member-only' }, { label: 'Paid members', value: '2,184', note: '+9.6%' }, { label: 'Feed subscribers', value: '8,942', note: 'RSS and podcast' }],
