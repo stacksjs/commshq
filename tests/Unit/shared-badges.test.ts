@@ -8,9 +8,24 @@ import { mergeCssConfig } from '../../node_modules/@stacksjs/stx/dist/ts-css-con
 
 const root = resolve(import.meta.dir, '../..')
 
+/**
+ * Markup with every comment removed, as DashboardShell.test.ts puts it: a
+ * comment that NAMES the shape being checked for satisfies the grep, so the
+ * better a file documents its own decision, the more likely it is to defeat
+ * the test guarding it. CommandCenter's own docstring lists the four invented
+ * figures it replaced, which is worth keeping and is not a figure the page
+ * renders. Both stx comment forms, and block and line comments in a script.
+ */
+function markupOnly(value: string): string {
+  return value
+    .replace(/\{\{--[\s\S]*?--\}\}/g, '')
+    .replace(/<!--[\s\S]*?-->/g, '')
+    .replace(/\/\*[\s\S]*?\*\//g, '')
+    .replace(/^\s*\/\/.*$/gm, '')
+}
+
 describe('shared workspace badges', () => {
   for (const [component, samples] of [
-    ['CommandCenter', [{ text: '+18.4%', item: { change: '+18.4%' } }]],
     ['WorkspaceSurface', [{ text: 'Complete', record: { status: 'Complete' } }, { text: 'On', check: { state: 'On' } }]],
   ] as const) {
     test(`${component} uses quiet shared badges and preserves its status text`, async () => {
@@ -50,6 +65,41 @@ describe('shared workspace badges', () => {
    * The palette itself is locked by the sibling test below, which generates
    * the shortcut's CSS and is indifferent to which element wears it.
    */
+  /*
+   * CommandCenter was in the loop above, rendering one <Badge> per metric tile
+   * around a `change` figure. It is gone for the same reason the audience
+   * pills left it, plus one of its own.
+   *
+   * The reason of its own comes first: those figures were "+18.4%", "99.1%",
+   * "+12.7%" and "3 need review", and no query produced any of them. The tiles
+   * now come from `/api/v1/workspace`, which performs counts and one sum and
+   * holds no previous period, so there is no change to badge. A delta can come
+   * back when the action grows a comparison to put in it.
+   *
+   * The shared reason is mechanical: the tiles are rendered by a client `:for`
+   * over state that only exists in the browser, and <Badge> is a server
+   * component, so it cannot be the markup inside that loop.
+   *
+   * What the badge was protecting is asserted here instead: the tiles carry no
+   * invented change text, and they stay QUIET, with no live region announcing
+   * five figures that refresh together.
+   */
+  test('the command center states its figures without badging a change nobody measured', () => {
+    const source = markupOnly(readFileSync(resolve(root, 'resources/components/CommsHQ/CommandCenter.stx'), 'utf8'))
+
+    expect(source).not.toContain('<Badge')
+    expect(source).not.toContain('workspace-change-badge')
+
+    // The literals the page used to assert as fact, each from no query at all.
+    for (const invented of ['+18.4%', '99.1%', '+12.7%', '1,284', '84,219', '$18,460', 'Sunday Paper Co.'])
+      expect(source).not.toContain(invented)
+
+    // Quiet: the one status role belongs to the loading announcement, and
+    // nothing announces the figures themselves as they land.
+    expect(source).not.toContain('aria-live=')
+    expect((source.match(/role="status"/g) || []).length).toBe(1)
+  })
+
   test('audience consent keeps the shared badge treatment and stays quiet', () => {
     const file = resolve(root, 'resources/components/CommsHQ/AudienceWorkspace.stx')
     const source = readFileSync(file, 'utf8')
@@ -94,7 +144,6 @@ describe('shared workspace badges', () => {
     const engine = await loadCssEngine()
     if (!engine) throw new Error('The installed STX CSS engine is required')
     for (const [shortcut, declarations] of [
-      ['workspace-change-badge', ['#42652e', '#a8d28e', '#eef5e8', '11px', '0.625rem']],
       ['workspace-record-badge', ['#466833', '#acd294', '#eef5e8', '10px']],
       ['workspace-check-badge', ['#bfe2ab', '10px']],
     ] as const) {
