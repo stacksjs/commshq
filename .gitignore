@@ -5,6 +5,8 @@
 .env
 .env.local
 .env.keys
+# Local backups of env entries taken out of a committed file. Never commit.
+.env.bak
 *.local
 .env.keys
 
