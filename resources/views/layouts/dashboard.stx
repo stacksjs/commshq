@@ -24,7 +24,7 @@
 
     <DashboardNavigation />
 
-    {{-- A div, not a <main>. Each of the six page components already opens
+    {{-- A div, not a <main>. Each of the seven page components already opens
          its own <main>, and wrapping them in a second one would give every
          dashboard page two main landmarks, which is invalid and leaves a
          screen reader's "skip to main" ambiguous. They carry `id="main"` so

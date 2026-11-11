@@ -4,8 +4,8 @@ definePageMeta({ middleware: ['auth'] })
 
 @extends('dashboard')
 
-@section('title', 'CommsHQ - Editor')
+@section('title', 'CommsHQ - Message studio')
 
 @section('content')
-<WorkspaceSurface area="editor" />
+<MessageStudio />
 @endsection

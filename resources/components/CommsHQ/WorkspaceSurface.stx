@@ -19,12 +19,6 @@ const pages: Record<string, WorkspacePage> = {
     records: [{ name: 'Create Sunday Paper Co.', detail: 'Workspace and owner configured', status: 'Complete', value: '1 min' }, { name: 'Verify sending domain', detail: 'sundaypaper.co', status: 'Complete', value: '4 min' }, { name: 'Send first welcome', detail: 'Review content and audience', status: 'Next', value: '8 min' }],
     checklist: [{ label: 'Double opt-in', detail: 'Required by default for new email contacts', state: 'On' }, { label: 'SMS consent', detail: 'Explicit written consent is required', state: 'On' }, { label: 'Quiet hours', detail: 'Recipient timezone enforcement', state: 'On' }],
   },
-  editor: {
-    eyebrow: 'Message studio', title: 'Shape one story for every screen.', description: 'Compose reusable blocks, conditional sections, personalization fallbacks, and plain-text output with revision history.', primary: 'New draft', icon: 'i-hugeicons-edit-02',
-    metrics: [{ label: 'Reusable blocks', value: '34', note: '8 shared' }, { label: 'Templates', value: '12', note: '4 channels' }, { label: 'Draft revisions', value: '186', note: '30-day history' }],
-    records: [{ name: 'Sunday Dispatch', detail: 'Email with product block', status: 'Editing', value: 'v18' }, { name: 'Back in stock', detail: 'SMS and email pair', status: 'Ready', value: 'v7' }, { name: 'Member welcome', detail: 'Conditional paid content', status: 'Approved', value: 'v12' }],
-    checklist: [{ label: 'Responsive preview', detail: 'Desktop and mobile canvases', state: 'Ready' }, { label: 'Plain-text output', detail: 'Generated and reviewed', state: 'Ready' }, { label: 'Human approval', detail: 'Required for AI-assisted copy', state: 'On' }],
-  },
   sites: {
     eyebrow: 'Sites', title: 'Every publication deserves a true address.', description: 'Manage native Stacks sites, customer domains, TLS, redirects, menus, and isolated draft rendering.', primary: 'Create site', icon: 'i-hugeicons-web-design-02',
     metrics: [{ label: 'Live sites', value: '3', note: '2 custom domains' }, { label: 'TLS coverage', value: '100%', note: 'Auto-renewing' }, { label: 'Redirect health', value: '99.9%', note: 'No loops found' }],

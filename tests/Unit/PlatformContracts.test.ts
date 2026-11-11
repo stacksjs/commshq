@@ -64,7 +64,7 @@ describe('interface contracts', () => {
     // The surface holds its figures as literals, so a page stays on it only
     // until it has an endpoint to read; the pages still here are the ones
     // that have not been wired yet, not the ones that should stay.
-    const required = ['onboarding', 'editor', 'sites', 'forms', 'publications', 'commerce', 'monetization', 'analytics', 'integrations', 'billing', 'domains', 'senders', 'teams', 'settings']
+    const required = ['onboarding', 'sites', 'forms', 'publications', 'commerce', 'monetization', 'analytics', 'integrations', 'billing', 'domains', 'senders', 'teams', 'settings']
     for (const page of required) {
       const source = await Bun.file(new URL(`../../resources/views/dashboard/commshq/${page}.stx`, import.meta.url)).text()
       expect(source).toContain(`<WorkspaceSurface area="${page}" />`)
@@ -73,6 +73,11 @@ describe('interface contracts', () => {
     const segments = await Bun.file(new URL('../../resources/views/dashboard/commshq/segments.stx', import.meta.url)).text()
     expect(segments).toContain('<SegmentsWorkspace />')
     expect(segments).not.toContain('<WorkspaceSurface')
+
+    // `editor` followed, reading `/api/v1/message-templates`.
+    const editor = await Bun.file(new URL('../../resources/views/dashboard/commshq/editor.stx', import.meta.url)).text()
+    expect(editor).toContain('<MessageStudio />')
+    expect(editor).not.toContain('<WorkspaceSurface')
 
     const surface = await Bun.file(new URL('../../resources/components/CommsHQ/WorkspaceSurface.stx', import.meta.url)).text()
     for (const state of ['populated', 'loading', 'empty', 'error']) expect(surface).toContain(`'${state}'`)
