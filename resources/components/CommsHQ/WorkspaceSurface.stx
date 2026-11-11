@@ -19,12 +19,6 @@ const pages: Record<string, WorkspacePage> = {
     records: [{ name: 'Create Sunday Paper Co.', detail: 'Workspace and owner configured', status: 'Complete', value: '1 min' }, { name: 'Verify sending domain', detail: 'sundaypaper.co', status: 'Complete', value: '4 min' }, { name: 'Send first welcome', detail: 'Review content and audience', status: 'Next', value: '8 min' }],
     checklist: [{ label: 'Double opt-in', detail: 'Required by default for new email contacts', state: 'On' }, { label: 'SMS consent', detail: 'Explicit written consent is required', state: 'On' }, { label: 'Quiet hours', detail: 'Recipient timezone enforcement', state: 'On' }],
   },
-  segments: {
-    eyebrow: 'Audience intelligence', title: 'Find the people behind the pattern.', description: 'Build explainable segments from consent, engagement, properties, purchases, and publication activity.', primary: 'Create segment', icon: 'i-hugeicons-filter-horizontal',
-    metrics: [{ label: 'Active segments', value: '18', note: '7 dynamic' }, { label: 'Marketable people', value: '24,816', note: '+8.2% this month' }, { label: 'Last evaluation', value: '2 min', note: 'All rules healthy' }],
-    records: [{ name: 'High-intent readers', detail: 'Opened 3 sends and viewed pricing', status: 'Live', value: '2,406' }, { name: 'First purchase, 30 days', detail: 'Order count equals one', status: 'Live', value: '864' }, { name: 'Needs re-consent', detail: 'Policy version before 2026.2', status: 'Review', value: '218' }],
-    checklist: [{ label: 'Rule preview', detail: 'Estimated before every save', state: 'Ready' }, { label: 'Consent filter', detail: 'Suppression always takes precedence', state: 'Locked' }, { label: 'Evaluation queue', detail: 'Median run time 18 seconds', state: 'Healthy' }],
-  },
   editor: {
     eyebrow: 'Message studio', title: 'Shape one story for every screen.', description: 'Compose reusable blocks, conditional sections, personalization fallbacks, and plain-text output with revision history.', primary: 'New draft', icon: 'i-hugeicons-edit-02',
     metrics: [{ label: 'Reusable blocks', value: '34', note: '8 shared' }, { label: 'Templates', value: '12', note: '4 channels' }, { label: 'Draft revisions', value: '186', note: '30-day history' }],
