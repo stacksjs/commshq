@@ -84,6 +84,11 @@ describe('interface contracts', () => {
     expect(billing).toContain('<BillingWorkspace />')
     expect(billing).not.toContain('<WorkspaceSurface')
 
+    // `reputation` followed, reading and acting through the reputation routes.
+    const reputation = await Bun.file(new URL('../../resources/views/dashboard/commshq/reputation.stx', import.meta.url)).text()
+    expect(reputation).toContain('<ReputationWorkspace />')
+    expect(reputation).not.toContain('<WorkspaceSurface')
+
     const surface = await Bun.file(new URL('../../resources/components/CommsHQ/WorkspaceSurface.stx', import.meta.url)).text()
     for (const state of ['populated', 'loading', 'empty', 'error']) expect(surface).toContain(`'${state}'`)
   })

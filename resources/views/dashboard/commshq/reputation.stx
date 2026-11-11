@@ -7,5 +7,5 @@ definePageMeta({ middleware: ['auth'] })
 @section('title', 'CommsHQ - Reputation')
 
 @section('content')
-<WorkspaceSurface area="reputation" />
+<ReputationWorkspace />
 @endsection
