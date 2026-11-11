@@ -1,0 +1,318 @@
+<script server>
+/* Fixed lists from the module, rendered here rather than looped in the
+ * browser, so the selects are usable in the first paint. */
+import { FORM_KINDS, FORM_STATUSES } from '../../data/forms-query'
+
+export const kindOptions = FORM_KINDS
+export const statusOptions = FORM_STATUSES
+</script>
+
+<script client>
+/**
+ * Signup forms, reading and writing through the application's own API.
+ *
+ * The signup path was already real: `POST /forms/{uuid}/submit` finds an
+ * active form, records consent, joins its audience and sends the confirmation
+ * when the form asks for double opt-in. There was no way to see or create a
+ * form from the dashboard. This page was the `forms` area of
+ * `WorkspaceSurface`, stating 38,412 views, a 42.8% completion rate and 4,906
+ * confirmed signups, none of which anything records.
+ *
+ * It lists forms from `GET /api/v1/forms`, creates them as drafts, and
+ * activates or archives them with a PATCH. A new form is never created
+ * active: an active form answers on a public endpoint the moment it exists,
+ * so going live is its own step. The public address is shown only while a
+ * form is active.
+ *
+ * There are no view, completion or per-form signup figures, because the
+ * endpoint returns none; `forms-query.ts` records why.
+ *
+ * Writes carry the CSRF token explicitly, read with `useCookie`, the
+ * composable, since a client script may not reach for the DOM itself.
+ */
+import {
+  draftError,
+  formPayload,
+  FORMS_ENDPOINT,
+  FORMS_PER_PAGE,
+  formsUrl,
+  formUrl,
+  listErrorMessage,
+  saveErrorMessage,
+  toFormViews,
+} from '../../data/forms-query'
+
+const forms = state([])
+const hasMore = state(false)
+const page = state(1)
+const status = state('')
+const loading = state(true)
+const errorText = state('')
+const actionError = state('')
+/* Which control the in-flight load belongs to, so one busy state is announced
+ * rather than three. */
+const busySource = state('refresh')
+/* The form a status change is in flight for, so only its button is busy. */
+const busyId = state(0)
+
+const addOpen = state(false)
+const addName = state('')
+const addSlug = state('')
+const addKind = state('inline')
+const addOptIn = state('double')
+const saving = state(false)
+const addError = state('')
+
+const csrfToken = useCookie('X-CSRF-Token')
+
+const refreshBusy = derived(() => loading() && busySource() === 'refresh')
+const prevBusy = derived(() => loading() && busySource() === 'prev')
+const nextBusy = derived(() => loading() && busySource() === 'next')
+const showEmpty = derived(() => !loading() && !errorText() && forms().length === 0)
+const showList = derived(() => !loading() && !errorText() && forms().length > 0)
+
+async function load(source = 'refresh') {
+  busySource.set(source)
+  loading.set(true)
+  errorText.set('')
+  try {
+    const response = await fetch(formsUrl({ page: page(), perPage: FORMS_PER_PAGE, status: status() }), {
+      credentials: 'same-origin',
+      headers: { Accept: 'application/json' },
+    })
+
+    if (!response.ok) {
+      errorText.set(listErrorMessage(response.status))
+      forms.set([])
+      return
+    }
+
+    const body = await response.json()
+    forms.set(toFormViews(body))
+    hasMore.set(body?.has_more_pages === true)
+  }
+  catch {
+    // A network failure, not a refusal: there is no status to explain.
+    errorText.set('Forms could not be loaded. Check your connection and try again.')
+    forms.set([])
+  }
+  finally {
+    loading.set(false)
+  }
+}
+
+function onStatusChange() {
+  page.set(1)
+  void load()
+}
+
+function nextPage() {
+  if (!hasMore() || loading())
+    return
+  page.update(value => value + 1)
+  void load('next')
+}
+
+function previousPage() {
+  if (page() <= 1 || loading())
+    return
+  page.update(value => value - 1)
+  void load('prev')
+}
+
+function writeHeaders() {
+  return {
+    'Content-Type': 'application/json',
+    'Accept': 'application/json',
+    'X-CSRF-Token': csrfToken() || '',
+  }
+}
+
+async function setStatus(id, next) {
+  if (busyId())
+    return
+  busyId.set(id)
+  actionError.set('')
+  try {
+    const response = await fetch(formUrl(id), {
+      method: 'PATCH',
+      credentials: 'same-origin',
+      headers: writeHeaders(),
+      body: JSON.stringify({ status: next }),
+    })
+
+    if (!response.ok)
+      actionError.set(saveErrorMessage(response.status))
+    /* Read again either way: on a 404 the list on screen is the stale thing. */
+    await load()
+  }
+  catch {
+    actionError.set('That change could not be saved. Check your connection and try again.')
+  }
+  finally {
+    busyId.set(0)
+  }
+}
+
+function toggleAdd() {
+  addOpen.update(value => !value)
+  addError.set('')
+}
+
+async function addForm() {
+  const draft = { name: addName(), slug: addSlug(), kind: addKind(), doubleOptIn: addOptIn() !== 'single' }
+  const problem = draftError(draft)
+  if (problem) {
+    addError.set(problem)
+    return
+  }
+
+  saving.set(true)
+  addError.set('')
+  try {
+    const response = await fetch(FORMS_ENDPOINT, {
+      method: 'POST',
+      credentials: 'same-origin',
+      headers: writeHeaders(),
+      body: JSON.stringify(formPayload(draft)),
+    })
+
+    if (response.status === 201 || response.ok) {
+      addName.set('')
+      addSlug.set('')
+      addKind.set('inline')
+      addOptIn.set('double')
+      addOpen.set(false)
+      page.set(1)
+      await load()
+      return
+    }
+
+    addError.set(saveErrorMessage(response.status))
+  }
+  catch {
+    addError.set('The form could not be saved. Check your connection and try again.')
+  }
+  finally {
+    saving.set(false)
+  }
+}
+
+onMount(() => {
+  void load()
+})
+</script>
+
+<main id="main" class="p-5 sm:p-8 min-h-screen text-fg bg-page">
+  <div class="mx-auto max-w-[1500px]">
+    <header class="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between mb-7">
+      <div>
+        <p class="font-bold text-[11px] text-accent tracking-[0.2em] uppercase">Forms</p>
+        <h1 class="mt-2 font-semibold text-4xl tracking-[-0.04em]">Make every signup feel like an invitation.</h1>
+        <p class="mt-2 max-w-2xl text-fg-muted text-sm">The forms other sites post signups to. Only an active form accepts them, and each one records consent for the contact it creates.</p>
+      </div>
+      <div class="flex gap-2">
+        <button type="button" @click="load()" :disabled="refreshBusy()" :aria-busy="refreshBusy()" class="px-5 min-h-11 font-bold text-fg text-sm bg-panel hover:bg-surface-hover border border-line rounded-pill focus-visible:outline focus-visible:outline-[var(--coral)] focus-visible:outline-2 focus-visible:outline-offset-2 disabled:opacity-60">Refresh</button>
+        <button type="button" @click="toggleAdd()" class="px-5 min-h-11 font-bold text-[var(--coral-ink)] text-sm bg-accent rounded-pill focus-visible:outline focus-visible:outline-[var(--coral)] focus-visible:outline-2 focus-visible:outline-offset-2">Build form</button>
+      </div>
+    </header>
+
+    <section :if="addOpen()" class="mb-5 p-5 bg-panel border border-line rounded-panel" aria-labelledby="add-form-title">
+      <h2 id="add-form-title" class="font-bold text-sm">Build a form</h2>
+      <p class="mt-1 text-fg-muted text-xs">It is saved as a draft with one required email field. It accepts no signups until you activate it.</p>
+      <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-4 mt-4">
+        <label class="block font-bold text-xs">
+          Name
+          <input x-model.trim="addName" type="text" autocomplete="off" maxlength="160" class="mt-1 field" placeholder="Newsletter signup">
+        </label>
+        <label class="block font-bold text-xs">
+          Address
+          <input x-model.trim="addSlug" type="text" autocomplete="off" maxlength="120" class="mt-1 field" placeholder="Left blank, it follows the name">
+        </label>
+        <label class="block font-bold text-xs">
+          Kind
+          <select x-model="addKind" class="mt-1 field">
+            @foreach(kindOptions as option)
+              <option value="{{ option.value }}">{{ option.label }}</option>
+            @endforeach
+          </select>
+        </label>
+        <label class="block font-bold text-xs">
+          Confirmation
+          <select x-model="addOptIn" class="mt-1 field">
+            <option value="double">Double opt-in</option>
+            <option value="single">Single opt-in</option>
+          </select>
+        </label>
+      </div>
+      <p :if="addError()" class="mt-3 font-bold text-danger text-xs" role="alert">{{ addError() }}</p>
+      <div class="flex gap-2 mt-4">
+        <button type="button" @click="addForm()" :disabled="saving()" :aria-busy="saving()" class="px-5 min-h-11 font-bold text-[var(--coral-ink)] text-sm bg-accent rounded-pill focus-visible:outline focus-visible:outline-[var(--coral)] focus-visible:outline-2 focus-visible:outline-offset-2 disabled:opacity-60">Save draft</button>
+        <button type="button" @click="toggleAdd()" class="px-5 min-h-11 font-bold text-fg text-sm bg-panel hover:bg-surface-hover border border-line rounded-pill focus-visible:outline focus-visible:outline-[var(--coral)] focus-visible:outline-2 focus-visible:outline-offset-2">Cancel</button>
+      </div>
+    </section>
+
+    <p :if="actionError()" class="mb-5 p-4 font-bold text-danger text-sm bg-panel border border-line rounded-panel" role="alert">{{ actionError() }}</p>
+
+    <section class="overflow-hidden bg-panel border border-line rounded-panel" aria-labelledby="forms-title">
+      <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between p-5 border-b border-line">
+        <h2 id="forms-title" class="font-bold">Forms</h2>
+        <label class="block">
+          <span class="sr-only">Filter by status</span>
+          <select x-model="status" @change="onStatusChange()" class="field">
+            <option value="">Every status</option>
+            @foreach(statusOptions as option)
+              <option value="{{ option.value }}">{{ option.label }}</option>
+            @endforeach
+          </select>
+        </label>
+      </div>
+
+      {{-- Loading. A row-shaped skeleton rather than a spinner, so the list
+           does not jump height when the rows land. --}}
+      <div :if="loading()" class="p-5 space-y-3" aria-hidden="true">
+        <div class="h-16 bg-surface-sunken rounded-control"></div>
+        <div class="h-16 bg-surface-sunken rounded-control"></div>
+      </div>
+      <p :if="loading()" class="sr-only" role="status">Loading forms</p>
+
+      <div :if="errorText()" class="p-8 text-center" role="alert">
+        <span aria-hidden="true" class="inline-block h-6 w-6 text-danger i-hugeicons-alert-02"></span>
+        <p class="mt-3 font-bold text-sm">{{ errorText() }}</p>
+        <button type="button" @click="load()" :disabled="refreshBusy()" :aria-busy="refreshBusy()" class="mt-4 px-5 min-h-11 font-bold text-fg text-sm bg-panel hover:bg-surface-hover border border-line rounded-pill focus-visible:outline focus-visible:outline-[var(--coral)] focus-visible:outline-2 disabled:opacity-60">Try again</button>
+      </div>
+
+      <div :if="showEmpty()" class="p-10 text-center">
+        <span aria-hidden="true" class="inline-block h-7 w-7 text-fg-muted i-hugeicons-form"></span>
+        <p class="mt-3 font-bold">No forms match this view.</p>
+        <p class="mt-1 text-fg-muted text-sm">Clear the status filter to see every form, or build the first one.</p>
+      </div>
+
+      <div :if="showList()" class="divide-line divide-y">
+        <template :for="form in forms()">
+          <article class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between p-5">
+            <div class="min-w-0">
+              <h3 class="font-bold text-sm">{{ form.name }}</h3>
+              <p class="mt-0.5 text-fg-muted text-xs">{{ form.kindLabel }}, {{ form.statusLabel }}, {{ form.optInLabel }}</p>
+              <p class="mt-0.5 text-fg-muted text-xs">{{ form.fieldsLabel }}. {{ form.originsLabel }}. Last changed {{ form.updatedLabel }}.</p>
+              <p :if="form.submitPath" class="mt-2 break-all text-xs">Accepting signups at <code class="font-bold">{{ form.submitPath }}</code></p>
+              <p :if="!form.submitPath" class="mt-2 text-fg-muted text-xs">Not accepting signups.</p>
+            </div>
+            <div class="flex gap-2 shrink-0">
+              <button :if="form.status !== 'active'" type="button" @click="setStatus(form.id, 'active')" :disabled="busyId() !== 0" :aria-busy="busyId() === form.id" class="px-4 min-h-11 font-bold text-fg text-sm bg-panel hover:bg-surface-hover border border-line rounded-pill focus-visible:outline focus-visible:outline-[var(--coral)] focus-visible:outline-2 disabled:opacity-50">Activate</button>
+              <button :if="form.status === 'active'" type="button" @click="setStatus(form.id, 'archived')" :disabled="busyId() !== 0" :aria-busy="busyId() === form.id" class="px-4 min-h-11 font-bold text-fg text-sm bg-panel hover:bg-surface-hover border border-line rounded-pill focus-visible:outline focus-visible:outline-[var(--coral)] focus-visible:outline-2 disabled:opacity-50">Archive</button>
+            </div>
+          </article>
+        </template>
+      </div>
+
+      <div :if="showList()" class="flex items-center justify-between p-4 border-line border-t">
+        <p class="m-0 text-fg-muted text-xs">Page {{ page() }}</p>
+        <div class="flex gap-2">
+          <button type="button" @click="previousPage()" :disabled="page() <= 1 || prevBusy()" :aria-busy="prevBusy()" class="px-4 min-h-11 font-bold text-fg text-sm bg-panel hover:bg-surface-hover border border-line rounded-pill focus-visible:outline focus-visible:outline-[var(--coral)] focus-visible:outline-2 disabled:opacity-50">Previous</button>
+          <button type="button" @click="nextPage()" :disabled="!hasMore() || nextBusy()" :aria-busy="nextBusy()" class="px-4 min-h-11 font-bold text-fg text-sm bg-panel hover:bg-surface-hover border border-line rounded-pill focus-visible:outline focus-visible:outline-[var(--coral)] focus-visible:outline-2 disabled:opacity-50">Next</button>
+        </div>
+      </div>
+    </section>
+  </div>
+</main>
