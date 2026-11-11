@@ -67,12 +67,6 @@ const pages: Record<string, WorkspacePage> = {
     records: [{ name: 'CommsHQ Mail', detail: 'SMTP, bounces, complaints, DKIM', status: 'Healthy', value: '12 ms' }, { name: 'Twilio messaging', detail: 'Outbound, inbound, delivery status', status: 'Healthy', value: '86 ms' }, { name: 'AWS Bedrock', detail: 'Draft assistance with provenance', status: 'Healthy', value: '420 ms' }],
     checklist: [{ label: 'Credential encryption', detail: 'Application keys protect every secret', state: 'Locked' }, { label: 'Webhook signatures', detail: 'Provider-specific validation enabled', state: 'On' }, { label: 'Failure replay', detail: 'Deduplicated manual replay available', state: 'Ready' }],
   },
-  billing: {
-    eyebrow: 'Billing and usage', title: 'Know what you use before the invoice arrives.', description: 'Review plan entitlements, contact and delivery usage, SMS costs, AI costs, platform fees, and overages.', primary: 'Manage plan', icon: 'i-hugeicons-credit-card',
-    metrics: [{ label: 'Current plan', value: 'Business', note: '$99 monthly' }, { label: 'Email usage', value: '84,219', note: '34% of 250,000' }, { label: 'Contacts', value: '24,816', note: '99% of 25,000' }],
-    records: [{ name: 'Business subscription', detail: 'Renews September 1', status: 'Active', value: '$99.00' }, { name: 'SMS carrier usage', detail: 'Twilio cost plus 15 percent', status: 'Metered', value: '$84.18' }, { name: 'Bedrock generation', detail: '612 of 5,000 generations', status: 'Metered', value: '$9.42' }],
-    checklist: [{ label: 'Usage alerts', detail: 'Notify at 75, 90, and 100 percent', state: 'On' }, { label: 'Invoice delivery', detail: 'billing@sundaypaper.co', state: 'Ready' }, { label: 'Payment method', detail: 'Visa ending 4242', state: 'Healthy' }],
-  },
   domains: {
     eyebrow: 'Domains', title: 'Make every address unmistakably yours.', description: 'Verify publication and sender domains, review DNS, issue TLS, and protect reputation without exposing server administration.', primary: 'Add domain', icon: 'i-hugeicons-global',
     metrics: [{ label: 'Verified domains', value: '4', note: '2 sending, 2 web' }, { label: 'TLS status', value: 'Healthy', note: 'Auto-renewing' }, { label: 'DNS checks', value: '12/12', note: 'All records pass' }],

@@ -7,5 +7,5 @@ definePageMeta({ middleware: ['auth'] })
 @section('title', 'CommsHQ - Billing')
 
 @section('content')
-<WorkspaceSurface area="billing" />
+<BillingWorkspace />
 @endsection
