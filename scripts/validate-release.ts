@@ -46,7 +46,12 @@ const CONTRACTS: Record<string, AppContract> = {
   },
   commshq: {
     domain: 'commshq.org',
-    minPages: 45,
+    // 38, not the 45 this was while the dashboard was readable signed out.
+    // Gating its twenty pages took them out of the artifact, which is what
+    // `gatedRoutes` below asserts, but the floor stayed where it was and
+    // failed every deploy from that change on with "artifact contains 38
+    // pages; expected at least 45". The floor counts public pages only.
+    minPages: 38,
     routes: {
       '/': ['Grow an audience worth knowing.', 'From first hello to favorite customer.'],
       '/login': ['CommsHQ'],
