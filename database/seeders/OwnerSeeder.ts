@@ -38,6 +38,18 @@ const BUSINESS_METERS = {
   custom_domains: 10,
 } as const
 
+/** The earliest workspace this user is the owner of, or undefined. */
+async function ownedTeamId(userId: number): Promise<number | undefined> {
+  const row = await db.selectFrom('team_members' as any)
+    .select(['team_id'] as any)
+    .where('user_id' as any, '=', userId)
+    .where('role' as any, '=', 'owner')
+    .orderBy('id' as any, 'asc')
+    .executeTakeFirst() as { team_id: number } | undefined
+  const id = Number(row?.team_id)
+  return Number.isInteger(id) && id > 0 ? id : undefined
+}
+
 async function findId(table: 'users' | 'teams', column: 'email' | 'name', value: string): Promise<number | undefined> {
   const row = await db.selectFrom(table as any)
     .select(['id'] as any)
@@ -140,7 +152,14 @@ export default class OwnerSeeder extends Seeder {
     if (!userId)
       throw new Error('The CommsHQ owner account could not be resolved after creation.')
 
-    let teamId = await findId('teams', 'name', OWNER_WORKSPACE)
+    /*
+     * The workspace the owner already owns, whatever it is called now, and
+     * only then the one with the default name. A workspace can be renamed
+     * from the settings page, and seeders run after every deploy: matched by
+     * name alone, a renamed workspace would not be found, and each deploy
+     * would create a fresh "CommsHQ" beside it with the owner as a member.
+     */
+    let teamId = await ownedTeamId(userId) ?? await findId('teams', 'name', OWNER_WORKSPACE)
     if (!teamId) {
       const now = new Date().toISOString()
       await db.insertInto('teams' as any).values({
