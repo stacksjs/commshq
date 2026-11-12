@@ -55,18 +55,6 @@ const pages: Record<string, WorkspacePage> = {
     records: [{ name: 'CommsHQ Mail', detail: 'SMTP, bounces, complaints, DKIM', status: 'Healthy', value: '12 ms' }, { name: 'Twilio messaging', detail: 'Outbound, inbound, delivery status', status: 'Healthy', value: '86 ms' }, { name: 'AWS Bedrock', detail: 'Draft assistance with provenance', status: 'Healthy', value: '420 ms' }],
     checklist: [{ label: 'Credential encryption', detail: 'Application keys protect every secret', state: 'Locked' }, { label: 'Webhook signatures', detail: 'Provider-specific validation enabled', state: 'On' }, { label: 'Failure replay', detail: 'Deduplicated manual replay available', state: 'Ready' }],
   },
-  domains: {
-    eyebrow: 'Domains', title: 'Make every address unmistakably yours.', description: 'Verify publication and sender domains, review DNS, issue TLS, and protect reputation without exposing server administration.', primary: 'Add domain', icon: 'i-hugeicons-global',
-    metrics: [{ label: 'Verified domains', value: '4', note: '2 sending, 2 web' }, { label: 'TLS status', value: 'Healthy', note: 'Auto-renewing' }, { label: 'DNS checks', value: '12/12', note: 'All records pass' }],
-    records: [{ name: 'sundaypaper.co', detail: 'Publication and email', status: 'Verified', value: 'Primary' }, { name: 'notes.sundaypaper.co', detail: 'Publication domain', status: 'Verified', value: 'TLS active' }, { name: 'mail.sundaypaper.co', detail: 'Return path and tracking', status: 'Verified', value: 'Aligned' }],
-    checklist: [{ label: 'SPF alignment', detail: 'Strict alignment is active', state: 'Pass' }, { label: 'DKIM signature', detail: '2048-bit key is current', state: 'Pass' }, { label: 'DMARC policy', detail: 'Reject with aggregate reporting', state: 'Pass' }],
-  },
-  senders: {
-    eyebrow: 'Senders', title: 'Protect the name behind every message.', description: 'Manage identities, addresses, domains, authentication, reputation, bounce rates, complaint rates, and test sends.', primary: 'Add sender', icon: 'i-hugeicons-mail-validation-01',
-    metrics: [{ label: 'Verified senders', value: '6', note: 'Across 2 domains' }, { label: 'Bounce rate', value: '0.24%', note: 'Within target' }, { label: 'Complaint rate', value: '0.018%', note: 'Within target' }],
-    records: [{ name: 'Maya from Sunday Paper', detail: 'maya@sundaypaper.co', status: 'Primary', value: 'Healthy' }, { name: 'Sunday Paper Updates', detail: 'hello@sundaypaper.co', status: 'Verified', value: 'Healthy' }, { name: 'Support', detail: 'support@sundaypaper.co', status: 'Transactional', value: 'Healthy' }],
-    checklist: [{ label: 'Authentication', detail: 'SPF, DKIM, and DMARC aligned', state: 'Pass' }, { label: 'Suppression sync', detail: 'Bounces and complaints are current', state: 'Healthy' }, { label: 'Test inboxes', detail: 'Seed-list checks completed today', state: 'Ready' }],
-  },
   teams: {
     eyebrow: 'Team and access', title: 'Give every collaborator the right room to work.', description: 'Manage workspace members, roles, invitations, gates, approvals, active sessions, and auditable administration.', primary: 'Invite member', icon: 'i-hugeicons-shield-user',
     metrics: [{ label: 'Active members', value: '7', note: '3 seats available' }, { label: 'Pending invites', value: '2', note: 'Expire in 4 days' }, { label: 'Protected actions', value: '14', note: 'Owner approval' }],
