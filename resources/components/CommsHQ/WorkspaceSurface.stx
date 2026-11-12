@@ -25,12 +25,6 @@ const pages: Record<string, WorkspacePage> = {
     records: [{ name: 'Primary Shopify store', detail: 'Orders, carts, products, customers', status: 'Healthy', value: 'Live' }, { name: 'Stripe subscriptions', detail: 'Plans and invoice activity', status: 'Healthy', value: 'Live' }, { name: 'Wholesale CSV', detail: 'Nightly signed import', status: 'Review', value: '2 rows' }],
     checklist: [{ label: 'Signature checks', detail: 'Every provider webhook is verified', state: 'Locked' }, { label: 'Event ledger', detail: 'Immutable normalized events', state: 'Healthy' }, { label: 'Replay safety', detail: 'Idempotency keys retained', state: 'On' }],
   },
-  monetization: {
-    eyebrow: 'Monetization', title: 'Earn without losing the reader’s trust.', description: 'Manage paid publications, referrals, recommendations, sponsors, inventory, commissions, and payouts clearly.', primary: 'Create offer', icon: 'i-hugeicons-money-receive-circle',
-    metrics: [{ label: 'Net earnings', value: '$31,842', note: 'This month' }, { label: 'Sponsor fill rate', value: '72%', note: '+8 points' }, { label: 'Referral earnings', value: '$4,218', note: '1,684 conversions' }],
-    records: [{ name: 'Studio Supply Co.', detail: 'Primary newsletter placement', status: 'Approved', value: '$4,800' }, { name: 'Field Guide exchange', detail: 'Recommendation partnership', status: 'Live', value: '$1.80 CPA' }, { name: 'August creator payout', detail: 'ACH account ending 1842', status: 'Scheduled', value: '$18,406' }],
-    checklist: [{ label: 'Disclosure copy', detail: 'Present on every sponsored placement', state: 'Ready' }, { label: 'Commission ledger', detail: 'Append-only accounting entries', state: 'Locked' }, { label: 'Payout review', detail: 'Owner approval is required', state: 'On' }],
-  },
   analytics: {
     eyebrow: 'First-party analytics', title: 'See the path from attention to revenue.', description: 'Measure acquisition, engagement, automations, referrals, cohorts, retention, attribution, and lifetime value.', primary: 'Create report', icon: 'i-hugeicons-chart-line-data-02',
     metrics: [{ label: 'Known visitors', value: '68.4%', note: '+4.2 points' }, { label: '30-day retention', value: '71.2%', note: '+2.8 points' }, { label: 'Reader LTV', value: '$48.20', note: '+$6.14' }],
