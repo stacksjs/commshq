@@ -25,6 +25,7 @@ export const actions = {
   'Actions/Api/V1/Team/ResendTeamInvitationAction': '../../../app/Actions/Api/V1/Team/ResendTeamInvitationAction.ts',
   'Actions/Api/V1/Team/RevokeTeamInvitationAction': '../../../app/Actions/Api/V1/Team/RevokeTeamInvitationAction.ts',
   'Actions/Api/V1/Team/UpdateTeamMemberAction': '../../../app/Actions/Api/V1/Team/UpdateTeamMemberAction.ts',
+  'Actions/Api/V1/WorkspaceSetupAction': '../../../app/Actions/Api/V1/WorkspaceSetupAction.ts',
   'Actions/Api/V1/WorkspaceSummaryAction': '../../../app/Actions/Api/V1/WorkspaceSummaryAction.ts',
   'Actions/Public/ConfirmSubscriptionAction': '../../../app/Actions/Public/ConfirmSubscriptionAction.ts',
   'Actions/Public/PreferencesAction': '../../../app/Actions/Public/PreferencesAction.ts',
