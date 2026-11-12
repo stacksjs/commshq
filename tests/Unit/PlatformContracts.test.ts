@@ -105,6 +105,16 @@ describe('interface contracts', () => {
     expect(composer).not.toContain('Campaign checks')
     expect(composer).not.toContain('Best send window')
 
+    // `automations` was a static builder of its own too. It reads
+    // `/api/automations` now, and it offers no way to switch one on.
+    const automations = await Bun.file(new URL('../../resources/views/dashboard/commshq/automations.stx', import.meta.url)).text()
+    const builder = await Bun.file(new URL('../../resources/components/CommsHQ/AutomationBuilder.stx', import.meta.url)).text()
+    expect(automations).toContain('<AutomationBuilder />')
+    expect(builder).toContain('automationsUrl(')
+    expect(builder).not.toContain('Step inspector')
+    expect(builder).not.toContain('Publish version')
+    expect(builder).not.toMatch(/setStatus\([^)]*'active'\)/)
+
     const surface = await Bun.file(new URL('../../resources/components/CommsHQ/WorkspaceSurface.stx', import.meta.url)).text()
     for (const state of ['populated', 'loading', 'empty', 'error']) expect(surface).toContain(`'${state}'`)
   })

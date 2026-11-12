@@ -1,93 +1,292 @@
-<script client>
-const selectedNode = state('purchase')
+<script server>
+/* The fixed list from the module, rendered here rather than looped in the
+ * browser, so the select is usable in the first paint. */
+import { AUTOMATION_STATUSES } from '../../data/automations-query'
+
+export const statusOptions = AUTOMATION_STATUSES
 </script>
 
-<main id="main" class="min-h-screen text-[#171916] dark:text-[#f5f2ec] bg-[#ebe7df] dark:bg-[#10110f]">
-  <header class="flex items-center justify-between px-5 min-h-16 bg-[#f8f5ef] dark:bg-[#171815] border-[#171916]/10 border-b dark:border-white/10">
-    <div class="flex gap-3 items-center">
-      <StxLink to="/dashboard/commshq" class="p-2 hover:bg-black/5 dark:hover:bg-white/10 rounded-full" aria-label="Back">
-        <span class="block h-5 w-5 i-hugeicons-arrow-left-02"></span>
-      </StxLink>
+<script client>
+/**
+ * Automations, reading and writing through the application's own API.
+ *
+ * This page was a static builder: a sample journey at version 6, a canvas of
+ * five nodes, a step palette and a panel saying it was ready to test. None of
+ * it was read from anywhere and none of its buttons did anything.
+ *
+ * It lists automations from `GET /api/automations`, saves new ones as drafts,
+ * and archives or restores them. It does not switch one on. Nothing starts a
+ * run yet and a message step sends nothing, so an active automation would
+ * look live and do nothing; `automations-query.ts` records what is missing.
+ * The page says so where the list begins.
+ *
+ * Writes carry the CSRF token explicitly, read with `useCookie`, the
+ * composable, since a client script may not reach for the DOM itself.
+ */
+import {
+  automationPayload,
+  AUTOMATIONS_ENDPOINT,
+  AUTOMATIONS_PER_PAGE,
+  automationsUrl,
+  automationUrl,
+  draftError,
+  listErrorMessage,
+  saveErrorMessage,
+  statusPayload,
+  toAutomationViews,
+} from '../../data/automations-query'
+
+const automations = state([])
+const hasMore = state(false)
+const page = state(1)
+const status = state('')
+const loading = state(true)
+const errorText = state('')
+const actionError = state('')
+/* Which control the in-flight load belongs to, so one busy state is announced
+ * rather than three. */
+const busySource = state('refresh')
+/* The automation a status change is in flight for, so only its button is busy. */
+const busyId = state(0)
+
+const addOpen = state(false)
+const addName = state('')
+const saving = state(false)
+const addError = state('')
+
+const csrfToken = useCookie('X-CSRF-Token')
+
+const refreshBusy = derived(() => loading() && busySource() === 'refresh')
+const prevBusy = derived(() => loading() && busySource() === 'prev')
+const nextBusy = derived(() => loading() && busySource() === 'next')
+const showEmpty = derived(() => !loading() && !errorText() && automations().length === 0)
+const showList = derived(() => !loading() && !errorText() && automations().length > 0)
+
+async function load(source = 'refresh') {
+  busySource.set(source)
+  loading.set(true)
+  errorText.set('')
+  try {
+    const response = await fetch(automationsUrl({ page: page(), perPage: AUTOMATIONS_PER_PAGE, status: status() }), {
+      credentials: 'same-origin',
+      headers: { Accept: 'application/json' },
+    })
+
+    if (!response.ok) {
+      errorText.set(listErrorMessage(response.status))
+      automations.set([])
+      return
+    }
+
+    const body = await response.json()
+    automations.set(toAutomationViews(body))
+    hasMore.set(body?.has_more_pages === true)
+  }
+  catch {
+    // A network failure, not a refusal: there is no status to explain.
+    errorText.set('Automations could not be loaded. Check your connection and try again.')
+    automations.set([])
+  }
+  finally {
+    loading.set(false)
+  }
+}
+
+function onStatusChange() {
+  page.set(1)
+  void load()
+}
+
+function nextPage() {
+  if (!hasMore() || loading())
+    return
+  page.update(value => value + 1)
+  void load('next')
+}
+
+function previousPage() {
+  if (page() <= 1 || loading())
+    return
+  page.update(value => value - 1)
+  void load('prev')
+}
+
+function writeHeaders() {
+  return {
+    'Content-Type': 'application/json',
+    'Accept': 'application/json',
+    'X-CSRF-Token': csrfToken() || '',
+  }
+}
+
+async function setStatus(id, next) {
+  /* `statusPayload` returns nothing for `active`, which this page never sets. */
+  const payload = statusPayload(next)
+  if (busyId() || !payload)
+    return
+  busyId.set(id)
+  actionError.set('')
+  try {
+    const response = await fetch(automationUrl(id), {
+      method: 'PATCH',
+      credentials: 'same-origin',
+      headers: writeHeaders(),
+      body: JSON.stringify(payload),
+    })
+
+    if (!response.ok)
+      actionError.set(saveErrorMessage(response.status))
+    /* Read again either way: on a 404 the list on screen is the stale thing. */
+    await load()
+  }
+  catch {
+    actionError.set('That change could not be saved. Check your connection and try again.')
+  }
+  finally {
+    busyId.set(0)
+  }
+}
+
+function toggleAdd() {
+  addOpen.update(value => !value)
+  addError.set('')
+}
+
+async function addAutomation() {
+  const draft = { name: addName() }
+  const problem = draftError(draft)
+  if (problem) {
+    addError.set(problem)
+    return
+  }
+
+  saving.set(true)
+  addError.set('')
+  try {
+    const response = await fetch(AUTOMATIONS_ENDPOINT, {
+      method: 'POST',
+      credentials: 'same-origin',
+      headers: writeHeaders(),
+      body: JSON.stringify(automationPayload(draft)),
+    })
+
+    if (response.status === 201 || response.ok) {
+      addName.set('')
+      addOpen.set(false)
+      status.set('')
+      page.set(1)
+      await load()
+      return
+    }
+
+    addError.set(saveErrorMessage(response.status))
+  }
+  catch {
+    addError.set('The automation could not be saved. Check your connection and try again.')
+  }
+  finally {
+    saving.set(false)
+  }
+}
+
+onMount(() => {
+  void load()
+})
+</script>
+
+<main id="main" class="p-5 sm:p-8 min-h-screen text-fg bg-page">
+  <div class="mx-auto max-w-[1500px]">
+    <header class="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between mb-7">
       <div>
-        <p class="font-bold text-sm">First purchase welcome</p>
-        <p class="text-[#5f635d] text-[10px] dark:text-[#bcbab5]">Version 6, draft</p>
+        <p class="font-bold text-[11px] text-accent tracking-[0.2em] uppercase">Automations</p>
+        <h1 class="mt-2 font-semibold text-4xl tracking-[-0.04em]">Journeys that start themselves.</h1>
+        <p class="mt-2 max-w-2xl text-fg-muted text-sm">The automations this workspace has drafted, with the trigger and steps each one holds.</p>
       </div>
-    </div>
-    <div class="flex gap-2">
-      <button class="px-4 min-h-10 font-bold text-xs border border-[#171916]/15 rounded-full dark:border-white/15">Test path</button>
-      <button class="px-5 min-h-10 font-bold text-white text-xs bg-[#bf4936] rounded-full">Publish version</button>
-    </div>
-  </header>
-  <div class="grid lg:grid-cols-[220px_1fr_300px] min-h-[calc(100vh-4rem)]">
-    <aside class="p-4 bg-[#f8f5ef] dark:bg-[#171815] border-[#171916]/10 border-r dark:border-white/10">
-      <p class="mb-3 font-bold text-[#5f635d] text-[10px] tracking-[0.16em] uppercase dark:text-[#bcbab5]">Add a step</p>
-      @foreach([{label:'Send email',icon:'i-hugeicons-mail-01'}, {label:'Send SMS',icon:'i-hugeicons-message-01'}, {label:'Wait',icon:'i-hugeicons-clock-03'}, {label:'Condition',icon:'i-hugeicons-git-compare'}, {label:'Update contact',icon:'i-hugeicons-user-edit-01'}, {label:'Webhook',icon:'i-hugeicons-webhook'}] as item)
-      <button class="flex gap-3 items-center mb-2 px-3 min-h-11 w-full font-bold text-left text-xs bg-white dark:bg-white/5 border border-[#171916]/10 rounded-xl dark:border-white/10 hover:border-[#e65743] transition">
-        <span class="h-4 w-4 {{ item.icon }}"></span>{{ item.label }}</button>
-      @endforeach
-    </aside>
-    <section class="overflow-auto relative p-10 min-h-[760px] bg-[radial-gradient(circle_at_center,rgba(23,25,22,0.13)_1px,transparent_1px)] dark:bg-[radial-gradient(circle_at_center,rgba(255,255,255,0.12)_1px,transparent_1px)] bg-[length:22px_22px]">
-      <div class="flex flex-col items-center mx-auto w-[640px]">
-        <button @click="selectedNode.set('purchase')" class="p-4 w-72 text-left bg-white dark:bg-[#20211e] border-[#e65743] border-2 rounded-2xl shadow-[0_14px_35px_rgba(35,28,22,0.1)]">
-          <p class="font-bold text-[#b8402f] text-[10px] tracking-[0.14em] uppercase dark:text-[#ff8c79]">Trigger</p>
-          <div class="flex gap-3 items-center mt-2">
-            <span class="grid place-items-center h-9 w-9 text-[#bd3e2e] bg-[#fff0eb] dark:bg-[#e65743]/15 rounded-full">
-              <span class="h-4 w-4 i-hugeicons-shopping-bag-check"></span>
-            </span>
-            <div>
-              <p class="font-bold text-sm">Purchase completed</p>
-              <p class="text-[#5f635d] text-[11px] dark:text-[#bcbab5]">Any first order</p>
+      <div class="flex gap-2">
+        <button type="button" @click="load()" :disabled="refreshBusy()" :aria-busy="refreshBusy()" class="px-5 min-h-11 font-bold text-fg text-sm bg-panel hover:bg-surface-hover border border-line rounded-pill focus-visible:outline focus-visible:outline-[var(--coral)] focus-visible:outline-2 focus-visible:outline-offset-2 disabled:opacity-60">Refresh</button>
+        <button type="button" @click="toggleAdd()" class="px-5 min-h-11 font-bold text-[var(--coral-ink)] text-sm bg-accent rounded-pill focus-visible:outline focus-visible:outline-[var(--coral)] focus-visible:outline-2 focus-visible:outline-offset-2">New automation</button>
+      </div>
+    </header>
+
+    <p class="flex gap-3 items-start mb-5 p-4 text-sm bg-panel border border-line rounded-panel">
+      <span aria-hidden="true" class="shrink-0 mt-0.5 h-5 w-5 text-fg-muted i-hugeicons-information-circle"></span>
+      <span>Automations cannot be switched on yet. You can draft and archive them here, but nothing starts a run and no step sends a message, so there is no Activate control.</span>
+    </p>
+
+    <section :if="addOpen()" class="mb-5 p-5 bg-panel border border-line rounded-panel" aria-labelledby="add-automation-title">
+      <h2 id="add-automation-title" class="font-bold text-sm">Draft an automation</h2>
+      <p class="mt-1 text-fg-muted text-xs">It is saved as a draft that starts when a subscriber joins, with no steps.</p>
+      <label class="block mt-4 max-w-xl font-bold text-xs">
+        Name
+        <input x-model.trim="addName" type="text" autocomplete="off" maxlength="255" class="mt-1 field" placeholder="New subscriber welcome">
+      </label>
+      <p :if="addError()" class="mt-3 font-bold text-danger text-xs" role="alert">{{ addError() }}</p>
+      <div class="flex gap-2 mt-4">
+        <button type="button" @click="addAutomation()" :disabled="saving()" :aria-busy="saving()" class="px-5 min-h-11 font-bold text-[var(--coral-ink)] text-sm bg-accent rounded-pill focus-visible:outline focus-visible:outline-[var(--coral)] focus-visible:outline-2 focus-visible:outline-offset-2 disabled:opacity-60">Save draft</button>
+        <button type="button" @click="toggleAdd()" class="px-5 min-h-11 font-bold text-fg text-sm bg-panel hover:bg-surface-hover border border-line rounded-pill focus-visible:outline focus-visible:outline-[var(--coral)] focus-visible:outline-2 focus-visible:outline-offset-2">Cancel</button>
+      </div>
+    </section>
+
+    <p :if="actionError()" class="mb-5 p-4 font-bold text-danger text-sm bg-panel border border-line rounded-panel" role="alert">{{ actionError() }}</p>
+
+    <section class="overflow-hidden bg-panel border border-line rounded-panel" aria-labelledby="automations-title">
+      <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between p-5 border-b border-line">
+        <h2 id="automations-title" class="font-bold">Automations</h2>
+        <label class="block">
+          <span class="sr-only">Filter by status</span>
+          <select x-model="status" @change="onStatusChange()" class="field">
+            <option value="">Every status</option>
+            @foreach(statusOptions as option)
+              <option value="{{ option.value }}">{{ option.label }}</option>
+            @endforeach
+          </select>
+        </label>
+      </div>
+
+      {{-- Loading. A row-shaped skeleton rather than a spinner, so the list
+           does not jump height when the rows land. --}}
+      <div :if="loading()" class="p-5 space-y-3" aria-hidden="true">
+        <div class="h-16 bg-surface-sunken rounded-control"></div>
+        <div class="h-16 bg-surface-sunken rounded-control"></div>
+      </div>
+      <p :if="loading()" class="sr-only" role="status">Loading automations</p>
+
+      <div :if="errorText()" class="p-8 text-center" role="alert">
+        <span aria-hidden="true" class="inline-block h-6 w-6 text-danger i-hugeicons-alert-02"></span>
+        <p class="mt-3 font-bold text-sm">{{ errorText() }}</p>
+        <button type="button" @click="load()" :disabled="refreshBusy()" :aria-busy="refreshBusy()" class="mt-4 px-5 min-h-11 font-bold text-fg text-sm bg-panel hover:bg-surface-hover border border-line rounded-pill focus-visible:outline focus-visible:outline-[var(--coral)] focus-visible:outline-2 disabled:opacity-60">Try again</button>
+      </div>
+
+      <div :if="showEmpty()" class="p-10 text-center">
+        <span aria-hidden="true" class="inline-block h-7 w-7 text-fg-muted i-hugeicons-workflow-square-01"></span>
+        <p class="mt-3 font-bold">No automations match this view.</p>
+        <p class="mt-1 text-fg-muted text-sm">Clear the status filter to see every automation, or draft the first one.</p>
+      </div>
+
+      <div :if="showList()" class="divide-line divide-y">
+        <template :for="automation in automations()">
+          <article class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between p-5">
+            <div class="min-w-0">
+              <h3 class="font-bold text-sm">{{ automation.name }}</h3>
+              <p class="mt-0.5 text-fg-muted text-xs">{{ automation.statusLabel }}. {{ automation.triggerLabel }}. {{ automation.stepsLabel }}.</p>
+              <p class="mt-0.5 text-fg-muted text-xs">{{ automation.publishedLabel }}. Last changed {{ automation.updatedLabel }}.</p>
             </div>
-          </div>
-        </button>
-        <div class="h-12 w-px bg-[#9a9c96]"></div>
-        <button @click="selectedNode.set('delay')" class="p-4 w-72 text-left bg-white dark:bg-[#20211e] border border-[#171916]/15 rounded-2xl dark:border-white/15 shadow-sm">
-          <p class="font-bold text-[#5f635d] text-[10px] tracking-[0.14em] uppercase dark:text-[#bcbab5]">Wait</p>
-          <p class="mt-2 font-bold text-sm">30 minutes</p>
-        </button>
-        <div class="h-12 w-px bg-[#9a9c96]"></div>
-        <button @click="selectedNode.set('email')" class="p-4 w-72 text-left bg-white dark:bg-[#20211e] border border-[#171916]/15 rounded-2xl dark:border-white/15 shadow-sm">
-          <p class="font-bold text-[#5f635d] text-[10px] tracking-[0.14em] uppercase dark:text-[#bcbab5]">Message</p>
-          <div class="flex gap-3 items-center mt-2">
-            <span class="h-5 w-5 text-[#e65743] i-hugeicons-mail-send-02"></span>
-            <div>
-              <p class="font-bold text-sm">Send order story</p>
-              <p class="text-[#5f635d] text-[11px] dark:text-[#bcbab5]">Personalized by product</p>
+            <div class="flex gap-2 shrink-0">
+              <button :if="automation.canPause" type="button" @click="setStatus(automation.id, 'paused')" :disabled="busyId() !== 0" :aria-busy="busyId() === automation.id" class="px-4 min-h-11 font-bold text-fg text-sm bg-panel hover:bg-surface-hover border border-line rounded-pill focus-visible:outline focus-visible:outline-[var(--coral)] focus-visible:outline-2 disabled:opacity-50">Pause</button>
+              <button :if="automation.canArchive" type="button" @click="setStatus(automation.id, 'archived')" :disabled="busyId() !== 0" :aria-busy="busyId() === automation.id" class="px-4 min-h-11 font-bold text-fg text-sm bg-panel hover:bg-surface-hover border border-line rounded-pill focus-visible:outline focus-visible:outline-[var(--coral)] focus-visible:outline-2 disabled:opacity-50">Archive</button>
+              <button :if="automation.canRestore" type="button" @click="setStatus(automation.id, 'draft')" :disabled="busyId() !== 0" :aria-busy="busyId() === automation.id" class="px-4 min-h-11 font-bold text-fg text-sm bg-panel hover:bg-surface-hover border border-line rounded-pill focus-visible:outline focus-visible:outline-[var(--coral)] focus-visible:outline-2 disabled:opacity-50">Restore as draft</button>
             </div>
-          </div>
-        </button>
-        <div class="h-12 w-px bg-[#9a9c96]"></div>
-        <button @click="selectedNode.set('branch')" class="p-4 w-72 text-left bg-white dark:bg-[#20211e] border border-[#171916]/15 rounded-2xl dark:border-white/15 shadow-sm">
-          <p class="font-bold text-[#5f635d] text-[10px] tracking-[0.14em] uppercase dark:text-[#bcbab5]">Branch</p>
-          <p class="mt-2 font-bold text-sm">Opened within 2 days?</p>
-        </button>
-        <div class="grid gap-24 grid-cols-2 w-[500px]">
-          <div class="text-center">
-            <div class="mx-auto h-12 w-px bg-[#9a9c96]"></div>
-            <span class="font-bold text-[#3f612d] text-[10px] dark:text-[#bfe2ab]">YES</span>
-            <div class="mt-2 p-4 font-bold text-sm bg-white dark:bg-[#20211e] border border-[#171916]/15 rounded-2xl dark:border-white/15">Apply customer tag</div>
-          </div>
-          <div class="text-center">
-            <div class="mx-auto h-12 w-px bg-[#9a9c96]"></div>
-            <span class="font-bold text-[#9a4b3e] text-[10px] dark:text-[#ffab9a]">NO</span>
-            <div class="mt-2 p-4 font-bold text-sm bg-white dark:bg-[#20211e] border border-[#171916]/15 rounded-2xl dark:border-white/15">Send SMS reminder</div>
-          </div>
+          </article>
+        </template>
+      </div>
+
+      <div :if="showList()" class="flex items-center justify-between p-4 border-line border-t">
+        <p class="m-0 text-fg-muted text-xs">Page {{ page() }}</p>
+        <div class="flex gap-2">
+          <button type="button" @click="previousPage()" :disabled="page() <= 1 || prevBusy()" :aria-busy="prevBusy()" class="px-4 min-h-11 font-bold text-fg text-sm bg-panel hover:bg-surface-hover border border-line rounded-pill focus-visible:outline focus-visible:outline-[var(--coral)] focus-visible:outline-2 disabled:opacity-50">Previous</button>
+          <button type="button" @click="nextPage()" :disabled="!hasMore() || nextBusy()" :aria-busy="nextBusy()" class="px-4 min-h-11 font-bold text-fg text-sm bg-panel hover:bg-surface-hover border border-line rounded-pill focus-visible:outline focus-visible:outline-[var(--coral)] focus-visible:outline-2 disabled:opacity-50">Next</button>
         </div>
       </div>
     </section>
-    <aside class="p-5 bg-[#f8f5ef] dark:bg-[#171815] border-[#171916]/10 border-l dark:border-white/10">
-      <p class="font-bold text-[#5f635d] text-[10px] tracking-[0.16em] uppercase dark:text-[#bcbab5]">Step inspector</p>
-      <h2 class="mt-4 font-bold text-lg">{{ selectedNode() === 'purchase' ? 'Purchase completed' : selectedNode() }}</h2>
-      <p class="mt-2 leading-5 text-[#6c6f68] text-xs dark:text-[#aaa9a3]">Changes stay in this draft version until the journey is explicitly published.</p>
-      <label class="block mt-6 font-bold text-xs">Run once per contact<select class="mt-2 px-3 min-h-11 w-full text-sm bg-white dark:bg-white/5 border border-[#171916]/15 rounded-xl dark:border-white/15">
-          <option>Yes, per store</option>
-          <option>No</option>
-        </select>
-      </label>
-      <div class="mt-5 p-4 text-[#3f612d] dark:text-[#acd294] bg-[#eef5e8] dark:bg-[#75a65a]/10 rounded-xl">
-        <p class="font-bold text-xs">Ready to test</p>
-        <p class="mt-1 leading-5 text-[11px]">Every exit has a destination and all message steps pass compliance checks.</p>
-      </div>
-    </aside>
   </div>
 </main>
