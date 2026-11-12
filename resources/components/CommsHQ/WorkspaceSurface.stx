@@ -49,12 +49,6 @@ const pages: Record<string, WorkspacePage> = {
     records: [{ name: 'Organic publication', detail: 'Search, direct, and RSS', status: 'Leading', value: '$28,412' }, { name: 'Reader referrals', detail: 'Verified recommendation links', status: 'Growing', value: '$18,920' }, { name: 'Commerce recovery', detail: 'Cart and win-back journeys', status: 'Efficient', value: '8.4x ROAS' }],
     checklist: [{ label: 'Attribution model', detail: 'First-party position based', state: 'Active' }, { label: 'Bot filtering', detail: 'Known agents and abnormal events removed', state: 'Healthy' }, { label: 'Export controls', detail: 'Workspace permissions required', state: 'Locked' }],
   },
-  integrations: {
-    eyebrow: 'Integrations', title: 'Connect the systems that carry the work.', description: 'Manage mail, SMS, commerce, billing, AI, and customer webhooks with encrypted credentials and diagnostics.', primary: 'Add integration', icon: 'i-hugeicons-plug-socket',
-    metrics: [{ label: 'Connected services', value: '7', note: 'All owned or native' }, { label: 'Webhook success', value: '99.98%', note: 'Last 7 days' }, { label: 'Pending replays', value: '0', note: 'Queue is clear' }],
-    records: [{ name: 'CommsHQ Mail', detail: 'SMTP, bounces, complaints, DKIM', status: 'Healthy', value: '12 ms' }, { name: 'Twilio messaging', detail: 'Outbound, inbound, delivery status', status: 'Healthy', value: '86 ms' }, { name: 'AWS Bedrock', detail: 'Draft assistance with provenance', status: 'Healthy', value: '420 ms' }],
-    checklist: [{ label: 'Credential encryption', detail: 'Application keys protect every secret', state: 'Locked' }, { label: 'Webhook signatures', detail: 'Provider-specific validation enabled', state: 'On' }, { label: 'Failure replay', detail: 'Deduplicated manual replay available', state: 'Ready' }],
-  },
   teams: {
     eyebrow: 'Team and access', title: 'Give every collaborator the right room to work.', description: 'Manage workspace members, roles, invitations, gates, approvals, active sessions, and auditable administration.', primary: 'Invite member', icon: 'i-hugeicons-shield-user',
     metrics: [{ label: 'Active members', value: '7', note: '3 seats available' }, { label: 'Pending invites', value: '2', note: 'Expire in 4 days' }, { label: 'Protected actions', value: '14', note: 'Owner approval' }],

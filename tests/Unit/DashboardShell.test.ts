@@ -95,7 +95,7 @@ describe('the dashboard shell', () => {
 
   test('it leaves the main landmark to the page, and gives the skip link a target', () => {
     /*
-     * Each of the twelve page components opens its own <main>. A <main> here too
+     * Each of the thirteen page components opens its own <main>. A <main> here too
      * would give every dashboard page two main landmarks, so the layout wraps
      * the content in a div and the components carry `id="main"`.
      */
@@ -103,7 +103,7 @@ describe('the dashboard shell', () => {
     // Markup, not prose: the layout's own comment explains why there is no
     // <main> here, and a grep that counts that mention is checking nothing.
     expect(markupOnly(layout)).not.toMatch(/<main\b/)
-    for (const component of ['AudienceWorkspace', 'BillingWorkspace', 'CommandCenter', 'AutomationBuilder', 'CampaignComposer', 'DomainsWorkspace', 'FormsWorkspace', 'MessageStudio', 'ReputationWorkspace', 'SegmentsWorkspace', 'SendersWorkspace', 'WorkspaceSurface']) {
+    for (const component of ['AudienceWorkspace', 'BillingWorkspace', 'CommandCenter', 'AutomationBuilder', 'CampaignComposer', 'DomainsWorkspace', 'FormsWorkspace', 'IntegrationsWorkspace', 'MessageStudio', 'ReputationWorkspace', 'SegmentsWorkspace', 'SendersWorkspace', 'WorkspaceSurface']) {
       const markup = markupOnly(readFileSync(join(root, `resources/components/CommsHQ/${component}.stx`), 'utf8'))
       expect({ component, mains: (markup.match(/<main\b/g) || []).length }).toEqual({ component, mains: 1 })
       expect(markup).toContain('<main id="main"')

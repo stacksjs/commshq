@@ -64,7 +64,7 @@ describe('interface contracts', () => {
     // The surface holds its figures as literals, so a page stays on it only
     // until it has an endpoint to read; the pages still here are the ones
     // that have not been wired yet, not the ones that should stay.
-    const required = ['onboarding', 'sites', 'publications', 'commerce', 'monetization', 'analytics', 'integrations', 'teams', 'settings']
+    const required = ['onboarding', 'sites', 'publications', 'commerce', 'monetization', 'analytics', 'teams', 'settings']
     for (const page of required) {
       const source = await Bun.file(new URL(`../../resources/views/dashboard/commshq/${page}.stx`, import.meta.url)).text()
       expect(source).toContain(`<WorkspaceSurface area="${page}" />`)
@@ -96,7 +96,8 @@ describe('interface contracts', () => {
 
     // `domains` and `senders` followed together, on the sending routes in
     // `routes/api.ts`: a sender is verified only through its domain.
-    for (const [page, component] of [['domains', 'DomainsWorkspace'], ['senders', 'SendersWorkspace']] as const) {
+    // `integrations` after them, storing credentials through its own actions.
+    for (const [page, component] of [['domains', 'DomainsWorkspace'], ['senders', 'SendersWorkspace'], ['integrations', 'IntegrationsWorkspace']] as const) {
       const view = await Bun.file(new URL(`../../resources/views/dashboard/commshq/${page}.stx`, import.meta.url)).text()
       expect(view).toContain(`<${component} />`)
       expect(view).not.toContain('<WorkspaceSurface')
