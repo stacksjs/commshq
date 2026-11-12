@@ -25,12 +25,13 @@ export default {
   },
 
   api: {
-    // The app's own models, plus the framework's `Campaign`. Generated APIs
-    // default to `own`, so `Campaign`, which this app sends through
-    // (`DispatchCampaignAction`, the `DispatchCampaign` job) but does not
-    // define, had no list or create endpoint and the campaigns page had
-    // nothing to read. It carries `team_id`, so its routes are scoped to the
-    // caller's active team like every model in `app/Models`.
-    models: ['own', 'Campaign'],
+    // The app's own models, plus two of the framework's. Generated APIs
+    // default to `own`, so `Campaign` and `Automation`, which this app runs
+    // (`DispatchCampaignAction`, the `DispatchCampaign` and
+    // `ProcessAutomationRun` jobs) but does not define, had no list or create
+    // endpoint and their pages had nothing to read. Both carry `team_id`, so
+    // their routes are scoped to the caller's active team like every model
+    // in `app/Models`.
+    models: ['own', 'Campaign', 'Automation'],
   },
 } satisfies SecurityConfig
