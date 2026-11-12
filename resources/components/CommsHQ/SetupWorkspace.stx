@@ -1,0 +1,108 @@
+<script client>
+/**
+ * Setup, read from the application's own API.
+ *
+ * This page was the `onboarding` area of `WorkspaceSurface`. It told every
+ * account that setup was 63% complete, 5 of 8 steps, with a verified domain
+ * and 1,248 imported contacts, whether or not any of it was true.
+ *
+ * It asks `GET /api/v1/workspace/setup` which steps this workspace has done
+ * and lists them in the order the work depends on, with a link to the page
+ * where each one is done. A step shows as done only when the server says so,
+ * and the first one that is not done is marked as next. Nothing is changed
+ * from here: every step is completed on its own page.
+ *
+ * `setup-query.ts` records what the old page showed that this one does not.
+ */
+import { SETUP_ENDPOINT, setupErrorMessage, toSetupView } from '../../data/setup-query'
+
+const setup = state(toSetupView(null))
+const loading = state(true)
+const errorText = state('')
+
+const showList = derived(() => !loading() && !errorText())
+const barStyle = derived(() => `width: ${setup().percent}%`)
+
+async function load() {
+  loading.set(true)
+  errorText.set('')
+  try {
+    const response = await fetch(SETUP_ENDPOINT, { credentials: 'same-origin', headers: { Accept: 'application/json' } })
+    if (!response.ok) {
+      errorText.set(setupErrorMessage(response.status))
+      return
+    }
+    setup.set(toSetupView(await response.json()))
+  }
+  catch {
+    // A network failure, not a refusal: there is no status to explain.
+    errorText.set('Setup could not be loaded. Check your connection and try again.')
+  }
+  finally {
+    loading.set(false)
+  }
+}
+
+onMount(() => {
+  void load()
+})
+</script>
+
+<main id="main" class="p-5 sm:p-8 min-h-screen text-fg bg-page">
+  <div class="mx-auto max-w-[1100px]">
+    <header class="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between mb-7">
+      <div>
+        <p class="font-bold text-[11px] text-accent tracking-[0.2em] uppercase">Start here</p>
+        <h1 class="mt-2 font-semibold text-4xl tracking-[-0.04em]">Set up a sending home that is ready to grow.</h1>
+        <p class="mt-2 max-w-2xl text-fg-muted text-sm">The steps from an empty workspace to a delivered campaign, in the order they depend on each other. Each one is ticked from what this workspace has actually done.</p>
+      </div>
+      <div class="flex gap-2">
+        <button type="button" @click="load()" :disabled="loading()" :aria-busy="loading()" class="px-5 min-h-11 font-bold text-fg text-sm bg-panel hover:bg-surface-hover border border-line rounded-pill focus-visible:outline focus-visible:outline-[var(--coral)] focus-visible:outline-2 focus-visible:outline-offset-2 disabled:opacity-60">Refresh</button>
+      </div>
+    </header>
+
+    <section :if="showList()" class="mb-5 p-5 bg-panel border border-line rounded-panel" aria-labelledby="progress-title">
+      <h2 id="progress-title" class="font-bold text-sm">{{ setup().summary }}</h2>
+      <div class="overflow-hidden mt-3 h-2 bg-surface-sunken rounded-pill" aria-hidden="true">
+        <div class="h-2 bg-accent rounded-pill" :style="barStyle()"></div>
+      </div>
+    </section>
+
+    <section class="overflow-hidden bg-panel border border-line rounded-panel" aria-labelledby="steps-title">
+      <div class="p-5 border-b border-line">
+        <h2 id="steps-title" class="font-bold">Steps</h2>
+      </div>
+
+      {{-- Loading. A row-shaped skeleton rather than a spinner, so the list
+           does not jump height when the rows land. --}}
+      <div :if="loading()" class="p-5 space-y-3" aria-hidden="true">
+        <div class="h-16 bg-surface-sunken rounded-control"></div>
+        <div class="h-16 bg-surface-sunken rounded-control"></div>
+        <div class="h-16 bg-surface-sunken rounded-control"></div>
+      </div>
+      <p :if="loading()" class="sr-only" role="status">Loading setup</p>
+
+      <div :if="errorText()" class="p-8 text-center" role="alert">
+        <span aria-hidden="true" class="inline-block h-6 w-6 text-danger i-hugeicons-alert-02"></span>
+        <p class="mt-3 font-bold text-sm">{{ errorText() }}</p>
+        <button type="button" @click="load()" :disabled="loading()" :aria-busy="loading()" class="mt-4 px-5 min-h-11 font-bold text-fg text-sm bg-panel hover:bg-surface-hover border border-line rounded-pill focus-visible:outline focus-visible:outline-[var(--coral)] focus-visible:outline-2 focus-visible:outline-offset-2 disabled:opacity-60">Try again</button>
+      </div>
+
+      <ol :if="showList()" class="m-0 p-0 list-none divide-line divide-y">
+        <template :for="step in setup().steps">
+          <li class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between p-5">
+            <div class="flex gap-4 items-start min-w-0">
+              <span aria-hidden="true" class="grid place-items-center shrink-0 h-8 w-8 font-bold text-xs border border-line rounded-pill" :class="step.done ? 'bg-accent text-[var(--coral-ink)]' : 'bg-surface-sunken text-fg-muted'">{{ step.number }}</span>
+              <div class="min-w-0">
+                <h3 class="font-bold text-sm">{{ step.title }}</h3>
+                <p class="mt-0.5 text-fg-muted text-xs">{{ step.detail }}</p>
+                <p class="mt-1 font-bold text-xs" :class="step.done ? 'text-fg-muted' : (step.next ? 'text-accent' : 'text-fg-muted')">{{ step.stateLabel }}</p>
+              </div>
+            </div>
+            <a :href="step.href" class="inline-flex items-center justify-center shrink-0 px-4 min-h-11 font-bold no-underline text-sm border border-line rounded-pill focus-visible:outline focus-visible:outline-[var(--coral)] focus-visible:outline-2" :class="step.next ? 'bg-accent text-[var(--coral-ink)]' : 'bg-panel text-fg hover:bg-surface-hover'">{{ step.action }}</a>
+          </li>
+        </template>
+      </ol>
+    </section>
+  </div>
+</main>

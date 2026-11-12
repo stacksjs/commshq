@@ -7,5 +7,5 @@ definePageMeta({ middleware: ['auth'] })
 @section('title', 'CommsHQ - Onboarding')
 
 @section('content')
-<WorkspaceSurface area="onboarding" />
+<SetupWorkspace />
 @endsection
