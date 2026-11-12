@@ -1,0 +1,264 @@
+<script server>
+/* The fixed list from the module, rendered here rather than looped in the
+ * browser, so the select is usable in the first paint. */
+import { CONNECTORS } from '../../data/integrations-query'
+
+export const connectorOptions = CONNECTORS
+</script>
+
+<script client>
+/**
+ * Service credentials, through the application's own API.
+ *
+ * This page was the `integrations` area of `WorkspaceSurface`: seven
+ * connected services, a webhook success rate and latencies, none of it
+ * recorded anywhere. Underneath, a workspace could not store a credential at
+ * all, so a monitored reputation profile stayed unconfigured for good.
+ *
+ * It lists the services a credential can be stored for and whether each is
+ * connected, and stores, replaces or removes a credential. The value goes to
+ * the server once, is encrypted there and is never returned: the field is
+ * cleared as soon as it is sent, and the list only ever shows the last four
+ * characters. Storing one puts that service's parked profiles back in the
+ * polling queue.
+ *
+ * Only services something reads a credential for are offered;
+ * `integrations-query.ts` records why the rest are not here.
+ *
+ * Writes carry the CSRF token explicitly, read with `useCookie`, the
+ * composable, since a client script may not reach for the DOM itself.
+ */
+import {
+  connectorLabel,
+  credentialDraftError,
+  credentialErrorMessage,
+  credentialPayload,
+  CREDENTIALS_ENDPOINT,
+  credentialsUrl,
+  credentialUrl,
+  listErrorMessage,
+  toConnectorViews,
+} from '../../data/integrations-query'
+
+const connectors = state([])
+const loading = state(true)
+const errorText = state('')
+const actionError = state('')
+const actionNotice = state('')
+/* The credential a removal is in flight for, so only its buttons are busy. */
+const busyId = state(0)
+/* The credential whose Remove has been pressed once and is waiting for the second. */
+const confirmId = state(0)
+
+const addOpen = state(false)
+const addProvider = state('google_business')
+const addValue = state('')
+const saving = state(false)
+const addError = state('')
+
+const csrfToken = useCookie('X-CSRF-Token')
+
+const showList = derived(() => !loading() && !errorText())
+
+async function load() {
+  loading.set(true)
+  errorText.set('')
+  confirmId.set(0)
+  try {
+    const response = await fetch(credentialsUrl(), { credentials: 'same-origin', headers: { Accept: 'application/json' } })
+    if (!response.ok) {
+      errorText.set(listErrorMessage(response.status))
+      connectors.set([])
+      return
+    }
+    connectors.set(toConnectorViews(await response.json()))
+  }
+  catch {
+    // A network failure, not a refusal: there is no status to explain.
+    errorText.set('Connections could not be loaded. Check your connection and try again.')
+    connectors.set([])
+  }
+  finally {
+    loading.set(false)
+  }
+}
+
+function writeHeaders() {
+  return {
+    'Content-Type': 'application/json',
+    'Accept': 'application/json',
+    'X-CSRF-Token': csrfToken() || '',
+  }
+}
+
+function openFor(provider) {
+  addProvider.set(provider)
+  addValue.set('')
+  addError.set('')
+  actionError.set('')
+  actionNotice.set('')
+  addOpen.set(true)
+}
+
+function closeAdd() {
+  /* Never leave a pasted secret sitting in a hidden field. */
+  addValue.set('')
+  addError.set('')
+  addOpen.set(false)
+}
+
+async function store() {
+  const draft = { provider: addProvider(), value: addValue() }
+  const problem = credentialDraftError(draft)
+  if (problem) {
+    addError.set(problem)
+    return
+  }
+
+  saving.set(true)
+  addError.set('')
+  const body = JSON.stringify(credentialPayload(draft))
+  /* Cleared before the request, not after: whatever the answer is, the
+   * secret is no longer held by the page. */
+  addValue.set('')
+  try {
+    const response = await fetch(CREDENTIALS_ENDPOINT, { method: 'POST', credentials: 'same-origin', headers: writeHeaders(), body })
+
+    if (response.status === 201 || response.ok) {
+      addOpen.set(false)
+      actionNotice.set(`${connectorLabel(draft.provider)} is connected. Its profiles on the Reputation page will be checked on the next sync.`)
+      await load()
+      return
+    }
+
+    addError.set(`${credentialErrorMessage(response.status)} Paste the credential again to retry.`)
+  }
+  catch {
+    addError.set('The credential could not be stored. Check your connection, then paste it again to retry.')
+  }
+  finally {
+    saving.set(false)
+  }
+}
+
+function askRemove(id) {
+  actionError.set('')
+  actionNotice.set('')
+  confirmId.set(id)
+}
+
+function cancelRemove() {
+  confirmId.set(0)
+}
+
+async function remove(id) {
+  if (busyId() || confirmId() !== id)
+    return
+  busyId.set(id)
+  actionError.set('')
+  actionNotice.set('')
+  try {
+    const response = await fetch(credentialUrl(id), { method: 'DELETE', credentials: 'same-origin', headers: writeHeaders() })
+    if (!response.ok)
+      actionError.set(credentialErrorMessage(response.status))
+    await load()
+  }
+  catch {
+    actionError.set('That connection could not be removed. Check your connection and try again.')
+  }
+  finally {
+    busyId.set(0)
+  }
+}
+
+onMount(() => {
+  void load()
+})
+</script>
+
+<main id="main" class="p-5 sm:p-8 min-h-screen text-fg bg-page">
+  <div class="mx-auto max-w-[1500px]">
+    <header class="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between mb-7">
+      <div>
+        <p class="font-bold text-[11px] text-accent tracking-[0.2em] uppercase">Integrations</p>
+        <h1 class="mt-2 font-semibold text-4xl tracking-[-0.04em]">Connect the systems that carry the work.</h1>
+        <p class="mt-2 max-w-2xl text-fg-muted text-sm">The outside services this workspace holds a credential for. A credential is encrypted when it is stored and is never shown again, here or anywhere else.</p>
+      </div>
+      <div class="flex gap-2">
+        <button type="button" @click="load()" :disabled="loading()" :aria-busy="loading()" class="px-5 min-h-11 font-bold text-fg text-sm bg-panel hover:bg-surface-hover border border-line rounded-pill focus-visible:outline focus-visible:outline-[var(--coral)] focus-visible:outline-2 focus-visible:outline-offset-2 disabled:opacity-60">Refresh</button>
+      </div>
+    </header>
+
+    <section :if="addOpen()" class="mb-5 p-5 bg-panel border border-line rounded-panel" aria-labelledby="add-credential-title">
+      <h2 id="add-credential-title" class="font-bold text-sm">Store a credential</h2>
+      <p class="mt-1 text-fg-muted text-xs">It replaces any credential already stored for the same service.</p>
+      <div class="grid gap-3 sm:grid-cols-[1fr_2fr] mt-4">
+        <label class="block font-bold text-xs">
+          Service
+          <select x-model="addProvider" class="mt-1 field">
+            @foreach(connectorOptions as option)
+              <option value="{{ option.provider }}">{{ option.label }}</option>
+            @endforeach
+          </select>
+        </label>
+        <label class="block font-bold text-xs">
+          Credential
+          <input x-model="addValue" type="password" autocomplete="off" autocapitalize="off" spellcheck="false" maxlength="4096" class="mt-1 field" placeholder="Paste the key or token">
+        </label>
+      </div>
+      <p :if="addError()" class="mt-3 font-bold text-danger text-xs" role="alert">{{ addError() }}</p>
+      <div class="flex gap-2 mt-4">
+        <button type="button" @click="store()" :disabled="saving()" :aria-busy="saving()" class="px-5 min-h-11 font-bold text-[var(--coral-ink)] text-sm bg-accent rounded-pill focus-visible:outline focus-visible:outline-[var(--coral)] focus-visible:outline-2 focus-visible:outline-offset-2 disabled:opacity-60">Store credential</button>
+        <button type="button" @click="closeAdd()" class="px-5 min-h-11 font-bold text-fg text-sm bg-panel hover:bg-surface-hover border border-line rounded-pill focus-visible:outline focus-visible:outline-[var(--coral)] focus-visible:outline-2 focus-visible:outline-offset-2">Cancel</button>
+      </div>
+    </section>
+
+    <p :if="actionError()" class="mb-5 p-4 font-bold text-danger text-sm bg-panel border border-line rounded-panel" role="alert">{{ actionError() }}</p>
+    <p :if="actionNotice()" class="mb-5 p-4 font-bold text-sm bg-panel border border-line rounded-panel" role="status">{{ actionNotice() }}</p>
+
+    <section class="overflow-hidden bg-panel border border-line rounded-panel" aria-labelledby="connections-title">
+      <div class="p-5 border-b border-line">
+        <h2 id="connections-title" class="font-bold">Services</h2>
+      </div>
+
+      {{-- Loading. A row-shaped skeleton rather than a spinner, so the list
+           does not jump height when the rows land. --}}
+      <div :if="loading()" class="p-5 space-y-3" aria-hidden="true">
+        <div class="h-16 bg-surface-sunken rounded-control"></div>
+        <div class="h-16 bg-surface-sunken rounded-control"></div>
+      </div>
+      <p :if="loading()" class="sr-only" role="status">Loading connections</p>
+
+      <div :if="errorText()" class="p-8 text-center" role="alert">
+        <span aria-hidden="true" class="inline-block h-6 w-6 text-danger i-hugeicons-alert-02"></span>
+        <p class="mt-3 font-bold text-sm">{{ errorText() }}</p>
+        <button type="button" @click="load()" :disabled="loading()" :aria-busy="loading()" class="mt-4 px-5 min-h-11 font-bold text-fg text-sm bg-panel hover:bg-surface-hover border border-line rounded-pill focus-visible:outline focus-visible:outline-[var(--coral)] focus-visible:outline-2 focus-visible:outline-offset-2 disabled:opacity-60">Try again</button>
+      </div>
+
+      <div :if="showList()" class="divide-line divide-y">
+        <template :for="connector in connectors()">
+          <article class="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between p-5">
+            <div class="min-w-0">
+              <h3 class="font-bold text-sm">{{ connector.label }}</h3>
+              <p class="mt-0.5 text-xs">{{ connector.standing }}</p>
+              <p class="mt-0.5 text-fg-muted text-xs">{{ connector.purpose }}</p>
+              <p class="mt-0.5 text-fg-muted text-xs">{{ connector.hint }}</p>
+            </div>
+            <div :if="confirmId() === 0 || confirmId() !== connector.credentialId" class="flex flex-wrap gap-2 shrink-0">
+              <button :if="!connector.connected" type="button" @click="openFor(connector.provider)" class="px-4 min-h-11 font-bold text-fg text-sm bg-panel hover:bg-surface-hover border border-line rounded-pill focus-visible:outline focus-visible:outline-[var(--coral)] focus-visible:outline-2 disabled:opacity-50">Connect</button>
+              <button :if="connector.connected" type="button" @click="openFor(connector.provider)" class="px-4 min-h-11 font-bold text-fg text-sm bg-panel hover:bg-surface-hover border border-line rounded-pill focus-visible:outline focus-visible:outline-[var(--coral)] focus-visible:outline-2 disabled:opacity-50">Replace credential</button>
+              <button :if="connector.connected" type="button" @click="askRemove(connector.credentialId)" :disabled="busyId() !== 0" :aria-busy="busyId() === connector.credentialId" class="px-4 min-h-11 font-bold text-fg text-sm bg-panel hover:bg-surface-hover border border-line rounded-pill focus-visible:outline focus-visible:outline-[var(--coral)] focus-visible:outline-2 disabled:opacity-50">Remove</button>
+            </div>
+            <div :if="confirmId() !== 0 && confirmId() === connector.credentialId" class="flex flex-col gap-2 shrink-0" role="group" aria-label="Confirm removal">
+              <p class="m-0 font-bold text-xs">Remove this credential? Its profiles stop syncing.</p>
+              <div class="flex gap-2">
+                <button type="button" @click="remove(connector.credentialId)" :disabled="busyId() !== 0" :aria-busy="busyId() === connector.credentialId" class="px-4 min-h-11 font-bold text-fg text-sm bg-panel hover:bg-surface-hover border border-line rounded-pill focus-visible:outline focus-visible:outline-[var(--coral)] focus-visible:outline-2 disabled:opacity-50">Yes, remove it</button>
+                <button type="button" @click="cancelRemove()" class="px-4 min-h-11 font-bold text-fg text-sm bg-panel hover:bg-surface-hover border border-line rounded-pill focus-visible:outline focus-visible:outline-[var(--coral)] focus-visible:outline-2 disabled:opacity-50">Keep it</button>
+              </div>
+            </div>
+          </article>
+        </template>
+      </div>
+    </section>
+  </div>
+</main>

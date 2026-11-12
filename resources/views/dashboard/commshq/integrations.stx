@@ -7,5 +7,5 @@ definePageMeta({ middleware: ['auth'] })
 @section('title', 'CommsHQ - Integrations')
 
 @section('content')
-<WorkspaceSurface area="integrations" />
+<IntegrationsWorkspace />
 @endsection
