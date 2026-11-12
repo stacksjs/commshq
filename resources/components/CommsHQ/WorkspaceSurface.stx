@@ -37,12 +37,6 @@ const pages: Record<string, WorkspacePage> = {
     records: [{ name: 'Organic publication', detail: 'Search, direct, and RSS', status: 'Leading', value: '$28,412' }, { name: 'Reader referrals', detail: 'Verified recommendation links', status: 'Growing', value: '$18,920' }, { name: 'Commerce recovery', detail: 'Cart and win-back journeys', status: 'Efficient', value: '8.4x ROAS' }],
     checklist: [{ label: 'Attribution model', detail: 'First-party position based', state: 'Active' }, { label: 'Bot filtering', detail: 'Known agents and abnormal events removed', state: 'Healthy' }, { label: 'Export controls', detail: 'Workspace permissions required', state: 'Locked' }],
   },
-  settings: {
-    eyebrow: 'Workspace settings', title: 'Set the defaults that keep work consistent.', description: 'Configure identity, locale, compliance, approvals, retention, AI quotas, notifications, and workspace ownership.', primary: 'Save settings', icon: 'i-hugeicons-settings-02',
-    metrics: [{ label: 'Configuration health', value: '98%', note: '1 recommendation' }, { label: 'Policy version', value: '2026.2', note: 'Current' }, { label: 'Retention rules', value: '6', note: 'All active' }],
-    records: [{ name: 'Workspace identity', detail: 'Sunday Paper Co., America/Los_Angeles', status: 'Complete', value: 'US' }, { name: 'Consent defaults', detail: 'Double opt-in and written SMS consent', status: 'Strict', value: 'Global' }, { name: 'AI publishing policy', detail: 'Human approval required', status: 'Enabled', value: 'All channels' }],
-    checklist: [{ label: 'Data minimization', detail: 'Unused metadata expires automatically', state: 'On' }, { label: 'Approval policy', detail: 'AI and high-risk sends require review', state: 'On' }, { label: 'Owner recovery', detail: 'Recovery contacts are verified', state: 'Ready' }],
-  },
 }
 
 const page = computed(() => pages[area()] || pages.sites)
