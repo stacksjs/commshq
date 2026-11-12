@@ -39,6 +39,11 @@ route.delete('/v1/sender-domains/{id}', 'Actions/Api/V1/Sending/DeleteSenderDoma
 // pending with no way to change it.
 route.post('/v1/sender-identities', 'Actions/Api/V1/Sending/CreateSenderIdentityAction').middleware('auth').middleware('team').rateLimit(20, 'minute')
 
+// Credentials are stored encrypted and never returned; the generated API
+// only reads them.
+route.post('/v1/integration-credentials', 'Actions/Api/V1/Integrations/StoreIntegrationCredentialAction').middleware('auth').middleware('team').rateLimit(10, 'minute')
+route.delete('/v1/integration-credentials/{id}', 'Actions/Api/V1/Integrations/DeleteIntegrationCredentialAction').middleware('auth').middleware('team').rateLimit(20, 'minute')
+
 route.post('/webhooks/{provider}/{endpoint}', 'Actions/Webhooks/IngestWebhookAction').rateLimit(300, 'minute')
 
 // `/coming-soon` is served as an STX view from

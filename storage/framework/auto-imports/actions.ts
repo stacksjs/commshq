@@ -8,6 +8,8 @@ export const actions = {
   'Actions/Api/V1/DecideAiDraftAction': '../../../app/Actions/Api/V1/DecideAiDraftAction.ts',
   'Actions/Api/V1/DispatchCampaignAction': '../../../app/Actions/Api/V1/DispatchCampaignAction.ts',
   'Actions/Api/V1/GenerateAiDraftAction': '../../../app/Actions/Api/V1/GenerateAiDraftAction.ts',
+  'Actions/Api/V1/Integrations/DeleteIntegrationCredentialAction': '../../../app/Actions/Api/V1/Integrations/DeleteIntegrationCredentialAction.ts',
+  'Actions/Api/V1/Integrations/StoreIntegrationCredentialAction': '../../../app/Actions/Api/V1/Integrations/StoreIntegrationCredentialAction.ts',
   'Actions/Api/V1/Reputation/AcknowledgeAlertAction': '../../../app/Actions/Api/V1/Reputation/AcknowledgeAlertAction.ts',
   'Actions/Api/V1/Reputation/CreateMonitoredProfileAction': '../../../app/Actions/Api/V1/Reputation/CreateMonitoredProfileAction.ts',
   'Actions/Api/V1/Reputation/TriageMentionAction': '../../../app/Actions/Api/V1/Reputation/TriageMentionAction.ts',
