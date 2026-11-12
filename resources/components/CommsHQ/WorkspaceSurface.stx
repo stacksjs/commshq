@@ -10,15 +10,9 @@ interface WorkspacePage {
   checklist: Array<{ label: string, detail: string, state: string }>
 }
 
-const area = useReactiveProp('area', 'onboarding')
+const area = useReactiveProp('area', 'sites')
 
 const pages: Record<string, WorkspacePage> = {
-  onboarding: {
-    eyebrow: 'Start here', title: 'Set up a sending home that is ready to grow.', description: 'Connect a domain, confirm consent defaults, import your first audience, and publish one useful welcome.', primary: 'Continue setup', icon: 'i-hugeicons-rocket-02',
-    metrics: [{ label: 'Setup complete', value: '63%', note: '5 of 8 steps' }, { label: 'Imported contacts', value: '1,248', note: 'All mapped' }, { label: 'Sender health', value: 'Ready', note: 'SPF and DKIM pass' }],
-    records: [{ name: 'Create Sunday Paper Co.', detail: 'Workspace and owner configured', status: 'Complete', value: '1 min' }, { name: 'Verify sending domain', detail: 'sundaypaper.co', status: 'Complete', value: '4 min' }, { name: 'Send first welcome', detail: 'Review content and audience', status: 'Next', value: '8 min' }],
-    checklist: [{ label: 'Double opt-in', detail: 'Required by default for new email contacts', state: 'On' }, { label: 'SMS consent', detail: 'Explicit written consent is required', state: 'On' }, { label: 'Quiet hours', detail: 'Recipient timezone enforcement', state: 'On' }],
-  },
   sites: {
     eyebrow: 'Sites', title: 'Every publication deserves a true address.', description: 'Manage native Stacks sites, customer domains, TLS, redirects, menus, and isolated draft rendering.', primary: 'Create site', icon: 'i-hugeicons-web-design-02',
     metrics: [{ label: 'Live sites', value: '3', note: '2 custom domains' }, { label: 'TLS coverage', value: '100%', note: 'Auto-renewing' }, { label: 'Redirect health', value: '99.9%', note: 'No loops found' }],
@@ -51,7 +45,7 @@ const pages: Record<string, WorkspacePage> = {
   },
 }
 
-const page = computed(() => pages[area()] || pages.onboarding)
+const page = computed(() => pages[area()] || pages.sites)
 const viewState = state('populated')
 </script>
 
