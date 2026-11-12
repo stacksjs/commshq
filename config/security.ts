@@ -23,4 +23,14 @@ export default {
     queryString: [],
     httpHeaders: [],
   },
+
+  api: {
+    // The app's own models, plus the framework's `Campaign`. Generated APIs
+    // default to `own`, so `Campaign`, which this app sends through
+    // (`DispatchCampaignAction`, the `DispatchCampaign` job) but does not
+    // define, had no list or create endpoint and the campaigns page had
+    // nothing to read. It carries `team_id`, so its routes are scoped to the
+    // caller's active team like every model in `app/Models`.
+    models: ['own', 'Campaign'],
+  },
 } satisfies SecurityConfig
