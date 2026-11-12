@@ -43,12 +43,6 @@ const pages: Record<string, WorkspacePage> = {
     records: [{ name: 'Organic publication', detail: 'Search, direct, and RSS', status: 'Leading', value: '$28,412' }, { name: 'Reader referrals', detail: 'Verified recommendation links', status: 'Growing', value: '$18,920' }, { name: 'Commerce recovery', detail: 'Cart and win-back journeys', status: 'Efficient', value: '8.4x ROAS' }],
     checklist: [{ label: 'Attribution model', detail: 'First-party position based', state: 'Active' }, { label: 'Bot filtering', detail: 'Known agents and abnormal events removed', state: 'Healthy' }, { label: 'Export controls', detail: 'Workspace permissions required', state: 'Locked' }],
   },
-  teams: {
-    eyebrow: 'Team and access', title: 'Give every collaborator the right room to work.', description: 'Manage workspace members, roles, invitations, gates, approvals, active sessions, and auditable administration.', primary: 'Invite member', icon: 'i-hugeicons-shield-user',
-    metrics: [{ label: 'Active members', value: '7', note: '3 seats available' }, { label: 'Pending invites', value: '2', note: 'Expire in 4 days' }, { label: 'Protected actions', value: '14', note: 'Owner approval' }],
-    records: [{ name: 'Maya Alvarez', detail: 'Owner, all permissions', status: 'Active', value: 'Now' }, { name: 'Elliot Chen', detail: 'Marketing and automations', status: 'Active', value: '18 min' }, { name: 'Priya Shah', detail: 'Publishing and analytics', status: 'Active', value: '2 hr' }],
-    checklist: [{ label: 'Multi-factor auth', detail: 'Required for owners and administrators', state: 'On' }, { label: 'Session review', detail: 'No unrecognized sessions', state: 'Healthy' }, { label: 'Audit trail', detail: 'Admin actions are append-only', state: 'Locked' }],
-  },
   settings: {
     eyebrow: 'Workspace settings', title: 'Set the defaults that keep work consistent.', description: 'Configure identity, locale, compliance, approvals, retention, AI quotas, notifications, and workspace ownership.', primary: 'Save settings', icon: 'i-hugeicons-settings-02',
     metrics: [{ label: 'Configuration health', value: '98%', note: '1 recommendation' }, { label: 'Policy version', value: '2026.2', note: 'Current' }, { label: 'Retention rules', value: '6', note: 'All active' }],
