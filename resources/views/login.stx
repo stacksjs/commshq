@@ -8,6 +8,12 @@ useSeoMeta({
 </script>
 
 <script client>
+import { afterSignIn } from '../data/auth-redirect'
+
+// Read for `next`, which is only honoured when it is an invitation page on
+// this site; `afterSignIn` explains why nothing else is followed.
+const route = useRoute()
+
 // Uncontrolled inputs read from the submit event; only the states the page
 // actually renders are signals. The token pack comes back as JSON AND as an
 // httpOnly cookie, and it is the cookie the dashboard reads, so there is
@@ -55,7 +61,7 @@ async function handleSubmit(e: SubmitEvent): Promise<void> {
       twoFactor.set(true)
       return
     }
-    navigate('/dashboard/commshq')
+    navigate(afterSignIn(route.query.next))
   }
   catch {
     error.set('Could not reach the server. Please try again.')
@@ -89,7 +95,7 @@ async function handleVerify(e: SubmitEvent): Promise<void> {
       challengeToken.set('')
       return
     }
-    navigate('/dashboard/commshq')
+    navigate(afterSignIn(route.query.next))
   }
   catch {
     error.set('Could not reach the server. Please try again.')
@@ -107,11 +113,11 @@ async function handleVerify(e: SubmitEvent): Promise<void> {
 @section('content')
 <div class="max-w-sm w-full">
   <div class="mb-8 text-center">
-    <StxLink to="/" class="font-bold text-2xl no-underline ink">CommsHQ</StxLink>
+    <StxLink to="/" class="font-bold no-underline text-2xl ink">CommsHQ</StxLink>
     <p class="mt-2 text-sm muted">Sign in to your workspace</p>
   </div>
 
-  <div class="px-6 py-7 border rounded-2xl border-tone panel">
+  <div class="px-6 py-7 border border-tone rounded-2xl panel">
     <form @submit="handleSubmit" class="space-y-4" :show="!twoFactor()">
       <div>
         <label for="email" class="block mb-1.5 font-medium text-xs ink">Email</label>
@@ -125,15 +131,15 @@ async function handleVerify(e: SubmitEvent): Promise<void> {
         <input id="password" name="password" type="password" required autocomplete="current-password" class="field" :aria-invalid="error() ? 'true' : 'false'" :aria-describedby="error() ? 'login-error' : ''">
       </div>
 
-      <label for="remember" class="flex items-center gap-2 text-xs cursor-pointer muted">
-        <input id="remember" name="remember" type="checkbox" class="rounded border-tone">
+      <label for="remember" class="flex gap-2 items-center text-xs cursor-pointer muted">
+        <input id="remember" name="remember" type="checkbox" class="border-tone rounded">
         Keep me signed in for 30 days
       </label>
 
       {{-- The label is static and the busy state rides on :disabled, an
           attribute binding. A reactive expression in the button's own text
           would make stx cloak it, and this button is the whole page. --}}
-      <button type="submit" :disabled="loading()" :aria-busy="loading()" class="px-4 py-2.5 w-full font-semibold text-sm text-[var(--coral-ink)] cursor-pointer rounded-xl border-0 bg-coral">Sign in</button>
+      <button type="submit" :disabled="loading()" :aria-busy="loading()" class="px-4 py-2.5 w-full font-semibold text-[var(--coral-ink)] text-sm bg-coral border-0 rounded-xl cursor-pointer">Sign in</button>
     </form>
 
     {{-- Second step for TOTP accounts. Hidden until step one reports
@@ -145,11 +151,11 @@ async function handleVerify(e: SubmitEvent): Promise<void> {
         <input id="code" name="code" type="text" inputmode="numeric" autocomplete="one-time-code" maxlength="6" pattern="[0-9]*" placeholder="123456" class="field" :aria-invalid="error() ? 'true' : 'false'" :aria-describedby="error() ? 'login-error' : ''">
         <p class="mt-1 text-xs muted">Enter the 6-digit code from your authenticator app.</p>
       </div>
-      <button type="submit" :disabled="loading()" :aria-busy="loading()" class="px-4 py-2.5 w-full font-semibold text-sm text-[var(--coral-ink)] cursor-pointer rounded-xl border-0 bg-coral">Verify</button>
+      <button type="submit" :disabled="loading()" :aria-busy="loading()" class="px-4 py-2.5 w-full font-semibold text-[var(--coral-ink)] text-sm bg-coral border-0 rounded-xl cursor-pointer">Verify</button>
     </form>
 
     <p role="status" class="mt-4 text-center text-xs muted" :show="loading()" style="display:none">Signing you in...</p>
-    <p id="login-error" role="alert" class="mt-4 px-3 py-2 text-sm text-center rounded-lg coral" :show="error()" style="display:none">{{ error() }}</p>
+    <p id="login-error" role="alert" class="mt-4 px-3 py-2 text-center text-sm rounded-lg coral" :show="error()" style="display:none">{{ error() }}</p>
   </div>
 
   <p class="mt-6 text-center text-sm muted">

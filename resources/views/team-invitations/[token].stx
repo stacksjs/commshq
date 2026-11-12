@@ -1,0 +1,152 @@
+<script server>
+useSeoMeta({
+  title: 'Workspace invitation - CommsHQ',
+  // A single-use link meant for one person. Nothing here belongs in an index.
+  robots: 'noindex, nofollow',
+})
+</script>
+
+<script client>
+/**
+ * Where a mailed workspace invitation lands, at `/team-invitations/{token}`.
+ *
+ * The invitation email has always linked here and nothing served the
+ * address, so every invitation ended at a 404. The two endpoints behind this
+ * page are the framework's own: one shows what the token invites to, the
+ * other accepts it for the signed-in person, and only when that person's
+ * email is the one that was invited.
+ *
+ * The page never decides whether someone is signed in. It asks to accept and
+ * reads the answer: a 401 means sign in or create an account first, and both
+ * links come straight back here afterwards.
+ */
+import { DASHBOARD_PATH, withReturn } from '../../data/auth-redirect'
+import { acceptErrorMessage, invitationUrls, roleLabel } from '../../data/teams-query'
+
+const route = useRoute()
+const csrfToken = useCookie('X-CSRF-Token')
+
+const loading = state(true)
+const found = state(false)
+const teamName = state('')
+const invitedEmail = state('')
+const invitedRole = state('')
+const available = state(false)
+const notice = state('')
+const error = state('')
+const needsSignIn = state(false)
+const accepting = state(false)
+const accepted = state(false)
+
+const token = derived(() => String(route.params.token || ''))
+const loginHref = derived(() => withReturn('/login', token()))
+const registerHref = derived(() => withReturn('/register', token()))
+const canAccept = derived(() => found() && available() && !accepted())
+
+async function load() {
+  loading.set(true)
+  error.set('')
+  try {
+    const response = await fetch(invitationUrls(token()).show, { credentials: 'same-origin', headers: { Accept: 'application/json' } })
+    if (!response.ok) {
+      error.set(response.status === 404 ? 'This invitation link is not valid. Ask for a new invitation.' : 'The invitation could not be loaded. Try again in a moment.')
+      return
+    }
+    const invitation = (await response.json())?.invitation ?? {}
+    teamName.set(String(invitation.teamName || 'a workspace'))
+    invitedEmail.set(String(invitation.email || ''))
+    invitedRole.set(roleLabel(invitation.role))
+    available.set(invitation.status === 'pending')
+    if (invitation.status !== 'pending')
+      notice.set(invitation.status === 'expired' ? 'This invitation has expired. Ask for a new one.' : 'This invitation is no longer available.')
+    found.set(true)
+  }
+  catch {
+    error.set('The invitation could not be loaded. Check your connection and try again.')
+  }
+  finally {
+    loading.set(false)
+  }
+}
+
+async function accept() {
+  if (accepting())
+    return
+  accepting.set(true)
+  error.set('')
+  needsSignIn.set(false)
+  try {
+    const response = await fetch(invitationUrls(token()).accept, {
+      method: 'POST',
+      credentials: 'same-origin',
+      headers: { 'Accept': 'application/json', 'Content-Type': 'application/json', 'X-CSRF-Token': csrfToken() || '' },
+    })
+    if (response.ok) {
+      accepted.set(true)
+      return
+    }
+    if (response.status === 401) {
+      needsSignIn.set(true)
+      return
+    }
+    error.set(acceptErrorMessage(response.status))
+  }
+  catch {
+    error.set('The invitation could not be accepted. Check your connection and try again.')
+  }
+  finally {
+    accepting.set(false)
+  }
+}
+
+function openWorkspace() {
+  navigate(DASHBOARD_PATH)
+}
+
+onMount(() => {
+  void load()
+})
+</script>
+
+@extends('auth')
+
+@section('title', 'Workspace invitation - CommsHQ')
+
+@section('content')
+<div class="max-w-sm w-full">
+  <div class="mb-8 text-center">
+    <StxLink to="/" class="font-bold text-2xl no-underline ink">CommsHQ</StxLink>
+    <p class="mt-2 text-sm muted">Workspace invitation</p>
+  </div>
+
+  <div class="p-6 rounded-2xl border border-tone panel">
+    <p role="status" class="text-center text-sm muted" :show="loading()">Loading your invitation...</p>
+
+    <div :show="found() && !accepted()" style="display:none">
+      <h1 class="font-semibold text-lg ink">Join {{ teamName() }}</h1>
+      <p class="mt-2 text-sm muted">This invitation is for {{ invitedEmail() }}, as {{ invitedRole() }}.</p>
+      <p class="mt-4 text-sm ink" :show="notice()" style="display:none">{{ notice() }}</p>
+
+      {{-- The label is static and the busy state rides on :disabled, the way
+          the sign-in button does it. --}}
+      <button type="button" @click="accept()" :show="canAccept() && !needsSignIn()" :disabled="accepting()" :aria-busy="accepting()" class="mt-5 px-4 py-2.5 w-full font-semibold text-sm text-[var(--coral-ink)] cursor-pointer rounded-xl border-0 bg-coral" style="display:none">Accept invitation</button>
+
+      <div :show="needsSignIn()" style="display:none">
+        <p class="mt-4 text-sm ink">Sign in as {{ invitedEmail() }} to accept. If you do not have an account yet, create one with that address.</p>
+        <div class="grid gap-2 mt-4">
+          <a :href="loginHref()" class="block px-4 py-2.5 font-semibold text-center text-sm text-[var(--coral-ink)] no-underline rounded-xl bg-coral">Sign in</a>
+          <a :href="registerHref()" class="block px-4 py-2.5 font-semibold text-center text-sm no-underline rounded-xl border border-tone ink">Create an account</a>
+        </div>
+      </div>
+    </div>
+
+    <div :show="accepted()" style="display:none">
+      <h1 class="font-semibold text-lg ink">You have joined {{ teamName() }}</h1>
+      <p class="mt-2 text-sm muted">Your access is as {{ invitedRole() }}.</p>
+      <button type="button" @click="openWorkspace()" class="mt-5 px-4 py-2.5 w-full font-semibold text-sm text-[var(--coral-ink)] cursor-pointer rounded-xl border-0 bg-coral">Open the workspace</button>
+    </div>
+
+    <p role="alert" class="mt-4 px-3 py-2 text-sm text-center rounded-lg coral" :show="error()" style="display:none">{{ error() }}</p>
+  </div>
+</div>
+@endsection

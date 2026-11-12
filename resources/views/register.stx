@@ -6,6 +6,12 @@ useSeoMeta({
 </script>
 
 <script client>
+import { afterSignIn } from '../data/auth-redirect'
+
+// Read for `next`, which is only honoured when it is an invitation page on
+// this site; `afterSignIn` explains why nothing else is followed.
+const route = useRoute()
+
 // RegisterAction signs the new account in as part of the same response: it
 // returns the token pack AND sets the httpOnly cookie, so there is no second
 // round trip and nothing here to persist.
@@ -52,7 +58,7 @@ async function handleSubmit(e: SubmitEvent): Promise<void> {
       error.set(String(data.message ?? 'Could not create your account.'))
       return
     }
-    navigate('/dashboard/commshq')
+    navigate(afterSignIn(route.query.next))
   }
   catch {
     error.set('Could not reach the server. Please try again.')
@@ -70,11 +76,11 @@ async function handleSubmit(e: SubmitEvent): Promise<void> {
 @section('content')
 <div class="max-w-sm w-full">
   <div class="mb-8 text-center">
-    <StxLink to="/" class="font-bold text-2xl no-underline ink">CommsHQ</StxLink>
+    <StxLink to="/" class="font-bold no-underline text-2xl ink">CommsHQ</StxLink>
     <p class="mt-2 text-sm muted">Create your workspace</p>
   </div>
 
-  <div class="px-6 py-7 border rounded-2xl border-tone panel">
+  <div class="px-6 py-7 border border-tone rounded-2xl panel">
     <form @submit="handleSubmit" class="space-y-4">
       <div>
         <label for="name" class="block mb-1.5 font-medium text-xs ink">Your name</label>
@@ -90,9 +96,9 @@ async function handleSubmit(e: SubmitEvent): Promise<void> {
         <p class="mt-1 text-xs muted">At least 8 characters.</p>
       </div>
 
-      <button type="submit" :disabled="loading()" :aria-busy="loading()" class="px-4 py-2.5 w-full font-semibold text-sm text-[var(--coral-ink)] cursor-pointer rounded-xl border-0 bg-coral">Create workspace</button>
+      <button type="submit" :disabled="loading()" :aria-busy="loading()" class="px-4 py-2.5 w-full font-semibold text-[var(--coral-ink)] text-sm bg-coral border-0 rounded-xl cursor-pointer">Create workspace</button>
       <p role="status" class="text-center text-xs muted" :show="loading()" style="display:none">Creating your workspace...</p>
-      <p id="form-error" role="alert" class="px-3 py-2 text-sm text-center rounded-lg coral" :show="error()" style="display:none">{{ error() }}</p>
+      <p id="form-error" role="alert" class="px-3 py-2 text-center text-sm rounded-lg coral" :show="error()" style="display:none">{{ error() }}</p>
     </form>
   </div>
 
