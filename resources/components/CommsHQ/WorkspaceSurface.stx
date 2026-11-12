@@ -25,12 +25,6 @@ const pages: Record<string, WorkspacePage> = {
     records: [{ name: 'Sunday Paper', detail: 'sundaypaper.co', status: 'Live', value: 'Primary' }, { name: 'Field Notes', detail: 'notes.sundaypaper.co', status: 'Live', value: 'Subdomain' }, { name: 'Spring launch', detail: 'Preview is team-only', status: 'Draft', value: 'Private' }],
     checklist: [{ label: 'Draft isolation', detail: 'Anonymous requests cannot resolve drafts', state: 'Locked' }, { label: 'Certificate renewal', detail: '42 days remaining', state: 'Healthy' }, { label: 'Canonical URLs', detail: 'All pages resolve one origin', state: 'Ready' }],
   },
-  publications: {
-    eyebrow: 'Publishing', title: 'Publish the archive people return to.', description: 'Run newsletters, blogs, gated posts, podcasts, feeds, menus, revisions, and scheduled releases together.', primary: 'Create post', icon: 'i-hugeicons-news-01',
-    metrics: [{ label: 'Published posts', value: '148', note: '12 member-only' }, { label: 'Paid members', value: '2,184', note: '+9.6%' }, { label: 'Feed subscribers', value: '8,942', note: 'RSS and podcast' }],
-    records: [{ name: 'A practice worth keeping', detail: 'Sunday Paper, issue 148', status: 'Scheduled', value: 'Aug 18' }, { name: 'Reader desk tours', detail: 'Paid member edition', status: 'Draft', value: 'v6' }, { name: 'Studio Notes 24', detail: 'Podcast episode and transcript', status: 'Live', value: '42 min' }],
-    checklist: [{ label: 'Revision history', detail: 'Every publish creates an immutable revision', state: 'Ready' }, { label: 'RSS-to-send', detail: 'Approval required before campaign creation', state: 'On' }, { label: 'SEO checks', detail: 'Metadata and social preview complete', state: 'Ready' }],
-  },
   commerce: {
     eyebrow: 'Commerce marketing', title: 'Turn store moments into thoughtful follow-up.', description: 'Normalize carts, purchases, subscriptions, and product activity before attribution or automation runs.', primary: 'Connect store', icon: 'i-hugeicons-shopping-bag-02',
     metrics: [{ label: 'Attributed revenue', value: '$84,620', note: '+12.7%' }, { label: 'Recovered carts', value: '318', note: '$26,418 recovered' }, { label: 'Commerce events', value: '1.8M', note: 'No duplicates' }],
