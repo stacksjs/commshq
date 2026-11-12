@@ -1,86 +1,399 @@
-<script client>
-const channel = state('email')
-const preview = state('desktop')
+<script server>
+/* Fixed lists from the module, rendered here rather than looped in the
+ * browser, so the selects are usable in the first paint. */
+import { CAMPAIGN_CHANNELS, CAMPAIGN_STATUSES } from '../../data/campaigns-query'
+
+export const channelOptions = CAMPAIGN_CHANNELS
+export const statusOptions = CAMPAIGN_STATUSES
 </script>
 
-<main id="main" class="min-h-screen text-[#171916] dark:text-[#f6f3ee] bg-[#ece8e1] dark:bg-[#0f100e]">
-  <header class="flex sticky top-0 z-20 items-center justify-between px-4 sm:px-7 min-h-16 bg-[#f8f5ef]/95 dark:bg-[#161714]/95 border-[#171916]/10 border-b dark:border-white/10 backdrop-blur">
-    <div class="flex gap-3 items-center">
-      <StxLink to="/dashboard/commshq" aria-label="Back to command center" class="p-2 hover:bg-black/5 dark:hover:bg-white/10 rounded-full">
-        <span class="block h-5 w-5 i-hugeicons-arrow-left-02"></span>
-      </StxLink>
+<script client>
+/**
+ * Campaigns, reading and writing through the application's own API.
+ *
+ * Sending was already real: `POST /api/v1/campaigns/{id}/dispatch` snapshots
+ * the audience and queues the job that delivers it, checking consent for each
+ * recipient. There was no way to see or write a campaign. This page was a
+ * static composer: a "Sunday Dispatch" draft, an audience snapshot of 24,816,
+ * 312 suppressed and a best send window, none of it read from anywhere.
+ *
+ * It lists campaigns from `GET /api/campaigns`, creates them as drafts, and
+ * sends, pauses or cancels them. Creating never sends. Send is two presses:
+ * the first names who it goes to, the second does it, because a send cannot
+ * be taken back once the job has started.
+ *
+ * There are no open or click rates, no audience size and no scheduling;
+ * `campaigns-query.ts` records why.
+ *
+ * Writes carry the CSRF token explicitly, read with `useCookie`, the
+ * composable, since a client script may not reach for the DOM itself.
+ */
+import {
+  audiencesUrl,
+  campaignPayload,
+  CAMPAIGNS_ENDPOINT,
+  CAMPAIGNS_PER_PAGE,
+  campaignsUrl,
+  campaignUrl,
+  dispatchErrorMessage,
+  dispatchResultMessage,
+  dispatchUrl,
+  draftError,
+  listErrorMessage,
+  saveErrorMessage,
+  toAudienceOptions,
+  toCampaignViews,
+} from '../../data/campaigns-query'
+
+const campaigns = state([])
+const audiences = state([])
+const hasMore = state(false)
+const page = state(1)
+const status = state('')
+const loading = state(true)
+const errorText = state('')
+const actionError = state('')
+const actionNotice = state('')
+/* Which control the in-flight load belongs to, so one busy state is announced
+ * rather than three. */
+const busySource = state('refresh')
+/* The campaign a change is in flight for, so only its buttons are busy. */
+const busyId = state(0)
+/* The campaign whose Send has been pressed once and is waiting for the second. */
+const confirmId = state(0)
+
+const addOpen = state(false)
+const addName = state('')
+const addChannel = state('email')
+const addSubject = state('')
+const addText = state('')
+const addAudience = state(0)
+const saving = state(false)
+const addError = state('')
+
+const csrfToken = useCookie('X-CSRF-Token')
+
+const refreshBusy = derived(() => loading() && busySource() === 'refresh')
+const prevBusy = derived(() => loading() && busySource() === 'prev')
+const nextBusy = derived(() => loading() && busySource() === 'next')
+const showEmpty = derived(() => !loading() && !errorText() && campaigns().length === 0)
+const showList = derived(() => !loading() && !errorText() && campaigns().length > 0)
+const isEmail = derived(() => addChannel() !== 'sms')
+
+/* The picker is a convenience: a failure here leaves "every active contact"
+ * as the only choice and rows naming an audience by its id, both true. */
+async function loadAudiences() {
+  try {
+    const response = await fetch(audiencesUrl(), { credentials: 'same-origin', headers: { Accept: 'application/json' } })
+    if (response.ok)
+      audiences.set(toAudienceOptions(await response.json()))
+  }
+  catch {}
+}
+
+async function load(source = 'refresh') {
+  busySource.set(source)
+  loading.set(true)
+  errorText.set('')
+  confirmId.set(0)
+  try {
+    const response = await fetch(campaignsUrl({ page: page(), perPage: CAMPAIGNS_PER_PAGE, status: status() }), {
+      credentials: 'same-origin',
+      headers: { Accept: 'application/json' },
+    })
+
+    if (!response.ok) {
+      errorText.set(listErrorMessage(response.status))
+      campaigns.set([])
+      return
+    }
+
+    const body = await response.json()
+    campaigns.set(toCampaignViews(body, audiences()))
+    hasMore.set(body?.has_more_pages === true)
+  }
+  catch {
+    // A network failure, not a refusal: there is no status to explain.
+    errorText.set('Campaigns could not be loaded. Check your connection and try again.')
+    campaigns.set([])
+  }
+  finally {
+    loading.set(false)
+  }
+}
+
+function onStatusChange() {
+  page.set(1)
+  void load()
+}
+
+function nextPage() {
+  if (!hasMore() || loading())
+    return
+  page.update(value => value + 1)
+  void load('next')
+}
+
+function previousPage() {
+  if (page() <= 1 || loading())
+    return
+  page.update(value => value - 1)
+  void load('prev')
+}
+
+function writeHeaders() {
+  return {
+    'Content-Type': 'application/json',
+    'Accept': 'application/json',
+    'X-CSRF-Token': csrfToken() || '',
+  }
+}
+
+async function setStatus(id, next) {
+  if (busyId())
+    return
+  busyId.set(id)
+  actionError.set('')
+  actionNotice.set('')
+  try {
+    const response = await fetch(campaignUrl(id), {
+      method: 'PATCH',
+      credentials: 'same-origin',
+      headers: writeHeaders(),
+      body: JSON.stringify({ status: next }),
+    })
+
+    if (!response.ok)
+      actionError.set(saveErrorMessage(response.status))
+    /* Read again either way: on a 404 the list on screen is the stale thing. */
+    await load()
+  }
+  catch {
+    actionError.set('That change could not be saved. Check your connection and try again.')
+  }
+  finally {
+    busyId.set(0)
+  }
+}
+
+function askSend(id) {
+  actionError.set('')
+  actionNotice.set('')
+  confirmId.set(id)
+}
+
+function cancelSend() {
+  confirmId.set(0)
+}
+
+async function send(id) {
+  if (busyId() || confirmId() !== id)
+    return
+  busyId.set(id)
+  actionError.set('')
+  actionNotice.set('')
+  try {
+    const response = await fetch(dispatchUrl(id), {
+      method: 'POST',
+      credentials: 'same-origin',
+      headers: writeHeaders(),
+    })
+
+    if (response.ok)
+      actionNotice.set(dispatchResultMessage(await response.json()))
+    else
+      actionError.set(dispatchErrorMessage(response.status))
+    await load()
+  }
+  catch {
+    actionError.set('The campaign could not be sent. Check your connection and try again.')
+  }
+  finally {
+    busyId.set(0)
+  }
+}
+
+function toggleAdd() {
+  addOpen.update(value => !value)
+  addError.set('')
+}
+
+function pickAudience(id) {
+  addAudience.set(id)
+}
+
+async function addCampaign() {
+  const draft = { name: addName(), channel: addChannel(), subject: addSubject(), text: addText(), audienceId: addAudience() }
+  const problem = draftError(draft)
+  if (problem) {
+    addError.set(problem)
+    return
+  }
+
+  saving.set(true)
+  addError.set('')
+  try {
+    const response = await fetch(CAMPAIGNS_ENDPOINT, {
+      method: 'POST',
+      credentials: 'same-origin',
+      headers: writeHeaders(),
+      body: JSON.stringify(campaignPayload(draft)),
+    })
+
+    if (response.status === 201 || response.ok) {
+      addName.set('')
+      addChannel.set('email')
+      addSubject.set('')
+      addText.set('')
+      addAudience.set(0)
+      addOpen.set(false)
+      status.set('')
+      page.set(1)
+      await load()
+      return
+    }
+
+    addError.set(saveErrorMessage(response.status))
+  }
+  catch {
+    addError.set('The campaign could not be saved. Check your connection and try again.')
+  }
+  finally {
+    saving.set(false)
+  }
+}
+
+onMount(async () => {
+  /* Audiences first, so the rows can name theirs on the first paint. */
+  await loadAudiences()
+  void load()
+})
+</script>
+
+<main id="main" class="p-5 sm:p-8 min-h-screen text-fg bg-page">
+  <div class="mx-auto max-w-[1500px]">
+    <header class="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between mb-7">
       <div>
-        <p class="font-bold text-xs">Sunday Dispatch</p>
-        <p class="text-[#5f635d] text-[10px] dark:text-[#bcbab5]">Draft saved just now</p>
+        <p class="font-bold text-[11px] text-accent tracking-[0.2em] uppercase">Campaigns</p>
+        <h1 class="mt-2 font-semibold text-4xl tracking-[-0.04em]">Write it once, send it to the right people.</h1>
+        <p class="mt-2 max-w-2xl text-fg-muted text-sm">Email and SMS campaigns for this workspace. A campaign is saved as a draft and goes nowhere until you send it, and every recipient is checked for consent first.</p>
       </div>
-    </div>
-    <div class="flex gap-2 items-center">
-      <button class="hidden sm:inline-flex px-4 min-h-10 font-bold text-xs border border-[#171916]/15 rounded-full">Send test</button>
-      <button class="px-5 min-h-10 font-bold text-white text-xs bg-[#bf4936] rounded-full">Review and schedule</button>
-    </div>
-  </header>
-  <div class="grid lg:grid-cols-[260px_1fr_300px] min-h-[calc(100vh-4rem)]">
-    <aside class="p-5 bg-[#f8f5ef] dark:bg-[#161714] border-[#171916]/10 border-r dark:border-white/10">
-      <div class="grid grid-cols-2 mb-5 p-1 bg-black/5 dark:bg-white/5 rounded-xl">
-        <button @click="channel.set('email')" class="px-3 py-2 font-bold text-xs rounded-lg" :class="channel() === 'email' ? 'bg-white shadow-sm dark:bg-white/10' : ''">Email</button>
-        <button @click="channel.set('sms')" class="px-3 py-2 font-bold text-xs rounded-lg" :class="channel() === 'sms' ? 'bg-white shadow-sm dark:bg-white/10' : ''">SMS</button>
+      <div class="flex gap-2">
+        <button type="button" @click="load()" :disabled="refreshBusy()" :aria-busy="refreshBusy()" class="px-5 min-h-11 font-bold text-fg text-sm bg-panel hover:bg-surface-hover border border-line rounded-pill focus-visible:outline focus-visible:outline-[var(--coral)] focus-visible:outline-2 focus-visible:outline-offset-2 disabled:opacity-60">Refresh</button>
+        <button type="button" @click="toggleAdd()" class="px-5 min-h-11 font-bold text-[var(--coral-ink)] text-sm bg-accent rounded-pill focus-visible:outline focus-visible:outline-[var(--coral)] focus-visible:outline-2 focus-visible:outline-offset-2">New campaign</button>
       </div>
-      <p class="mb-3 font-bold text-[#5f635d] text-[10px] tracking-[0.16em] uppercase dark:text-[#bcbab5]">Content blocks</p>
-      <div class="grid gap-2 grid-cols-2">
-        @foreach([{label:'Text',icon:'i-hugeicons-text'}, {label:'Image',icon:'i-hugeicons-image-02'}, {label:'Button',icon:'i-hugeicons-cursor-pointer-02'}, {label:'Product',icon:'i-hugeicons-shopping-bag-02'}, {label:'Divider',icon:'i-hugeicons-minus-sign'}, {label:'Columns',icon:'i-hugeicons-layout-grid'}] as block)
-        <button class="grid place-items-center min-h-20 font-bold text-xs hover:text-[#bd3e2e] bg-white dark:bg-white/5 border border-[#171916]/10 rounded-xl dark:border-white/10 hover:border-[#e65743] transition">
-          <span>
-            <span class="mx-auto mb-2 block h-5 w-5 {{ block.icon }}"></span>{{ block.label }}</span>
-        </button>
-        @endforeach
+    </header>
+
+    <section :if="addOpen()" class="mb-5 p-5 bg-panel border border-line rounded-panel" aria-labelledby="add-campaign-title">
+      <h2 id="add-campaign-title" class="font-bold text-sm">Write a campaign</h2>
+      <p class="mt-1 text-fg-muted text-xs">It is saved as a draft. Email goes out from the workspace's default sender, which needs a verified sending domain.</p>
+      <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-[2fr_1fr_3fr] mt-4">
+        <label class="block font-bold text-xs">
+          Name
+          <input x-model.trim="addName" type="text" autocomplete="off" maxlength="255" class="mt-1 field" placeholder="Sunday issue">
+        </label>
+        <label class="block font-bold text-xs">
+          Channel
+          <select x-model="addChannel" class="mt-1 field">
+            @foreach(channelOptions as option)
+              <option value="{{ option.value }}">{{ option.label }}</option>
+            @endforeach
+          </select>
+        </label>
+        <label :if="isEmail()" class="block font-bold text-xs">
+          Subject line
+          <input x-model.trim="addSubject" type="text" autocomplete="off" maxlength="255" class="mt-1 field" placeholder="What the inbox shows">
+        </label>
       </div>
-      <div class="mt-6 p-4 bg-[#fff0eb] dark:bg-[#e65743]/10 rounded-xl">
-        <p class="font-bold text-[#a53527] text-xs dark:text-[#ff9b85]">Personalization ready</p>
-        <p class="mt-1 leading-5 text-[#7d4b43] text-[11px] dark:text-white/60">Contact fallbacks and conditional content are validated before send.</p>
-      </div>
-    </aside>
-    <section class="p-4 sm:p-8">
-      <div class="flex items-center justify-between mb-5 mx-auto max-w-[760px]">
-        <div class="flex p-1 bg-white dark:bg-white/5 border border-[#171916]/10 rounded-full dark:border-white/10">
-          <button @click="preview.set('desktop')" aria-label="Desktop preview" class="p-2 rounded-full" :class="preview() === 'desktop' ? 'bg-[#1c201b] text-white' : ''">
-            <span class="block h-4 w-4 i-hugeicons-computer"></span>
-          </button>
-          <button @click="preview.set('mobile')" aria-label="Mobile preview" class="p-2 rounded-full" :class="preview() === 'mobile' ? 'bg-[#1c201b] text-white' : ''">
-            <span class="block h-4 w-4 i-hugeicons-smart-phone-01"></span>
-          </button>
+      <label class="block mt-3 font-bold text-xs">
+        Message
+        <textarea x-model="addText" rows="5" class="mt-1 field" placeholder="What the campaign says"></textarea>
+      </label>
+      <fieldset class="mt-3">
+        <legend class="font-bold text-xs">Send to</legend>
+        <div class="flex flex-wrap gap-2 mt-2">
+          <button type="button" @click="pickAudience(0)" :aria-pressed="addAudience() === 0" class="px-4 min-h-11 font-bold text-sm border border-line rounded-pill focus-visible:outline focus-visible:outline-[var(--coral)] focus-visible:outline-2" :class="addAudience() === 0 ? 'bg-accent text-[var(--coral-ink)]' : 'bg-panel text-fg hover:bg-surface-hover'">Every active contact</button>
+          <template :for="audience in audiences()">
+            <button type="button" @click="pickAudience(audience.id)" :aria-pressed="addAudience() === audience.id" class="px-4 min-h-11 font-bold text-sm border border-line rounded-pill focus-visible:outline focus-visible:outline-[var(--coral)] focus-visible:outline-2" :class="addAudience() === audience.id ? 'bg-accent text-[var(--coral-ink)]' : 'bg-panel text-fg hover:bg-surface-hover'">{{ audience.name }}</button>
+          </template>
         </div>
-        <span class="text-[#5f635d] text-xs dark:text-[#bcbab5]">Responsive preview</span>
+      </fieldset>
+      <p :if="addError()" class="mt-3 font-bold text-danger text-xs" role="alert">{{ addError() }}</p>
+      <div class="flex gap-2 mt-4">
+        <button type="button" @click="addCampaign()" :disabled="saving()" :aria-busy="saving()" class="px-5 min-h-11 font-bold text-[var(--coral-ink)] text-sm bg-accent rounded-pill focus-visible:outline focus-visible:outline-[var(--coral)] focus-visible:outline-2 focus-visible:outline-offset-2 disabled:opacity-60">Save draft</button>
+        <button type="button" @click="toggleAdd()" class="px-5 min-h-11 font-bold text-fg text-sm bg-panel hover:bg-surface-hover border border-line rounded-pill focus-visible:outline focus-visible:outline-[var(--coral)] focus-visible:outline-2 focus-visible:outline-offset-2">Cancel</button>
       </div>
-      <article class="mx-auto min-h-[680px] dark:text-[#171916] bg-white dark:bg-[#faf8f3] shadow-[0_24px_80px_rgba(35,28,22,0.14)] transition-all" :class="preview() === 'mobile' ? 'max-w-[390px]' : 'max-w-[760px]'">
-        <div class="h-2 bg-[#e65743]"></div>
-        <div class="p-8 sm:p-12">
-          <p class="font-bold text-[#b8402f] text-[10px] tracking-[0.2em] uppercase">Sunday Paper Co.</p>
-          <h1 class="mt-8 max-w-xl font-serif leading-[1.05] text-4xl tracking-[-0.04em]">A calmer way to make the work people remember.</h1>
-          <p class="mt-5 max-w-xl leading-7 text-[#5e625b] text-base">This week: an honest field guide to sustainable creative pace, reader questions, and one desk object worth keeping.</p>
-          <div class="aspect-[16/8] my-9 bg-gradient-to-br from-[#f7d8cc] to-[#712f28] via-[#e65743] rounded-2xl"></div>
-          <h2 class="font-serif text-2xl">The practice is the product</h2>
-          <p class="mt-3 leading-7 text-[#5e625b]">Small, repeatable rituals beat heroic bursts. Here are three we have kept for a full year.</p>
-          <a href="#" class="inline-flex mt-7 px-6 py-3 font-bold text-sm text-white bg-[#1c201b] rounded-full">Read the field guide</a>
-        </div>
-      </article>
     </section>
-    <aside class="p-5 bg-[#f8f5ef] dark:bg-[#161714] border-[#171916]/10 border-l dark:border-white/10">
-      <p class="font-bold text-[#5f635d] text-[10px] tracking-[0.16em] uppercase dark:text-[#bcbab5]">Campaign checks</p>
-      <div class="mt-4 space-y-3">
-        @foreach([{label:'Audience snapshot',value:'24,816'}, {label:'Suppressed',value:'312'}, {label:'Expected recipients',value:'24,504'}, {label:'Plain-text version',value:'Ready'}] as check)
-        <div class="p-4 border border-[#171916]/10 rounded-xl dark:border-white/10">
-          <p class="text-[#5f635d] text-[11px] dark:text-[#bcbab5]">{{ check.label }}</p>
-          <p class="mt-1 font-bold text-sm">{{ check.value }}</p>
-        </div>
-        @endforeach
+
+    <p :if="actionError()" class="mb-5 p-4 font-bold text-danger text-sm bg-panel border border-line rounded-panel" role="alert">{{ actionError() }}</p>
+    <p :if="actionNotice()" class="mb-5 p-4 font-bold text-sm bg-panel border border-line rounded-panel" role="status">{{ actionNotice() }}</p>
+
+    <section class="overflow-hidden bg-panel border border-line rounded-panel" aria-labelledby="campaigns-title">
+      <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between p-5 border-b border-line">
+        <h2 id="campaigns-title" class="font-bold">Campaigns</h2>
+        <label class="block">
+          <span class="sr-only">Filter by status</span>
+          <select x-model="status" @change="onStatusChange()" class="field">
+            <option value="">Every status</option>
+            @foreach(statusOptions as option)
+              <option value="{{ option.value }}">{{ option.label }}</option>
+            @endforeach
+          </select>
+        </label>
       </div>
-      <div class="mt-5 p-4 bg-[#fff0eb] dark:bg-[#e65743]/10 border border-[#f2b9ad] rounded-xl dark:border-[#e65743]/30">
-        <div class="flex gap-2 items-center text-[#ad3829] dark:text-[#ff9b85]">
-          <span class="h-4 w-4 i-hugeicons-clock-03"></span>
-          <p class="font-bold text-xs">Best send window</p>
-        </div>
-        <p class="mt-2 leading-5 text-[#704b44] text-xs dark:text-white/60">Tuesday, 9:10 AM in each recipient timezone. Quiet hours are clear.</p>
+
+      {{-- Loading. A row-shaped skeleton rather than a spinner, so the list
+           does not jump height when the rows land. --}}
+      <div :if="loading()" class="p-5 space-y-3" aria-hidden="true">
+        <div class="h-16 bg-surface-sunken rounded-control"></div>
+        <div class="h-16 bg-surface-sunken rounded-control"></div>
       </div>
-    </aside>
+      <p :if="loading()" class="sr-only" role="status">Loading campaigns</p>
+
+      <div :if="errorText()" class="p-8 text-center" role="alert">
+        <span aria-hidden="true" class="inline-block h-6 w-6 text-danger i-hugeicons-alert-02"></span>
+        <p class="mt-3 font-bold text-sm">{{ errorText() }}</p>
+        <button type="button" @click="load()" :disabled="refreshBusy()" :aria-busy="refreshBusy()" class="mt-4 px-5 min-h-11 font-bold text-fg text-sm bg-panel hover:bg-surface-hover border border-line rounded-pill focus-visible:outline focus-visible:outline-[var(--coral)] focus-visible:outline-2 disabled:opacity-60">Try again</button>
+      </div>
+
+      <div :if="showEmpty()" class="p-10 text-center">
+        <span aria-hidden="true" class="inline-block h-7 w-7 text-fg-muted i-hugeicons-megaphone-02"></span>
+        <p class="mt-3 font-bold">No campaigns match this view.</p>
+        <p class="mt-1 text-fg-muted text-sm">Clear the status filter to see every campaign, or write the first one.</p>
+      </div>
+
+      <div :if="showList()" class="divide-line divide-y">
+        <template :for="campaign in campaigns()">
+          <article class="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between p-5">
+            <div class="min-w-0">
+              <h3 class="font-bold text-sm">{{ campaign.name }}</h3>
+              <p class="mt-0.5 text-fg-muted text-xs">{{ campaign.channelLabel }}, {{ campaign.statusLabel }}. {{ campaign.whenLabel }}.</p>
+              <p class="mt-0.5 text-xs">{{ campaign.summary }}</p>
+              <p class="mt-0.5 text-fg-muted text-xs">To: {{ campaign.audienceLabel }}</p>
+            </div>
+            <div :if="confirmId() !== campaign.id" class="flex flex-wrap gap-2 shrink-0">
+              <button :if="campaign.canSend" type="button" @click="askSend(campaign.id)" :disabled="busyId() !== 0" :aria-busy="busyId() === campaign.id" class="px-4 min-h-11 font-bold text-[var(--coral-ink)] text-sm bg-accent rounded-pill focus-visible:outline focus-visible:outline-[var(--coral)] focus-visible:outline-2 focus-visible:outline-offset-2 disabled:opacity-50">Send</button>
+              <button :if="campaign.canPause" type="button" @click="setStatus(campaign.id, 'paused')" :disabled="busyId() !== 0" :aria-busy="busyId() === campaign.id" class="px-4 min-h-11 font-bold text-fg text-sm bg-panel hover:bg-surface-hover border border-line rounded-pill focus-visible:outline focus-visible:outline-[var(--coral)] focus-visible:outline-2 disabled:opacity-50">Pause</button>
+              <button :if="campaign.canCancel" type="button" @click="setStatus(campaign.id, 'cancelled')" :disabled="busyId() !== 0" :aria-busy="busyId() === campaign.id" class="px-4 min-h-11 font-bold text-fg text-sm bg-panel hover:bg-surface-hover border border-line rounded-pill focus-visible:outline focus-visible:outline-[var(--coral)] focus-visible:outline-2 disabled:opacity-50">Cancel campaign</button>
+            </div>
+            <div :if="confirmId() === campaign.id" class="flex flex-col gap-2 shrink-0" role="group" aria-label="Confirm send">
+              <p class="m-0 font-bold text-xs">Send now to: {{ campaign.audienceLabel }}?</p>
+              <div class="flex gap-2">
+                <button type="button" @click="send(campaign.id)" :disabled="busyId() !== 0" :aria-busy="busyId() === campaign.id" class="px-4 min-h-11 font-bold text-[var(--coral-ink)] text-sm bg-accent rounded-pill focus-visible:outline focus-visible:outline-[var(--coral)] focus-visible:outline-2 focus-visible:outline-offset-2 disabled:opacity-50">Yes, send it</button>
+                <button type="button" @click="cancelSend()" class="px-4 min-h-11 font-bold text-fg text-sm bg-panel hover:bg-surface-hover border border-line rounded-pill focus-visible:outline focus-visible:outline-[var(--coral)] focus-visible:outline-2">Not yet</button>
+              </div>
+            </div>
+          </article>
+        </template>
+      </div>
+
+      <div :if="showList()" class="flex items-center justify-between p-4 border-line border-t">
+        <p class="m-0 text-fg-muted text-xs">Page {{ page() }}</p>
+        <div class="flex gap-2">
+          <button type="button" @click="previousPage()" :disabled="page() <= 1 || prevBusy()" :aria-busy="prevBusy()" class="px-4 min-h-11 font-bold text-fg text-sm bg-panel hover:bg-surface-hover border border-line rounded-pill focus-visible:outline focus-visible:outline-[var(--coral)] focus-visible:outline-2 disabled:opacity-50">Previous</button>
+          <button type="button" @click="nextPage()" :disabled="!hasMore() || nextBusy()" :aria-busy="nextBusy()" class="px-4 min-h-11 font-bold text-fg text-sm bg-panel hover:bg-surface-hover border border-line rounded-pill focus-visible:outline focus-visible:outline-[var(--coral)] focus-visible:outline-2 disabled:opacity-50">Next</button>
+        </div>
+      </div>
+    </section>
   </div>
 </main>

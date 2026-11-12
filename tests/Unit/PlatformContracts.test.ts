@@ -94,6 +94,17 @@ describe('interface contracts', () => {
     expect(forms).toContain('<FormsWorkspace />')
     expect(forms).not.toContain('<WorkspaceSurface')
 
+    // `campaigns` was never on the surface: it was a static composer of its
+    // own. It reads `/api/campaigns` now, and its sample draft is gone.
+    const campaigns = await Bun.file(new URL('../../resources/views/dashboard/commshq/campaigns.stx', import.meta.url)).text()
+    const composer = await Bun.file(new URL('../../resources/components/CommsHQ/CampaignComposer.stx', import.meta.url)).text()
+    expect(campaigns).toContain('<CampaignComposer />')
+    expect(composer).toContain('campaignsUrl(')
+    // Headings of the old static panels. The component's own comment names
+    // the sample figures it replaced, so those are not what to look for.
+    expect(composer).not.toContain('Campaign checks')
+    expect(composer).not.toContain('Best send window')
+
     const surface = await Bun.file(new URL('../../resources/components/CommsHQ/WorkspaceSurface.stx', import.meta.url)).text()
     for (const state of ['populated', 'loading', 'empty', 'error']) expect(surface).toContain(`'${state}'`)
   })

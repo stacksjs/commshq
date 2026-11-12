@@ -4,7 +4,7 @@ definePageMeta({ middleware: ['auth'] })
 
 @extends('dashboard')
 
-@section('title', 'CommsHQ - Campaign composer')
+@section('title', 'CommsHQ - Campaigns')
 
 @section('content')
 <CampaignComposer />
