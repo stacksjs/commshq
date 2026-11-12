@@ -26,6 +26,7 @@
  * the wrong hour is not something to get approximately right.
  */
 import { formatSeen } from './contacts-query'
+import { SENDERS_ENDPOINT, SENDERS_PER_PAGE } from './sending-query'
 
 export const CAMPAIGNS_ENDPOINT = '/api/campaigns'
 export const CAMPAIGN_DISPATCH_PREFIX = '/api/v1/campaigns'
@@ -68,6 +69,7 @@ export const PAUSABLE_STATUSES = ['scheduled', 'sending'] as const
 export const CANCELLABLE_STATUSES = ['draft', 'scheduled', 'sending', 'paused'] as const
 
 export const EVERY_CONTACT_LABEL = 'Every active contact'
+export const DEFAULT_SENDER_LABEL = 'The workspace default address'
 
 function titleCase(value: string): string {
   const spaced = value.replace(/[_-]+/g, ' ').trim()
@@ -118,6 +120,60 @@ export function audiencesUrl(): string {
 }
 
 /**
+ * The senders an email campaign may come from: verified email senders only.
+ *
+ * The filter is a convenience, not the guard. The send job checks the From
+ * domain against the team's verified sending domains for every delivery, so
+ * an address written into a campaign some other way still cannot go out
+ * from a domain nobody proved.
+ */
+export function verifiedSendersUrl(): string {
+  const params = new URLSearchParams()
+  params.set('per_page', String(SENDERS_PER_PAGE))
+  params.set('channel', 'email')
+  params.set('status', 'verified')
+  params.set('sort', 'name,id')
+  return `${SENDERS_ENDPOINT}?${params.toString()}`
+}
+
+export interface SenderOptionRow {
+  id: number
+  name?: string | null
+  address?: string | null
+  reply_to?: string | null
+  status?: string | null
+}
+
+export interface SenderOption {
+  id: number
+  name: string
+  address: string
+  replyTo: string
+  /** "Name <address>", the way a From line reads. */
+  label: string
+}
+
+function fromLine(name: string, address: string): string {
+  return name && name !== address ? `${name} <${address}>` : address
+}
+
+/**
+ * Picker options from the senders list.
+ *
+ * Filtered again here to verified rows with an address, so the picker stays
+ * right even if the endpoint ignored the status filter.
+ */
+export function toSenderOptions(body: { data?: SenderOptionRow[] } | null | undefined): SenderOption[] {
+  return (body?.data ?? [])
+    .filter(row => row.status === 'verified' && (row.address || '').trim())
+    .map((row) => {
+      const address = String(row.address).trim()
+      const name = (row.name || '').trim() || address
+      return { id: Number(row.id), name, address, replyTo: (row.reply_to || '').trim(), label: fromLine(name, address) }
+    })
+}
+
+/**
  * The audience a campaign is for, from `segment_definition.audienceId`.
  *
  * The same reading `DispatchCampaignAction` does: a positive integer id, and
@@ -158,6 +214,8 @@ export interface CampaignRow {
   subject?: string | null
   text?: string | null
   segment_definition?: unknown
+  from_name?: string | null
+  from_address?: string | null
   scheduled_at?: string | null
   sent_at?: string | null
   updated_at?: string | null
@@ -172,6 +230,8 @@ export interface CampaignView {
   /** The subject for email, the opening of the message for SMS. */
   summary: string
   audienceLabel: string
+  /** Who an email comes from. Empty for SMS, which has no From line here. */
+  fromLabel: string
   whenLabel: string
   canSend: boolean
   canPause: boolean
@@ -196,6 +256,18 @@ function whenLabelOf(row: CampaignRow, locale?: string): string {
   return `Last changed ${formatSeen(row.updated_at, locale)}`
 }
 
+/**
+ * With no From on the row the job falls back to the configured default
+ * address, and still requires that address's domain to be one the team has
+ * verified. The label says which of the two a campaign will use.
+ */
+function fromLabelOf(row: CampaignRow): string {
+  const address = (row.from_address || '').trim()
+  if (!address)
+    return DEFAULT_SENDER_LABEL
+  return fromLine((row.from_name || '').trim(), address)
+}
+
 /** Normalize one API row into the shape the list renders. */
 export function toCampaignView(row: CampaignRow, audiences: AudienceOption[] = [], locale?: string): CampaignView {
   const status = String(row.status || 'draft')
@@ -212,6 +284,7 @@ export function toCampaignView(row: CampaignRow, audiences: AudienceOption[] = [
     // An id with no matching name is an audience that was deleted, or one
     // past the picker's first page. Named by its id rather than guessed at.
     audienceLabel: audienceId ? (audience ? audience.name : `Audience ${audienceId}`) : EVERY_CONTACT_LABEL,
+    fromLabel: row.type === 'sms' ? '' : fromLabelOf(row),
     whenLabel: whenLabelOf(row, locale),
     canSend: (DISPATCHABLE_STATUSES as readonly string[]).includes(status),
     canPause: (PAUSABLE_STATUSES as readonly string[]).includes(status),
@@ -230,6 +303,8 @@ export interface CampaignDraft {
   subject?: string
   text?: string
   audienceId?: string | number
+  /** The sender picked for an email, or none for the workspace default. */
+  sender?: { name: string, address: string, replyTo?: string } | null
 }
 
 /** Why a draft cannot be saved, against the limits the model declares. */
@@ -257,6 +332,9 @@ export interface CampaignPayload {
   subject?: string
   text: string
   segment_definition?: string
+  from_name?: string
+  from_address?: string
+  reply_to?: string
 }
 
 /**
@@ -266,6 +344,8 @@ export interface CampaignPayload {
  * confirmed step on the list. An SMS carries no subject. With no audience the
  * `segment_definition` is left out, which the dispatch action reads as every
  * active contact, so the page says exactly that where the audience would be.
+ * An email may carry the sender it comes from, copied onto the campaign so a
+ * later change to that sender does not change a campaign already written.
  */
 export function campaignPayload(draft: CampaignDraft): CampaignPayload {
   const type = draft.channel === 'sms' ? 'sms' : 'email'
@@ -275,8 +355,19 @@ export function campaignPayload(draft: CampaignDraft): CampaignPayload {
     status: 'draft',
     text: (draft.text ?? '').trim(),
   }
-  if (type === 'email')
+  if (type === 'email') {
     payload.subject = (draft.subject ?? '').trim()
+    // Left out entirely when no sender is picked, so the row holds no From
+    // and the job's own default applies. Never sent for SMS.
+    const address = (draft.sender?.address ?? '').trim()
+    if (address) {
+      payload.from_address = address
+      payload.from_name = (draft.sender?.name ?? '').trim() || address
+      const replyTo = (draft.sender?.replyTo ?? '').trim()
+      if (replyTo)
+        payload.reply_to = replyTo
+    }
+  }
   const audienceId = Number(draft.audienceId)
   if (Number.isInteger(audienceId) && audienceId > 0)
     payload.segment_definition = JSON.stringify({ audienceId })

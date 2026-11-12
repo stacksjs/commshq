@@ -30,6 +30,8 @@ import {
   toAudienceOptions,
   toCampaignView,
   toCampaignViews,
+  toSenderOptions,
+  verifiedSendersUrl,
 } from '../../resources/data/campaigns-query'
 
 function params(url: string): Record<string, string> {
@@ -169,6 +171,55 @@ describe('creating one', () => {
   test('only the channels the job delivers are offered', () => {
     expect(CAMPAIGN_CHANNELS.map(item => item.value)).toEqual(['email', 'sms'])
     expect(campaignPayload({ ...draft, channel: 'push' }).type).toBe('email')
+  })
+})
+
+describe('who an email comes from', () => {
+  const maya = { name: 'Maya', address: 'maya@example.com', replyTo: 'replies@example.com' }
+
+  test('the picker asks for verified email senders', () => {
+    expect(params(verifiedSendersUrl())).toEqual({ per_page: '50', channel: 'email', status: 'verified', sort: 'name,id' })
+    expect(verifiedSendersUrl().startsWith('/api/v1/sender-identities?')).toBe(true)
+  })
+
+  test('only verified senders with an address become options', () => {
+    const options = toSenderOptions({ data: [
+      { id: 1, name: 'Maya', address: 'maya@example.com', reply_to: 'replies@example.com', status: 'verified' },
+      { id: 2, name: 'Waiting', address: 'w@example.org', status: 'pending' },
+      { id: 3, name: 'No address', address: ' ', status: 'verified' },
+      { id: 4, name: '', address: 'bare@example.com', status: 'verified' },
+    ] })
+    expect(options).toEqual([
+      { id: 1, name: 'Maya', address: 'maya@example.com', replyTo: 'replies@example.com', label: 'Maya <maya@example.com>' },
+      { id: 4, name: 'bare@example.com', address: 'bare@example.com', replyTo: '', label: 'bare@example.com' },
+    ])
+    expect(toSenderOptions(null)).toEqual([])
+  })
+
+  test('a picked sender is copied onto an email campaign', () => {
+    expect(campaignPayload({ name: 'Sunday issue', channel: 'email', subject: 'Hi', text: 'Hello', sender: maya })).toMatchObject({ from_name: 'Maya', from_address: 'maya@example.com', reply_to: 'replies@example.com' })
+  })
+
+  test('no sender leaves the From off the row, and SMS never carries one', () => {
+    const email = campaignPayload({ name: 'Sunday issue', channel: 'email', subject: 'Hi', text: 'Hello', sender: null })
+    for (const key of ['from_name', 'from_address', 'reply_to'])
+      expect(email).not.toHaveProperty(key)
+    const sms = campaignPayload({ name: 'Flash text', channel: 'sms', text: 'Doors open at 9', sender: maya })
+    expect(sms).toEqual({ name: 'Flash text', type: 'sms', status: 'draft', text: 'Doors open at 9' })
+  })
+
+  test('a row says which address it will use', () => {
+    expect(toCampaignView({ id: 1, type: 'email', from_name: 'Maya', from_address: 'maya@example.com' }).fromLabel).toBe('Maya <maya@example.com>')
+    expect(toCampaignView({ id: 1, type: 'email' }).fromLabel).toBe('The workspace default address')
+    expect(toCampaignView({ id: 1, type: 'sms', from_address: 'maya@example.com' }).fromLabel).toBe('')
+  })
+
+  test('the columns written are the ones the send job reads', async () => {
+    const job = await Bun.file(new URL('../../app/Jobs/DispatchCampaign.ts', import.meta.url)).text()
+    for (const field of ['campaign.fromAddress', 'campaign.fromName', 'campaign.replyTo'])
+      expect(job).toContain(field)
+    // The guard that makes the picker a convenience and not the protection.
+    expect(job).toContain("SenderDomain.where('team_id', payload.teamId).where('domain', domain).where('status', 'verified')")
   })
 })
 

@@ -43,10 +43,13 @@ import {
   saveErrorMessage,
   toAudienceOptions,
   toCampaignViews,
+  toSenderOptions,
+  verifiedSendersUrl,
 } from '../../data/campaigns-query'
 
 const campaigns = state([])
 const audiences = state([])
+const fromSenders = state([])
 const hasMore = state(false)
 const page = state(1)
 const status = state('')
@@ -68,6 +71,7 @@ const addChannel = state('email')
 const addSubject = state('')
 const addText = state('')
 const addAudience = state(0)
+const addSender = state(0)
 const saving = state(false)
 const addError = state('')
 
@@ -87,6 +91,17 @@ async function loadAudiences() {
     const response = await fetch(audiencesUrl(), { credentials: 'same-origin', headers: { Accept: 'application/json' } })
     if (response.ok)
       audiences.set(toAudienceOptions(await response.json()))
+  }
+  catch {}
+}
+
+/* Verified senders for the From picker. A failure leaves the workspace
+ * default as the only choice, which is what an unset From means anyway. */
+async function loadSenders() {
+  try {
+    const response = await fetch(verifiedSendersUrl(), { credentials: 'same-origin', headers: { Accept: 'application/json' } })
+    if (response.ok)
+      fromSenders.set(toSenderOptions(await response.json()))
   }
   catch {}
 }
@@ -222,8 +237,13 @@ function pickAudience(id) {
   addAudience.set(id)
 }
 
+function pickSender(id) {
+  addSender.set(id)
+}
+
 async function addCampaign() {
-  const draft = { name: addName(), channel: addChannel(), subject: addSubject(), text: addText(), audienceId: addAudience() }
+  const sender = fromSenders().find(item => item.id === addSender()) || null
+  const draft = { name: addName(), channel: addChannel(), subject: addSubject(), text: addText(), audienceId: addAudience(), sender }
   const problem = draftError(draft)
   if (problem) {
     addError.set(problem)
@@ -246,6 +266,7 @@ async function addCampaign() {
       addSubject.set('')
       addText.set('')
       addAudience.set(0)
+      addSender.set(0)
       addOpen.set(false)
       status.set('')
       page.set(1)
@@ -266,6 +287,7 @@ async function addCampaign() {
 onMount(async () => {
   /* Audiences first, so the rows can name theirs on the first paint. */
   await loadAudiences()
+  void loadSenders()
   void load()
 })
 </script>
@@ -286,7 +308,7 @@ onMount(async () => {
 
     <section :if="addOpen()" class="mb-5 p-5 bg-panel border border-line rounded-panel" aria-labelledby="add-campaign-title">
       <h2 id="add-campaign-title" class="font-bold text-sm">Write a campaign</h2>
-      <p class="mt-1 text-fg-muted text-xs">It is saved as a draft. Email goes out from the workspace's default sender, which needs a verified sending domain.</p>
+      <p class="mt-1 text-fg-muted text-xs">It is saved as a draft. Email is only delivered from an address at a verified sending domain.</p>
       <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-[2fr_1fr_3fr] mt-4">
         <label class="block font-bold text-xs">
           Name
@@ -317,6 +339,16 @@ onMount(async () => {
             <button type="button" @click="pickAudience(audience.id)" :aria-pressed="addAudience() === audience.id" class="px-4 min-h-11 font-bold text-sm border border-line rounded-pill focus-visible:outline focus-visible:outline-[var(--coral)] focus-visible:outline-2" :class="addAudience() === audience.id ? 'bg-accent text-[var(--coral-ink)]' : 'bg-panel text-fg hover:bg-surface-hover'">{{ audience.name }}</button>
           </template>
         </div>
+      </fieldset>
+      <fieldset :if="isEmail()" class="mt-3">
+        <legend class="font-bold text-xs">From</legend>
+        <div class="flex flex-wrap gap-2 mt-2">
+          <button type="button" @click="pickSender(0)" :aria-pressed="addSender() === 0" class="px-4 min-h-11 font-bold text-sm border border-line rounded-pill focus-visible:outline focus-visible:outline-[var(--coral)] focus-visible:outline-2" :class="addSender() === 0 ? 'bg-accent text-[var(--coral-ink)]' : 'bg-panel text-fg hover:bg-surface-hover'">The workspace default address</button>
+          <template :for="sender in fromSenders()">
+            <button type="button" @click="pickSender(sender.id)" :aria-pressed="addSender() === sender.id" class="px-4 min-h-11 font-bold text-sm border border-line rounded-pill focus-visible:outline focus-visible:outline-[var(--coral)] focus-visible:outline-2" :class="addSender() === sender.id ? 'bg-accent text-[var(--coral-ink)]' : 'bg-panel text-fg hover:bg-surface-hover'">{{ sender.label }}</button>
+          </template>
+        </div>
+        <p :if="fromSenders().length === 0" class="mt-2 text-fg-muted text-xs">No verified senders yet. Add one on the Senders page once its domain is verified on the Domains page.</p>
       </fieldset>
       <p :if="addError()" class="mt-3 font-bold text-danger text-xs" role="alert">{{ addError() }}</p>
       <div class="flex gap-2 mt-4">
@@ -370,6 +402,7 @@ onMount(async () => {
               <p class="mt-0.5 text-fg-muted text-xs">{{ campaign.channelLabel }}, {{ campaign.statusLabel }}. {{ campaign.whenLabel }}.</p>
               <p class="mt-0.5 text-xs">{{ campaign.summary }}</p>
               <p class="mt-0.5 text-fg-muted text-xs">To: {{ campaign.audienceLabel }}</p>
+              <p :if="campaign.fromLabel" class="mt-0.5 break-all text-fg-muted text-xs">From: {{ campaign.fromLabel }}</p>
             </div>
             <div :if="confirmId() !== campaign.id" class="flex flex-wrap gap-2 shrink-0">
               <button :if="campaign.canSend" type="button" @click="askSend(campaign.id)" :disabled="busyId() !== 0" :aria-busy="busyId() === campaign.id" class="px-4 min-h-11 font-bold text-[var(--coral-ink)] text-sm bg-accent rounded-pill focus-visible:outline focus-visible:outline-[var(--coral)] focus-visible:outline-2 focus-visible:outline-offset-2 disabled:opacity-50">Send</button>
