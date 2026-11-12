@@ -7,5 +7,5 @@ definePageMeta({ middleware: ['auth'] })
 @section('title', 'CommsHQ - Senders')
 
 @section('content')
-<WorkspaceSurface area="senders" />
+<SendersWorkspace />
 @endsection

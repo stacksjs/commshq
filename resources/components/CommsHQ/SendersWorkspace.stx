@@ -1,0 +1,268 @@
+<script client>
+/**
+ * Email senders, through the application's own API.
+ *
+ * This page was the `senders` area of `WorkspaceSurface`: six verified
+ * senders, a 0.24% bounce rate and a 0.018% complaint rate, none of it
+ * recorded anywhere. Underneath, a sender could be stored but never
+ * verified, so nothing could use one.
+ *
+ * It lists the workspace's email senders, adds one and removes one. A sender
+ * is verified exactly when its address is at a verified sending domain; the
+ * server decides that, and nothing this page sends can. Each row says where
+ * it stands and what would change it, which is why the domains are read too.
+ *
+ * Email only: an SMS sender is a number issued by the carrier. There is no
+ * edit, since changing an address is changing what was verified; remove the
+ * sender and add it again. No bounce or complaint rates, which nothing
+ * aggregates.
+ *
+ * Writes carry the CSRF token explicitly, read with `useCookie`, the
+ * composable, since a client script may not reach for the DOM itself.
+ */
+import {
+  DOMAINS_ENDPOINT,
+  listErrorMessage,
+  senderDraftError,
+  senderErrorMessage,
+  senderPayload,
+  SENDERS_ENDPOINT,
+  sendersUrl,
+  senderUrl,
+  toDomainViews,
+  toSenderViews,
+} from '../../data/sending-query'
+
+const senders = state([])
+const loading = state(true)
+const errorText = state('')
+const actionError = state('')
+/* The sender a removal is in flight for, so only its buttons are busy. */
+const busyId = state(0)
+/* The sender whose Remove has been pressed once and is waiting for the second. */
+const confirmId = state(0)
+
+const addOpen = state(false)
+const addName = state('')
+const addAddress = state('')
+const addReplyTo = state('')
+const saving = state(false)
+const addError = state('')
+
+const csrfToken = useCookie('X-CSRF-Token')
+
+const showEmpty = derived(() => !loading() && !errorText() && senders().length === 0)
+const showList = derived(() => !loading() && !errorText() && senders().length > 0)
+
+/* The domains only sharpen each row's explanation. If they cannot be read,
+ * a pending sender is still shown as not verified, which stays true. */
+async function knownDomains() {
+  try {
+    const response = await fetch(DOMAINS_ENDPOINT, { credentials: 'same-origin', headers: { Accept: 'application/json' } })
+    if (!response.ok)
+      return []
+    return toDomainViews(await response.json()).map(item => ({ domain: item.domain, verified: item.verified }))
+  }
+  catch {
+    return []
+  }
+}
+
+async function load() {
+  loading.set(true)
+  errorText.set('')
+  confirmId.set(0)
+  try {
+    const [response, domains] = await Promise.all([
+      fetch(sendersUrl(), { credentials: 'same-origin', headers: { Accept: 'application/json' } }),
+      knownDomains(),
+    ])
+    if (!response.ok) {
+      errorText.set(listErrorMessage(response.status, 'senders'))
+      senders.set([])
+      return
+    }
+    senders.set(toSenderViews(await response.json(), domains))
+  }
+  catch {
+    // A network failure, not a refusal: there is no status to explain.
+    errorText.set('Senders could not be loaded. Check your connection and try again.')
+    senders.set([])
+  }
+  finally {
+    loading.set(false)
+  }
+}
+
+function writeHeaders() {
+  return {
+    'Content-Type': 'application/json',
+    'Accept': 'application/json',
+    'X-CSRF-Token': csrfToken() || '',
+  }
+}
+
+function askRemove(id) {
+  actionError.set('')
+  confirmId.set(id)
+}
+
+function cancelRemove() {
+  confirmId.set(0)
+}
+
+async function remove(id) {
+  if (busyId() || confirmId() !== id)
+    return
+  busyId.set(id)
+  actionError.set('')
+  try {
+    const response = await fetch(senderUrl(id), { method: 'DELETE', credentials: 'same-origin', headers: writeHeaders() })
+    if (!response.ok)
+      actionError.set(senderErrorMessage(response.status))
+    await load()
+  }
+  catch {
+    actionError.set('That sender could not be removed. Check your connection and try again.')
+  }
+  finally {
+    busyId.set(0)
+  }
+}
+
+function toggleAdd() {
+  addOpen.update(value => !value)
+  addError.set('')
+}
+
+async function addOne() {
+  const draft = { name: addName(), address: addAddress(), replyTo: addReplyTo() }
+  const problem = senderDraftError(draft)
+  if (problem) {
+    addError.set(problem)
+    return
+  }
+
+  saving.set(true)
+  addError.set('')
+  try {
+    const response = await fetch(SENDERS_ENDPOINT, {
+      method: 'POST',
+      credentials: 'same-origin',
+      headers: writeHeaders(),
+      body: JSON.stringify(senderPayload(draft)),
+    })
+
+    if (response.status === 201 || response.ok) {
+      addName.set('')
+      addAddress.set('')
+      addReplyTo.set('')
+      addOpen.set(false)
+      await load()
+      return
+    }
+
+    addError.set(senderErrorMessage(response.status))
+  }
+  catch {
+    addError.set('The sender could not be added. Check your connection and try again.')
+  }
+  finally {
+    saving.set(false)
+  }
+}
+
+onMount(() => {
+  void load()
+})
+</script>
+
+<main id="main" class="p-5 sm:p-8 min-h-screen text-fg bg-page">
+  <div class="mx-auto max-w-[1500px]">
+    <header class="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between mb-7">
+      <div>
+        <p class="font-bold text-[11px] text-accent tracking-[0.2em] uppercase">Senders</p>
+        <h1 class="mt-2 font-semibold text-4xl tracking-[-0.04em]">Protect the name behind every message.</h1>
+        <p class="mt-2 max-w-2xl text-fg-muted text-sm">The names and addresses this workspace's email comes from. A sender is verified once its domain is, on the Domains page.</p>
+      </div>
+      <div class="flex gap-2">
+        <button type="button" @click="load()" :disabled="loading()" :aria-busy="loading()" class="px-5 min-h-11 font-bold text-fg text-sm bg-panel hover:bg-surface-hover border border-line rounded-pill focus-visible:outline focus-visible:outline-[var(--coral)] focus-visible:outline-2 focus-visible:outline-offset-2 disabled:opacity-60">Refresh</button>
+        <button type="button" @click="toggleAdd()" class="px-5 min-h-11 font-bold text-[var(--coral-ink)] text-sm bg-accent rounded-pill focus-visible:outline focus-visible:outline-[var(--coral)] focus-visible:outline-2 focus-visible:outline-offset-2">Add sender</button>
+      </div>
+    </header>
+
+    <section :if="addOpen()" class="mb-5 p-5 bg-panel border border-line rounded-panel" aria-labelledby="add-sender-title">
+      <h2 id="add-sender-title" class="font-bold text-sm">Add an email sender</h2>
+      <p class="mt-1 text-fg-muted text-xs">It is verified straight away if its domain already is, and waits for that domain otherwise.</p>
+      <div class="grid gap-3 sm:grid-cols-3 mt-4">
+        <label class="block font-bold text-xs">
+          Name
+          <input x-model.trim="addName" type="text" autocomplete="off" maxlength="160" class="mt-1 field" placeholder="Maya from Sunday Paper">
+        </label>
+        <label class="block font-bold text-xs">
+          Address
+          <input x-model.trim="addAddress" type="email" autocomplete="off" maxlength="255" class="mt-1 field" placeholder="maya@example.com">
+        </label>
+        <label class="block font-bold text-xs">
+          Reply address, if different
+          <input x-model.trim="addReplyTo" type="email" autocomplete="off" maxlength="255" class="mt-1 field" placeholder="Left blank, replies come back here">
+        </label>
+      </div>
+      <p :if="addError()" class="mt-3 font-bold text-danger text-xs" role="alert">{{ addError() }}</p>
+      <div class="flex gap-2 mt-4">
+        <button type="button" @click="addOne()" :disabled="saving()" :aria-busy="saving()" class="px-5 min-h-11 font-bold text-[var(--coral-ink)] text-sm bg-accent rounded-pill focus-visible:outline focus-visible:outline-[var(--coral)] focus-visible:outline-2 focus-visible:outline-offset-2 disabled:opacity-60">Add sender</button>
+        <button type="button" @click="toggleAdd()" class="px-5 min-h-11 font-bold text-fg text-sm bg-panel hover:bg-surface-hover border border-line rounded-pill focus-visible:outline focus-visible:outline-[var(--coral)] focus-visible:outline-2 focus-visible:outline-offset-2">Cancel</button>
+      </div>
+    </section>
+
+    <p :if="actionError()" class="mb-5 p-4 font-bold text-danger text-sm bg-panel border border-line rounded-panel" role="alert">{{ actionError() }}</p>
+
+    <section class="overflow-hidden bg-panel border border-line rounded-panel" aria-labelledby="senders-title">
+      <div class="p-5 border-b border-line">
+        <h2 id="senders-title" class="font-bold">Email senders</h2>
+      </div>
+
+      {{-- Loading. A row-shaped skeleton rather than a spinner, so the list
+           does not jump height when the rows land. --}}
+      <div :if="loading()" class="p-5 space-y-3" aria-hidden="true">
+        <div class="h-16 bg-surface-sunken rounded-control"></div>
+        <div class="h-16 bg-surface-sunken rounded-control"></div>
+      </div>
+      <p :if="loading()" class="sr-only" role="status">Loading senders</p>
+
+      <div :if="errorText()" class="p-8 text-center" role="alert">
+        <span aria-hidden="true" class="inline-block h-6 w-6 text-danger i-hugeicons-alert-02"></span>
+        <p class="mt-3 font-bold text-sm">{{ errorText() }}</p>
+        <button type="button" @click="load()" :disabled="loading()" :aria-busy="loading()" class="mt-4 px-5 min-h-11 font-bold text-fg text-sm bg-panel hover:bg-surface-hover border border-line rounded-pill focus-visible:outline focus-visible:outline-[var(--coral)] focus-visible:outline-2 focus-visible:outline-offset-2 disabled:opacity-60">Try again</button>
+      </div>
+
+      <div :if="showEmpty()" class="p-10 text-center">
+        <span aria-hidden="true" class="inline-block h-7 w-7 text-fg-muted i-hugeicons-mail-validation-01"></span>
+        <p class="mt-3 font-bold">No senders yet.</p>
+        <p class="mt-1 text-fg-muted text-sm">Add the name and address your email should come from.</p>
+      </div>
+
+      <div :if="showList()" class="divide-line divide-y">
+        <template :for="sender in senders()">
+          <article class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between p-5">
+            <div class="min-w-0">
+              <h3 class="font-bold text-sm">{{ sender.name }}</h3>
+              <p class="mt-0.5 break-all text-fg-muted text-xs">{{ sender.address }}. {{ sender.replyLabel }}.</p>
+              <p class="mt-0.5 text-xs">{{ sender.standing }}</p>
+            </div>
+            <div :if="confirmId() !== sender.id" class="flex gap-2 shrink-0">
+              <button type="button" @click="askRemove(sender.id)" :disabled="busyId() !== 0" :aria-busy="busyId() === sender.id" class="px-4 min-h-11 font-bold text-fg text-sm bg-panel hover:bg-surface-hover border border-line rounded-pill focus-visible:outline focus-visible:outline-[var(--coral)] focus-visible:outline-2 disabled:opacity-50">Remove</button>
+            </div>
+            <div :if="confirmId() === sender.id" class="flex flex-col gap-2 shrink-0" role="group" aria-label="Confirm removal">
+              <p class="m-0 font-bold text-xs">Remove this sender?</p>
+              <div class="flex gap-2">
+                <button type="button" @click="remove(sender.id)" :disabled="busyId() !== 0" :aria-busy="busyId() === sender.id" class="px-4 min-h-11 font-bold text-fg text-sm bg-panel hover:bg-surface-hover border border-line rounded-pill focus-visible:outline focus-visible:outline-[var(--coral)] focus-visible:outline-2 disabled:opacity-50">Yes, remove it</button>
+                <button type="button" @click="cancelRemove()" class="px-4 min-h-11 font-bold text-fg text-sm bg-panel hover:bg-surface-hover border border-line rounded-pill focus-visible:outline focus-visible:outline-[var(--coral)] focus-visible:outline-2 disabled:opacity-50">Keep it</button>
+              </div>
+            </div>
+          </article>
+        </template>
+      </div>
+    </section>
+  </div>
+</main>
