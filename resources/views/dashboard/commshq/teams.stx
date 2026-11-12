@@ -7,5 +7,5 @@ definePageMeta({ middleware: ['auth'] })
 @section('title', 'CommsHQ - Teams')
 
 @section('content')
-<WorkspaceSurface area="teams" />
+<TeamsWorkspace />
 @endsection

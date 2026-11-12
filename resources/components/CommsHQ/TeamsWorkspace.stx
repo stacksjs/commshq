@@ -1,0 +1,340 @@
+<script server>
+/* The fixed list from the module, rendered here rather than looped in the
+ * browser, so the select is usable in the first paint. */
+import { ASSIGNABLE_ROLES } from '../../data/teams-query'
+
+export const roleOptions = ASSIGNABLE_ROLES
+</script>
+
+<script client>
+/**
+ * A workspace's people, through the application's own API.
+ *
+ * This page was the `teams` area of `WorkspaceSurface`: seven active
+ * members, two pending invites and a list of named colleagues with "last
+ * seen" times, none of it read from anywhere. A workspace had no way to add
+ * a second person.
+ *
+ * It lists members and pending invitations, invites by email, sends an
+ * invitation again or revokes it, and suspends, restores, removes or changes
+ * the role of a member. The work is done by the framework's team actions;
+ * the routes this page calls check first that the caller belongs to the team
+ * and that their role allows the change. Which buttons show follows the same
+ * rules, but that is only tidiness: the server decides.
+ *
+ * Removing a person is two presses. There is no "last seen", no session
+ * list, no ownership transfer and no workspace switcher; `teams-query.ts`
+ * records why.
+ *
+ * Writes carry the CSRF token explicitly, read with `useCookie`, the
+ * composable, since a client script may not reach for the DOM itself.
+ */
+import {
+  changeErrorMessage,
+  invitationsUrl,
+  invitationUrl,
+  inviteDraftError,
+  invitePayload,
+  listErrorMessage,
+  memberUrl,
+  PEOPLE_ENDPOINT,
+  resendUrl,
+  serverMessage,
+  toInvitationViews,
+  toMe,
+  toMemberViews,
+} from '../../data/teams-query'
+
+const teamId = state(0)
+const teamName = state('')
+const me = state(toMe(null))
+const members = state([])
+const invitations = state([])
+const loading = state(true)
+const errorText = state('')
+const actionError = state('')
+const actionNotice = state('')
+/* What a change is in flight for, as "member:9" or "invitation:3", so only
+ * that row's buttons are busy. */
+const busyKey = state('')
+/* The member whose Remove has been pressed once and is waiting for the second. */
+const confirmId = state(0)
+
+const addOpen = state(false)
+const addEmail = state('')
+const addRole = state('member')
+const saving = state(false)
+const addError = state('')
+
+const csrfToken = useCookie('X-CSRF-Token')
+
+const canManage = derived(() => me().canManage)
+const showList = derived(() => !loading() && !errorText())
+const showInvitations = derived(() => showList() && canManage() && invitations().length > 0)
+
+async function load() {
+  loading.set(true)
+  errorText.set('')
+  confirmId.set(0)
+  try {
+    const response = await fetch(PEOPLE_ENDPOINT, { credentials: 'same-origin', headers: { Accept: 'application/json' } })
+    if (!response.ok) {
+      errorText.set(listErrorMessage(response.status))
+      members.set([])
+      invitations.set([])
+      return
+    }
+    const body = await response.json()
+    teamId.set(Number(body?.team?.id) || 0)
+    teamName.set(String(body?.team?.name || ''))
+    me.set(toMe(body))
+    members.set(toMemberViews(body))
+    invitations.set(toInvitationViews(body))
+  }
+  catch {
+    // A network failure, not a refusal: there is no status to explain.
+    errorText.set('The workspace could not be loaded. Check your connection and try again.')
+    members.set([])
+    invitations.set([])
+  }
+  finally {
+    loading.set(false)
+  }
+}
+
+function writeHeaders() {
+  return {
+    'Content-Type': 'application/json',
+    'Accept': 'application/json',
+    'X-CSRF-Token': csrfToken() || '',
+  }
+}
+
+/* One request, the server's own words on a refusal, then the list again. */
+async function change(key, url, method, payload, done) {
+  if (busyKey())
+    return
+  busyKey.set(key)
+  actionError.set('')
+  actionNotice.set('')
+  try {
+    const response = await fetch(url, {
+      method,
+      credentials: 'same-origin',
+      headers: writeHeaders(),
+      body: payload ? JSON.stringify(payload) : undefined,
+    })
+    if (response.ok)
+      actionNotice.set(done)
+    else
+      actionError.set(serverMessage(await response.json().catch(() => null), changeErrorMessage(response.status)))
+    await load()
+  }
+  catch {
+    actionError.set('That change could not be made. Check your connection and try again.')
+  }
+  finally {
+    busyKey.set('')
+  }
+}
+
+function setStatus(id, next) {
+  void change(`member:${id}`, memberUrl(teamId(), id), 'PATCH', { status: next }, next === 'suspended' ? 'That member is suspended and can no longer open the workspace.' : 'That member is active again.')
+}
+
+function setRole(id, next) {
+  if (!next)
+    return
+  void change(`member:${id}`, memberUrl(teamId(), id), 'PATCH', { role: next }, 'That member\'s role has changed.')
+}
+
+function askRemove(id) {
+  actionError.set('')
+  actionNotice.set('')
+  confirmId.set(id)
+}
+
+function cancelRemove() {
+  confirmId.set(0)
+}
+
+function remove(id) {
+  if (confirmId() !== id)
+    return
+  void change(`member:${id}`, memberUrl(teamId(), id), 'DELETE', null, 'That member has been removed from the workspace.')
+}
+
+function resend(id) {
+  void change(`invitation:${id}`, resendUrl(teamId(), id), 'POST', null, 'The invitation was sent again.')
+}
+
+function revoke(id) {
+  void change(`invitation:${id}`, invitationUrl(teamId(), id), 'DELETE', null, 'The invitation was revoked. Its link no longer works.')
+}
+
+function toggleAdd() {
+  addOpen.update(value => !value)
+  addError.set('')
+}
+
+async function invite() {
+  const draft = { email: addEmail(), role: addRole() }
+  const problem = inviteDraftError(draft, me())
+  if (problem) {
+    addError.set(problem)
+    return
+  }
+
+  saving.set(true)
+  addError.set('')
+  actionError.set('')
+  actionNotice.set('')
+  try {
+    const response = await fetch(invitationsUrl(teamId()), {
+      method: 'POST',
+      credentials: 'same-origin',
+      headers: writeHeaders(),
+      body: JSON.stringify(invitePayload(draft)),
+    })
+
+    if (response.status === 201 || response.ok) {
+      actionNotice.set(`An invitation was emailed to ${invitePayload(draft).email}. It expires in 7 days.`)
+      addEmail.set('')
+      addRole.set('member')
+      addOpen.set(false)
+      await load()
+      return
+    }
+
+    /* 502 is "created, but the email failed": the invitation exists and is
+     * in the list, so close the form and say so where the list is. */
+    const message = serverMessage(await response.json().catch(() => null), changeErrorMessage(response.status))
+    if (response.status === 502) {
+      actionError.set(message)
+      addEmail.set('')
+      addOpen.set(false)
+      await load()
+      return
+    }
+    addError.set(message)
+  }
+  catch {
+    addError.set('The invitation could not be sent. Check your connection and try again.')
+  }
+  finally {
+    saving.set(false)
+  }
+}
+
+onMount(() => {
+  void load()
+})
+</script>
+
+<main id="main" class="p-5 sm:p-8 min-h-screen text-fg bg-page">
+  <div class="mx-auto max-w-[1500px]">
+    <header class="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between mb-7">
+      <div>
+        <p class="font-bold text-[11px] text-accent tracking-[0.2em] uppercase">Team and access</p>
+        <h1 class="mt-2 font-semibold text-4xl tracking-[-0.04em]">Give every collaborator the right room to work.</h1>
+        <p class="mt-2 max-w-2xl text-fg-muted text-sm">The people in this workspace and what each may do. Owners and admins invite, suspend and remove; only the owner makes or changes an admin.</p>
+      </div>
+      <div class="flex gap-2">
+        <button type="button" @click="load()" :disabled="loading()" :aria-busy="loading()" class="px-5 min-h-11 font-bold text-fg text-sm bg-panel hover:bg-surface-hover border border-line rounded-pill focus-visible:outline focus-visible:outline-[var(--coral)] focus-visible:outline-2 focus-visible:outline-offset-2 disabled:opacity-60">Refresh</button>
+        <button :if="canManage()" type="button" @click="toggleAdd()" class="px-5 min-h-11 font-bold text-[var(--coral-ink)] text-sm bg-accent rounded-pill focus-visible:outline focus-visible:outline-[var(--coral)] focus-visible:outline-2 focus-visible:outline-offset-2">Invite member</button>
+      </div>
+    </header>
+
+    <section :if="addOpen()" class="mb-5 p-5 bg-panel border border-line rounded-panel" aria-labelledby="invite-title">
+      <h2 id="invite-title" class="font-bold text-sm">Invite someone</h2>
+      <p class="mt-1 text-fg-muted text-xs">They get an email with a link that works once and expires in 7 days. They accept it signed in with this address.</p>
+      <div class="grid gap-3 sm:grid-cols-[2fr_1fr] mt-4 max-w-2xl">
+        <label class="block font-bold text-xs">
+          Email
+          <input x-model.trim="addEmail" type="email" autocomplete="off" maxlength="255" class="mt-1 field" placeholder="colleague@example.com">
+        </label>
+        <label class="block font-bold text-xs">
+          Role
+          <select x-model="addRole" class="mt-1 field">
+            @foreach(roleOptions as option)
+              <option value="{{ option.value }}">{{ option.label }}</option>
+            @endforeach
+          </select>
+        </label>
+      </div>
+      <p :if="addError()" class="mt-3 font-bold text-danger text-xs" role="alert">{{ addError() }}</p>
+      <div class="flex gap-2 mt-4">
+        <button type="button" @click="invite()" :disabled="saving()" :aria-busy="saving()" class="px-5 min-h-11 font-bold text-[var(--coral-ink)] text-sm bg-accent rounded-pill focus-visible:outline focus-visible:outline-[var(--coral)] focus-visible:outline-2 focus-visible:outline-offset-2 disabled:opacity-60">Send invitation</button>
+        <button type="button" @click="toggleAdd()" class="px-5 min-h-11 font-bold text-fg text-sm bg-panel hover:bg-surface-hover border border-line rounded-pill focus-visible:outline focus-visible:outline-[var(--coral)] focus-visible:outline-2 focus-visible:outline-offset-2">Cancel</button>
+      </div>
+    </section>
+
+    <p :if="actionError()" class="mb-5 p-4 font-bold text-danger text-sm bg-panel border border-line rounded-panel" role="alert">{{ actionError() }}</p>
+    <p :if="actionNotice()" class="mb-5 p-4 font-bold text-sm bg-panel border border-line rounded-panel" role="status">{{ actionNotice() }}</p>
+
+    <section class="overflow-hidden bg-panel border border-line rounded-panel" aria-labelledby="members-title">
+      <div class="p-5 border-b border-line">
+        <h2 id="members-title" class="font-bold">Members</h2>
+      </div>
+
+      {{-- Loading. A row-shaped skeleton rather than a spinner, so the list
+           does not jump height when the rows land. --}}
+      <div :if="loading()" class="p-5 space-y-3" aria-hidden="true">
+        <div class="h-16 bg-surface-sunken rounded-control"></div>
+        <div class="h-16 bg-surface-sunken rounded-control"></div>
+      </div>
+      <p :if="loading()" class="sr-only" role="status">Loading the workspace</p>
+
+      <div :if="errorText()" class="p-8 text-center" role="alert">
+        <span aria-hidden="true" class="inline-block h-6 w-6 text-danger i-hugeicons-alert-02"></span>
+        <p class="mt-3 font-bold text-sm">{{ errorText() }}</p>
+        <button type="button" @click="load()" :disabled="loading()" :aria-busy="loading()" class="mt-4 px-5 min-h-11 font-bold text-fg text-sm bg-panel hover:bg-surface-hover border border-line rounded-pill focus-visible:outline focus-visible:outline-[var(--coral)] focus-visible:outline-2 focus-visible:outline-offset-2 disabled:opacity-60">Try again</button>
+      </div>
+
+      <div :if="showList()" class="divide-line divide-y">
+        <template :for="member in members()">
+          <article class="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between p-5">
+            <div class="min-w-0">
+              <h3 class="font-bold text-sm">{{ member.name }}<span :if="member.isMe" class="font-normal text-fg-muted"> (you)</span></h3>
+              <p class="mt-0.5 break-all text-fg-muted text-xs">{{ member.email }}</p>
+              <p class="mt-0.5 text-xs">{{ member.roleLabel }}. {{ member.standing }}</p>
+            </div>
+            <div :if="member.canChange && confirmId() !== member.id" class="flex flex-wrap gap-2 shrink-0">
+              <button :if="member.swapRole" type="button" @click="setRole(member.id, member.swapRole)" :disabled="busyKey() !== ''" :aria-busy="busyKey() === 'member:' + member.id" class="px-4 min-h-11 font-bold text-fg text-sm bg-panel hover:bg-surface-hover border border-line rounded-pill focus-visible:outline focus-visible:outline-[var(--coral)] focus-visible:outline-2 disabled:opacity-50">{{ member.swapLabel }}</button>
+              <button :if="!member.suspended" type="button" @click="setStatus(member.id, 'suspended')" :disabled="busyKey() !== ''" :aria-busy="busyKey() === 'member:' + member.id" class="px-4 min-h-11 font-bold text-fg text-sm bg-panel hover:bg-surface-hover border border-line rounded-pill focus-visible:outline focus-visible:outline-[var(--coral)] focus-visible:outline-2 disabled:opacity-50">Suspend</button>
+              <button :if="member.suspended" type="button" @click="setStatus(member.id, 'active')" :disabled="busyKey() !== ''" :aria-busy="busyKey() === 'member:' + member.id" class="px-4 min-h-11 font-bold text-fg text-sm bg-panel hover:bg-surface-hover border border-line rounded-pill focus-visible:outline focus-visible:outline-[var(--coral)] focus-visible:outline-2 disabled:opacity-50">Restore access</button>
+              <button type="button" @click="askRemove(member.id)" :disabled="busyKey() !== ''" :aria-busy="busyKey() === 'member:' + member.id" class="px-4 min-h-11 font-bold text-fg text-sm bg-panel hover:bg-surface-hover border border-line rounded-pill focus-visible:outline focus-visible:outline-[var(--coral)] focus-visible:outline-2 disabled:opacity-50">Remove</button>
+            </div>
+            <div :if="member.canChange && confirmId() === member.id" class="flex flex-col gap-2 shrink-0" role="group" aria-label="Confirm removal">
+              <p class="m-0 font-bold text-xs">Remove {{ member.name }} from this workspace?</p>
+              <div class="flex gap-2">
+                <button type="button" @click="remove(member.id)" :disabled="busyKey() !== ''" :aria-busy="busyKey() === 'member:' + member.id" class="px-4 min-h-11 font-bold text-fg text-sm bg-panel hover:bg-surface-hover border border-line rounded-pill focus-visible:outline focus-visible:outline-[var(--coral)] focus-visible:outline-2 disabled:opacity-50">Yes, remove</button>
+                <button type="button" @click="cancelRemove()" class="px-4 min-h-11 font-bold text-fg text-sm bg-panel hover:bg-surface-hover border border-line rounded-pill focus-visible:outline focus-visible:outline-[var(--coral)] focus-visible:outline-2 disabled:opacity-50">Keep</button>
+              </div>
+            </div>
+          </article>
+        </template>
+      </div>
+    </section>
+
+    <section :if="showInvitations()" class="overflow-hidden mt-5 bg-panel border border-line rounded-panel" aria-labelledby="invitations-title">
+      <div class="p-5 border-b border-line">
+        <h2 id="invitations-title" class="font-bold">Pending invitations</h2>
+      </div>
+      <div class="divide-line divide-y">
+        <template :for="invitation in invitations()">
+          <article class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between p-5">
+            <div class="min-w-0">
+              <h3 class="break-all font-bold text-sm">{{ invitation.email }}</h3>
+              <p class="mt-0.5 text-xs">Invited as {{ invitation.roleLabel }}. {{ invitation.standing }}</p>
+            </div>
+            <div class="flex flex-wrap gap-2 shrink-0">
+              <button type="button" @click="resend(invitation.id)" :disabled="busyKey() !== ''" :aria-busy="busyKey() === 'invitation:' + invitation.id" class="px-4 min-h-11 font-bold text-fg text-sm bg-panel hover:bg-surface-hover border border-line rounded-pill focus-visible:outline focus-visible:outline-[var(--coral)] focus-visible:outline-2 disabled:opacity-50">Send again</button>
+              <button type="button" @click="revoke(invitation.id)" :disabled="busyKey() !== ''" :aria-busy="busyKey() === 'invitation:' + invitation.id" class="px-4 min-h-11 font-bold text-fg text-sm bg-panel hover:bg-surface-hover border border-line rounded-pill focus-visible:outline focus-visible:outline-[var(--coral)] focus-visible:outline-2 disabled:opacity-50">Revoke</button>
+            </div>
+          </article>
+        </template>
+      </div>
+    </section>
+  </div>
+</main>
