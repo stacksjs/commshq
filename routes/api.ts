@@ -44,6 +44,16 @@ route.post('/v1/sender-identities', 'Actions/Api/V1/Sending/CreateSenderIdentity
 route.post('/v1/integration-credentials', 'Actions/Api/V1/Integrations/StoreIntegrationCredentialAction').middleware('auth').middleware('team').rateLimit(10, 'minute')
 route.delete('/v1/integration-credentials/{id}', 'Actions/Api/V1/Integrations/DeleteIntegrationCredentialAction').middleware('auth').middleware('team').rateLimit(20, 'minute')
 
+// A workspace's own people. The framework's team actions do the work; these
+// routes hold the path to the caller's team and check the caller's role
+// first, which the framework's platform-admin routes do not.
+route.get('/v1/team/people', 'Actions/Api/V1/Team/ListTeamPeopleAction').middleware('auth').middleware('team')
+route.post('/v1/teams/{id}/invitations', 'Actions/Api/V1/Team/InviteTeamMemberAction').middleware('auth').middleware('team').rateLimit(20, 'minute')
+route.post('/v1/teams/{id}/invitations/{invitationId}/resend', 'Actions/Api/V1/Team/ResendTeamInvitationAction').middleware('auth').middleware('team').rateLimit(10, 'minute')
+route.delete('/v1/teams/{id}/invitations/{invitationId}', 'Actions/Api/V1/Team/RevokeTeamInvitationAction').middleware('auth').middleware('team').rateLimit(20, 'minute')
+route.patch('/v1/teams/{id}/members/{memberId}', 'Actions/Api/V1/Team/UpdateTeamMemberAction').middleware('auth').middleware('team').rateLimit(30, 'minute')
+route.delete('/v1/teams/{id}/members/{memberId}', 'Actions/Api/V1/Team/RemoveTeamMemberAction').middleware('auth').middleware('team').rateLimit(20, 'minute')
+
 route.post('/webhooks/{provider}/{endpoint}', 'Actions/Webhooks/IngestWebhookAction').rateLimit(300, 'minute')
 
 // `/coming-soon` is served as an STX view from
