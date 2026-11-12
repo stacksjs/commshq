@@ -92,8 +92,32 @@ beforeAll(async () => {
   } as any)).id)
 })
 
-afterAll(() => {
+/**
+ * Every table this suite writes to, children before the team and user they
+ * hang off. The suite runs against the development database, and it used to
+ * leave its team behind on every run: 94 of them had piled up, each with a
+ * profile, a credential, a rule, mentions and alerts, and the dashboard's
+ * cross-team jobs were polling all of it.
+ */
+const TEAM_TABLES = ['reputation_alerts', 'reputation_alert_rules', 'reputation_mentions', 'monitored_profiles', 'integration_credentials', 'team_members']
+const USER_TABLES = ['notification_deliveries', 'notifications']
+
+afterAll(async () => {
   globalThis.fetch = realFetch
+
+  // Guarded on the ids: if `beforeAll` threw before assigning them there is
+  // nothing of this run's to remove, and an unscoped delete must not happen.
+  if (teamId) {
+    for (const table of TEAM_TABLES)
+      await db.deleteFrom(table as any).where('team_id' as any, '=', teamId).execute()
+    await db.deleteFrom('teams' as any).where('id' as any, '=', teamId).execute()
+  }
+
+  if (userId) {
+    for (const table of USER_TABLES)
+      await db.deleteFrom(table as any).where('user_id' as any, '=', userId).execute()
+    await db.deleteFrom('users' as any).where('id' as any, '=', userId).execute()
+  }
 })
 
 describe('a profile with no credential', () => {
