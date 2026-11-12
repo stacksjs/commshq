@@ -4,7 +4,12 @@ import { schema } from '@stacksjs/validation'
 export default defineModel({
   name: 'SenderIdentity', table: 'sender_identities', belongsTo: ['Team', 'SenderDomain'],
   indexes: [{ name: 'sender_identities_team_address_unique', columns: ['team_id', 'channel', 'address'], unique: true }],
-  traits: { useUuid: true, useTimestamps: true, observe: true, useApi: { prefix: 'v1', uri: 'sender-identities', routes: ['index', 'store', 'show', 'update', 'destroy'], middleware: ['auth', 'team'] } },
+  // No generated `store` or `update`. `address` is fillable and `status` is
+  // not, so a generated update could move a verified sender to an address at
+  // a domain nobody proved while it stayed verified. Creating goes through
+  // `CreateSenderIdentityAction`, which derives the status from the domain;
+  // changing an address means removing the sender and adding it again.
+  traits: { useUuid: true, useTimestamps: true, observe: true, useApi: { prefix: 'v1', uri: 'sender-identities', routes: ['index', 'show', 'destroy'], middleware: ['auth', 'team'] } },
   attributes: {
     channel: { required: true, fillable: true, validation: { rule: schema.enum(['email', 'sms']) } },
     name: { required: true, fillable: true, validation: { rule: schema.string().max(160) } },

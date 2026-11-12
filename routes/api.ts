@@ -29,6 +29,16 @@ route.post('/v1/reputation-alert-rules', 'Actions/Api/V1/Reputation/UpsertAlertR
 route.post('/v1/reputation-alerts/{id}/decision', 'Actions/Api/V1/Reputation/AcknowledgeAlertAction').middleware('auth').middleware('team').rateLimit(60, 'minute')
 route.post('/v1/reputation-mentions/{id}/triage', 'Actions/Api/V1/Reputation/TriageMentionAction').middleware('auth').middleware('team').rateLimit(120, 'minute')
 
+// Sending domains are not the generated CRUD: `SenderDomain` declares `status`
+// fillable, so that API would let a request body mark a domain verified.
+route.get('/v1/sender-domains', 'Actions/Api/V1/Sending/ListSenderDomainsAction').middleware('auth').middleware('team')
+route.post('/v1/sender-domains', 'Actions/Api/V1/Sending/CreateSenderDomainAction').middleware('auth').middleware('team').rateLimit(20, 'minute')
+route.post('/v1/sender-domains/{id}/verify', 'Actions/Api/V1/Sending/VerifySenderDomainAction').middleware('auth').middleware('team').rateLimit(10, 'minute')
+route.delete('/v1/sender-domains/{id}', 'Actions/Api/V1/Sending/DeleteSenderDomainAction').middleware('auth').middleware('team').rateLimit(20, 'minute')
+// Claims the path before the generated create, which stores every sender as
+// pending with no way to change it.
+route.post('/v1/sender-identities', 'Actions/Api/V1/Sending/CreateSenderIdentityAction').middleware('auth').middleware('team').rateLimit(20, 'minute')
+
 route.post('/webhooks/{provider}/{endpoint}', 'Actions/Webhooks/IngestWebhookAction').rateLimit(300, 'minute')
 
 // `/coming-soon` is served as an STX view from
