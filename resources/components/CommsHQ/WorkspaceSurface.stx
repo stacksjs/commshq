@@ -10,15 +10,9 @@ interface WorkspacePage {
   checklist: Array<{ label: string, detail: string, state: string }>
 }
 
-const area = useReactiveProp('area', 'sites')
+const area = useReactiveProp('area', 'commerce')
 
 const pages: Record<string, WorkspacePage> = {
-  sites: {
-    eyebrow: 'Sites', title: 'Every publication deserves a true address.', description: 'Manage native Stacks sites, customer domains, TLS, redirects, menus, and isolated draft rendering.', primary: 'Create site', icon: 'i-hugeicons-web-design-02',
-    metrics: [{ label: 'Live sites', value: '3', note: '2 custom domains' }, { label: 'TLS coverage', value: '100%', note: 'Auto-renewing' }, { label: 'Redirect health', value: '99.9%', note: 'No loops found' }],
-    records: [{ name: 'Sunday Paper', detail: 'sundaypaper.co', status: 'Live', value: 'Primary' }, { name: 'Field Notes', detail: 'notes.sundaypaper.co', status: 'Live', value: 'Subdomain' }, { name: 'Spring launch', detail: 'Preview is team-only', status: 'Draft', value: 'Private' }],
-    checklist: [{ label: 'Draft isolation', detail: 'Anonymous requests cannot resolve drafts', state: 'Locked' }, { label: 'Certificate renewal', detail: '42 days remaining', state: 'Healthy' }, { label: 'Canonical URLs', detail: 'All pages resolve one origin', state: 'Ready' }],
-  },
   commerce: {
     eyebrow: 'Commerce marketing', title: 'Turn store moments into thoughtful follow-up.', description: 'Normalize carts, purchases, subscriptions, and product activity before attribution or automation runs.', primary: 'Connect store', icon: 'i-hugeicons-shopping-bag-02',
     metrics: [{ label: 'Attributed revenue', value: '$84,620', note: '+12.7%' }, { label: 'Recovered carts', value: '318', note: '$26,418 recovered' }, { label: 'Commerce events', value: '1.8M', note: 'No duplicates' }],
@@ -27,7 +21,7 @@ const pages: Record<string, WorkspacePage> = {
   },
 }
 
-const page = computed(() => pages[area()] || pages.sites)
+const page = computed(() => pages[area()] || pages.commerce)
 const viewState = state('populated')
 </script>
 
