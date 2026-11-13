@@ -1,0 +1,468 @@
+<script server>
+/* Fixed lists from the module, rendered here rather than looped in the
+ * browser, so the select is usable in the first paint. */
+import { EVENT_TYPES } from '../../data/commerce-query'
+
+export const eventTypeOptions = EVENT_TYPES
+</script>
+
+<script client>
+/**
+ * Commerce, reading and writing through the application's own API.
+ *
+ * This page was the `commerce` area of `WorkspaceSurface`: $84,620 of
+ * attributed revenue, 318 recovered carts and a "Primary Shopify store"
+ * that was "Healthy", none of it read from anywhere. A workspace could not
+ * connect a store at all.
+ *
+ * It connects a store through `/api/v1/commerce/stores`, shows the address
+ * to give that store, pauses and resumes it and replaces its signing
+ * secret, and lists the order events that arrived from
+ * `/api/v1/commerce-events`. The secret is sent once and never comes back.
+ * Pausing and replacing a secret are two presses: both stop a store's
+ * events arriving until something else is done.
+ *
+ * `commerce-query.ts` records what the old page showed that this one does
+ * not, and the page says the same in its own words.
+ *
+ * Writes carry the CSRF token explicitly, read with `useCookie`, the
+ * composable, since a client script may not reach for the DOM itself.
+ */
+import {
+  connectError,
+  connectPayload,
+  EVENTS_PER_PAGE,
+  eventsUrl,
+  listErrorMessage,
+  NOT_USED_YET,
+  providerOf,
+  saveErrorMessage,
+  secretError,
+  STORES_ENDPOINT,
+  storeUrl,
+  toEventViews,
+  toStoresView,
+} from '../../data/commerce-query'
+
+const notUsedYet = NOT_USED_YET
+
+const view = state(toStoresView(null))
+const loading = state(true)
+const errorText = state('')
+const actionError = state('')
+/* The store a change is in flight for, so only its buttons are busy. */
+const busyId = state(0)
+/* The store whose Pause is waiting for its second press. */
+const confirmId = state(0)
+
+const events = state([])
+const eventsLoading = state(true)
+const eventsError = state('')
+const eventsMore = state(false)
+const eventsPage = state(1)
+const eventType = state('')
+const eventsBusy = state('refresh')
+
+const addOpen = state(false)
+const addProvider = state('')
+const addName = state('')
+const addSecret = state('')
+const saving = state(false)
+const addError = state('')
+/* The address of a store connected a moment ago, shown until dismissed. */
+const connectedUrl = state('')
+const connectedSetup = state('')
+
+/* The store whose signing secret is being replaced, 0 when none is. */
+const secretId = state(0)
+const secretValue = state('')
+const secretProblem = state('')
+
+const csrfToken = useCookie('X-CSRF-Token')
+
+const showEmpty = derived(() => !loading() && !errorText() && view().stores.length === 0)
+const showList = derived(() => !loading() && !errorText() && view().stores.length > 0)
+const canConnect = derived(() => view().canManage && view().available.length > 0)
+const secretHint = derived(() => providerOf(addProvider())?.secretHint ?? 'Choose a kind of store to see where its signing secret comes from.')
+const eventsRefreshBusy = derived(() => eventsLoading() && eventsBusy() === 'refresh')
+const eventsPrevBusy = derived(() => eventsLoading() && eventsBusy() === 'prev')
+const eventsNextBusy = derived(() => eventsLoading() && eventsBusy() === 'next')
+const showEventsEmpty = derived(() => !eventsLoading() && !eventsError() && events().length === 0)
+const showEvents = derived(() => !eventsLoading() && !eventsError() && events().length > 0)
+
+async function loadStores() {
+  loading.set(true)
+  errorText.set('')
+  try {
+    const response = await fetch(STORES_ENDPOINT, { credentials: 'same-origin', headers: { Accept: 'application/json' } })
+    if (!response.ok) {
+      errorText.set(listErrorMessage(response.status, 'stores'))
+      return
+    }
+    view.set(toStoresView(await response.json()))
+  }
+  catch {
+    // A network failure, not a refusal: there is no status to explain.
+    errorText.set('Stores could not be loaded. Check your connection and try again.')
+  }
+  finally {
+    loading.set(false)
+  }
+}
+
+async function loadEvents(source = 'refresh') {
+  eventsBusy.set(source)
+  eventsLoading.set(true)
+  eventsError.set('')
+  try {
+    const response = await fetch(eventsUrl({ page: eventsPage(), perPage: EVENTS_PER_PAGE, type: eventType() }), {
+      credentials: 'same-origin',
+      headers: { Accept: 'application/json' },
+    })
+    if (!response.ok) {
+      eventsError.set(listErrorMessage(response.status, 'events'))
+      events.set([])
+      return
+    }
+    const body = await response.json()
+    events.set(toEventViews(body))
+    eventsMore.set(body?.has_more_pages === true)
+  }
+  catch {
+    eventsError.set('Events could not be loaded. Check your connection and try again.')
+    events.set([])
+  }
+  finally {
+    eventsLoading.set(false)
+  }
+}
+
+function refresh() {
+  void loadStores()
+  void loadEvents()
+}
+
+function onTypeChange() {
+  eventsPage.set(1)
+  void loadEvents()
+}
+
+function nextEvents() {
+  if (!eventsMore() || eventsLoading())
+    return
+  eventsPage.update(value => value + 1)
+  void loadEvents('next')
+}
+
+function previousEvents() {
+  if (eventsPage() <= 1 || eventsLoading())
+    return
+  eventsPage.update(value => value - 1)
+  void loadEvents('prev')
+}
+
+function writeHeaders() {
+  return {
+    'Content-Type': 'application/json',
+    'Accept': 'application/json',
+    'X-CSRF-Token': csrfToken() || '',
+  }
+}
+
+function toggleAdd() {
+  addOpen.update(value => !value)
+  addError.set('')
+  addSecret.set('')
+}
+
+function chooseProvider(provider) {
+  addProvider.set(provider)
+  addError.set('')
+}
+
+async function connectStore() {
+  const draft = { provider: addProvider(), name: addName(), secret: addSecret() }
+  const problem = connectError(draft)
+  if (problem) {
+    addError.set(problem)
+    return
+  }
+
+  saving.set(true)
+  addError.set('')
+  try {
+    const response = await fetch(STORES_ENDPOINT, {
+      method: 'POST',
+      credentials: 'same-origin',
+      headers: writeHeaders(),
+      body: JSON.stringify(connectPayload(draft)),
+    })
+
+    if (response.status === 201 || response.ok) {
+      const body = await response.json()
+      connectedUrl.set(String(body?.data?.webhook_url ?? ''))
+      connectedSetup.set(providerOf(draft.provider)?.setup ?? '')
+      addProvider.set('')
+      addName.set('')
+      addOpen.set(false)
+      await loadStores()
+      return
+    }
+
+    addError.set(saveErrorMessage(response.status))
+  }
+  catch {
+    addError.set('The store could not be connected. Check your connection and try again.')
+  }
+  finally {
+    // Whatever happened, the secret does not stay in the form.
+    addSecret.set('')
+    saving.set(false)
+  }
+}
+
+function dismissConnected() {
+  connectedUrl.set('')
+  connectedSetup.set('')
+}
+
+async function patchStore(id, body) {
+  busyId.set(id)
+  actionError.set('')
+  try {
+    const response = await fetch(storeUrl(id), {
+      method: 'PATCH',
+      credentials: 'same-origin',
+      headers: writeHeaders(),
+      body: JSON.stringify(body),
+    })
+    if (!response.ok)
+      actionError.set(saveErrorMessage(response.status))
+    /* Read again either way: on a 404 the list on screen is the stale thing. */
+    await loadStores()
+    return response.ok
+  }
+  catch {
+    actionError.set('That change could not be saved. Check your connection and try again.')
+    return false
+  }
+  finally {
+    busyId.set(0)
+  }
+}
+
+/* Resuming is one press. Pausing is two: it stops the store's events arriving. */
+function changeStatus(id, next) {
+  if (busyId() || !next)
+    return
+  if (next === 'disabled' && confirmId() !== id) {
+    confirmId.set(id)
+    return
+  }
+  confirmId.set(0)
+  void patchStore(id, { status: next })
+}
+
+function cancelConfirm() {
+  confirmId.set(0)
+}
+
+function openSecret(id) {
+  secretId.set(secretId() === id ? 0 : id)
+  secretValue.set('')
+  secretProblem.set('')
+}
+
+async function replaceSecret(id) {
+  if (busyId())
+    return
+  const problem = secretError(secretValue())
+  if (problem) {
+    secretProblem.set(problem)
+    return
+  }
+  const secret = secretValue().trim()
+  secretValue.set('')
+  secretProblem.set('')
+  if (await patchStore(id, { secret }))
+    secretId.set(0)
+}
+
+onMount(() => {
+  refresh()
+})
+</script>
+
+<main id="main" class="p-5 sm:p-8 min-h-screen text-fg bg-page">
+  <div class="mx-auto max-w-[1500px]">
+    <header class="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between mb-7">
+      <div>
+        <p class="font-bold text-[11px] text-accent tracking-[0.2em] uppercase">Commerce</p>
+        <h1 class="mt-2 font-semibold text-4xl tracking-[-0.04em]">Let your store tell CommsHQ what sold.</h1>
+        <p class="mt-2 max-w-2xl text-fg-muted text-sm">Connect a Shopify or WooCommerce store and its orders, fulfilments and refunds are recorded here as they happen, each one checked against the store's signing secret.</p>
+      </div>
+      <div class="flex gap-2">
+        <button type="button" @click="refresh()" :disabled="loading()" :aria-busy="loading()" class="px-5 min-h-11 font-bold text-fg text-sm bg-panel hover:bg-surface-hover border border-line rounded-pill focus-visible:outline focus-visible:outline-[var(--coral)] focus-visible:outline-2 focus-visible:outline-offset-2 disabled:opacity-60">Refresh</button>
+        <button :if="canConnect()" type="button" @click="toggleAdd()" class="px-5 min-h-11 font-bold text-[var(--coral-ink)] text-sm bg-accent rounded-pill focus-visible:outline focus-visible:outline-[var(--coral)] focus-visible:outline-2 focus-visible:outline-offset-2">Connect store</button>
+      </div>
+    </header>
+
+    <p class="flex gap-3 items-start mb-5 p-4 text-sm bg-panel border border-line rounded-panel">
+      <span aria-hidden="true" class="shrink-0 mt-0.5 h-5 w-5 text-fg-muted i-hugeicons-information-circle"></span>
+      <span>{{ notUsedYet }}</span>
+    </p>
+
+    <section :if="connectedUrl()" class="mb-5 p-5 bg-panel border border-line rounded-panel" aria-labelledby="connected-title" role="status">
+      <h2 id="connected-title" class="font-bold text-sm">Store connected. Now give it this address.</h2>
+      <p class="mt-2 text-xs">{{ connectedSetup() }}</p>
+      <p class="mt-3 p-3 break-all font-mono text-xs bg-surface-sunken rounded-control">{{ connectedUrl() }}</p>
+      <p class="mt-2 text-fg-muted text-xs">The address stays on the store's row below. The signing secret is stored encrypted and is not shown again.</p>
+      <button type="button" @click="dismissConnected()" class="mt-3 px-4 min-h-11 font-bold text-fg text-sm bg-panel hover:bg-surface-hover border border-line rounded-pill focus-visible:outline focus-visible:outline-[var(--coral)] focus-visible:outline-2 focus-visible:outline-offset-2">Done</button>
+    </section>
+
+    <section :if="addOpen()" class="mb-5 p-5 bg-panel border border-line rounded-panel" aria-labelledby="add-store-title">
+      <h2 id="add-store-title" class="font-bold text-sm">Connect a store</h2>
+      <p class="mt-1 text-fg-muted text-xs">Each kind of store can be connected once.</p>
+      <div class="flex flex-wrap gap-2 mt-4" role="group" aria-label="Kind of store">
+        <template :for="option in view().available">
+          <button type="button" @click="chooseProvider(option.provider)" :aria-pressed="addProvider() === option.provider" class="px-4 min-h-11 font-bold text-sm border border-line rounded-pill focus-visible:outline focus-visible:outline-[var(--coral)] focus-visible:outline-2 focus-visible:outline-offset-2" :class="addProvider() === option.provider ? 'bg-accent text-[var(--coral-ink)]' : 'bg-panel text-fg hover:bg-surface-hover'">{{ option.label }}</button>
+        </template>
+      </div>
+      <div class="grid gap-3 sm:grid-cols-2 mt-4">
+        <label class="block font-bold text-xs">
+          Name
+          <input x-model.trim="addName" type="text" autocomplete="off" maxlength="120" class="mt-1 field" placeholder="Main store">
+        </label>
+        <label class="block font-bold text-xs">
+          Signing secret
+          <input x-model="addSecret" type="password" autocomplete="off" autocapitalize="off" spellcheck="false" maxlength="4096" class="mt-1 field" placeholder="Paste or choose the secret">
+        </label>
+      </div>
+      <p class="mt-2 text-fg-muted text-xs">{{ secretHint() }}</p>
+      <p :if="addError()" class="mt-3 font-bold text-danger text-xs" role="alert">{{ addError() }}</p>
+      <div class="flex gap-2 mt-4">
+        <button type="button" @click="connectStore()" :disabled="saving()" :aria-busy="saving()" class="px-5 min-h-11 font-bold text-[var(--coral-ink)] text-sm bg-accent rounded-pill focus-visible:outline focus-visible:outline-[var(--coral)] focus-visible:outline-2 focus-visible:outline-offset-2 disabled:opacity-60">Connect</button>
+        <button type="button" @click="toggleAdd()" class="px-5 min-h-11 font-bold text-fg text-sm bg-panel hover:bg-surface-hover border border-line rounded-pill focus-visible:outline focus-visible:outline-[var(--coral)] focus-visible:outline-2 focus-visible:outline-offset-2">Cancel</button>
+      </div>
+    </section>
+
+    <p :if="actionError()" class="mb-5 p-4 font-bold text-danger text-sm bg-panel border border-line rounded-panel" role="alert">{{ actionError() }}</p>
+
+    <section class="overflow-hidden mb-5 bg-panel border border-line rounded-panel" aria-labelledby="stores-title">
+      <div class="p-5 border-b border-line">
+        <h2 id="stores-title" class="font-bold">Stores</h2>
+      </div>
+
+      {{-- Loading. A row-shaped skeleton rather than a spinner, so the list
+           does not jump height when the rows land. --}}
+      <div :if="loading()" class="p-5 space-y-3" aria-hidden="true">
+        <div class="h-20 bg-surface-sunken rounded-control"></div>
+      </div>
+      <p :if="loading()" class="sr-only" role="status">Loading stores</p>
+
+      <div :if="errorText()" class="p-8 text-center" role="alert">
+        <span aria-hidden="true" class="inline-block h-6 w-6 text-danger i-hugeicons-alert-02"></span>
+        <p class="mt-3 font-bold text-sm">{{ errorText() }}</p>
+        <button type="button" @click="loadStores()" :disabled="loading()" :aria-busy="loading()" class="mt-4 px-5 min-h-11 font-bold text-fg text-sm bg-panel hover:bg-surface-hover border border-line rounded-pill focus-visible:outline focus-visible:outline-[var(--coral)] focus-visible:outline-2 disabled:opacity-60">Try again</button>
+      </div>
+
+      <div :if="showEmpty()" class="p-10 text-center">
+        <span aria-hidden="true" class="inline-block h-7 w-7 text-fg-muted i-hugeicons-shopping-bag-02"></span>
+        <p class="mt-3 font-bold">No store is connected.</p>
+        <p :if="view().canManage" class="mt-1 text-fg-muted text-sm">Connect a Shopify or WooCommerce store to start recording its orders.</p>
+        <p :if="!view().canManage" class="mt-1 text-fg-muted text-sm">An admin or owner of this workspace can connect one.</p>
+      </div>
+
+      <div :if="showList()" class="divide-line divide-y">
+        <template :for="store in view().stores">
+          <article class="p-5">
+            <div class="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+              <div class="min-w-0">
+                <h3 class="font-bold text-sm">{{ store.name }}</h3>
+                <p class="mt-0.5 text-fg-muted text-xs">{{ store.providerLabel }}. {{ store.statusLabel }}. {{ store.standing }}</p>
+                <p :if="store.failedNote" class="mt-0.5 font-bold text-danger text-xs">{{ store.failedNote }}</p>
+                <p :if="store.webhookUrl" class="mt-2 text-fg-muted text-xs">Webhook address</p>
+                <p :if="store.webhookUrl" class="mt-1 p-2 break-all font-mono text-xs bg-surface-sunken rounded-control">{{ store.webhookUrl }}</p>
+                <p :if="!store.webhookUrl" class="mt-2 font-bold text-danger text-xs">This store has no webhook address, so nothing can arrive from it.</p>
+              </div>
+              <div :if="view().canManage" class="flex flex-wrap gap-2 shrink-0">
+                <button :if="store.nextStatus" type="button" @click="changeStatus(store.id, store.nextStatus)" :disabled="busyId() !== 0" :aria-busy="busyId() === store.id" class="px-4 min-h-11 font-bold text-fg text-sm bg-panel hover:bg-surface-hover border border-line rounded-pill focus-visible:outline focus-visible:outline-[var(--coral)] focus-visible:outline-2 disabled:opacity-50">{{ confirmId() === store.id ? 'Yes, pause it' : store.nextLabel }}</button>
+                <button :if="confirmId() === store.id" type="button" @click="cancelConfirm()" class="px-4 min-h-11 font-bold text-fg text-sm bg-panel hover:bg-surface-hover border border-line rounded-pill focus-visible:outline focus-visible:outline-[var(--coral)] focus-visible:outline-2">Keep receiving</button>
+                <button :if="store.webhookUrl" type="button" @click="openSecret(store.id)" :aria-expanded="secretId() === store.id" class="px-4 min-h-11 font-bold text-fg text-sm bg-panel hover:bg-surface-hover border border-line rounded-pill focus-visible:outline focus-visible:outline-[var(--coral)] focus-visible:outline-2">Replace secret</button>
+              </div>
+            </div>
+            <p :if="confirmId() === store.id" class="mt-3 text-xs" role="status">While a store is paused its webhooks are refused, and the store may stop sending after repeated failures.</p>
+            <div :if="secretId() === store.id" class="mt-4 p-4 bg-surface-sunken rounded-control">
+              <label class="block font-bold text-xs">
+                New signing secret
+                <input x-model="secretValue" type="password" autocomplete="off" autocapitalize="off" spellcheck="false" maxlength="4096" class="mt-1 field" placeholder="Paste the new secret">
+              </label>
+              <p class="mt-2 text-fg-muted text-xs">The old secret stops working at once. Webhooks signed with it are refused until the store uses the new one.</p>
+              <p :if="secretProblem()" class="mt-2 font-bold text-danger text-xs" role="alert">{{ secretProblem() }}</p>
+              <div class="flex gap-2 mt-3">
+                <button type="button" @click="replaceSecret(store.id)" :disabled="busyId() !== 0" :aria-busy="busyId() === store.id" class="px-4 min-h-11 font-bold text-[var(--coral-ink)] text-sm bg-accent rounded-pill focus-visible:outline focus-visible:outline-[var(--coral)] focus-visible:outline-2 disabled:opacity-60">Replace it</button>
+                <button type="button" @click="openSecret(store.id)" class="px-4 min-h-11 font-bold text-fg text-sm bg-panel hover:bg-surface-hover border border-line rounded-pill focus-visible:outline focus-visible:outline-[var(--coral)] focus-visible:outline-2">Cancel</button>
+              </div>
+            </div>
+          </article>
+        </template>
+      </div>
+    </section>
+
+    <section class="overflow-hidden bg-panel border border-line rounded-panel" aria-labelledby="events-title">
+      <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between p-5 border-b border-line">
+        <div>
+          <h2 id="events-title" class="font-bold">Events received</h2>
+          <p class="mt-1 text-fg-muted text-xs">Newest first. Amounts are in the store's own currency.</p>
+        </div>
+        <label class="block">
+          <span class="sr-only">Filter events by kind</span>
+          <select x-model="eventType" @change="onTypeChange()" class="field">
+            <option value="">Every kind</option>
+            @foreach(eventTypeOptions as option)
+              <option value="{{ option.value }}">{{ option.label }}</option>
+            @endforeach
+          </select>
+        </label>
+      </div>
+
+      <div :if="eventsLoading()" class="p-5 space-y-3" aria-hidden="true">
+        <div class="h-10 bg-surface-sunken rounded-control"></div>
+        <div class="h-10 bg-surface-sunken rounded-control"></div>
+      </div>
+      <p :if="eventsLoading()" class="sr-only" role="status">Loading events</p>
+
+      <div :if="eventsError()" class="p-8 text-center" role="alert">
+        <span aria-hidden="true" class="inline-block h-6 w-6 text-danger i-hugeicons-alert-02"></span>
+        <p class="mt-3 font-bold text-sm">{{ eventsError() }}</p>
+        <button type="button" @click="loadEvents()" :disabled="eventsRefreshBusy()" :aria-busy="eventsRefreshBusy()" class="mt-4 px-5 min-h-11 font-bold text-fg text-sm bg-panel hover:bg-surface-hover border border-line rounded-pill focus-visible:outline focus-visible:outline-[var(--coral)] focus-visible:outline-2 disabled:opacity-60">Try again</button>
+      </div>
+
+      <div :if="showEventsEmpty()" class="p-10 text-center">
+        <span aria-hidden="true" class="inline-block h-7 w-7 text-fg-muted i-hugeicons-invoice-01"></span>
+        <p class="mt-3 font-bold">No events match this view.</p>
+        <p class="mt-1 text-fg-muted text-sm">Events appear here when a connected store sends a signed webhook.</p>
+      </div>
+
+      <ul :if="showEvents()" class="m-0 p-0 list-none divide-line divide-y">
+        <template :for="event in events()">
+          <li class="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between px-5 py-3">
+            <div class="min-w-0">
+              <p class="font-bold text-sm">{{ event.typeLabel }} <span :if="event.amountLabel" class="font-normal">{{ event.amountLabel }}</span></p>
+              <p class="text-fg-muted text-xs truncate">Reference <code>{{ event.reference }}</code></p>
+            </div>
+            <p class="shrink-0 text-fg-muted text-xs">{{ event.occurredLabel }}</p>
+          </li>
+        </template>
+      </ul>
+
+      <div :if="showEvents()" class="flex items-center justify-between p-4 border-line border-t">
+        <p class="m-0 text-fg-muted text-xs">Page {{ eventsPage() }}</p>
+        <div class="flex gap-2">
+          <button type="button" @click="previousEvents()" :disabled="eventsPage() <= 1 || eventsPrevBusy()" :aria-busy="eventsPrevBusy()" class="px-4 min-h-11 font-bold text-fg text-sm bg-panel hover:bg-surface-hover border border-line rounded-pill focus-visible:outline focus-visible:outline-[var(--coral)] focus-visible:outline-2 disabled:opacity-50">Previous</button>
+          <button type="button" @click="nextEvents()" :disabled="!eventsMore() || eventsNextBusy()" :aria-busy="eventsNextBusy()" class="px-4 min-h-11 font-bold text-fg text-sm bg-panel hover:bg-surface-hover border border-line rounded-pill focus-visible:outline focus-visible:outline-[var(--coral)] focus-visible:outline-2 disabled:opacity-50">Next</button>
+        </div>
+      </div>
+    </section>
+  </div>
+</main>
