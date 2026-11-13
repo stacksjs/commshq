@@ -103,7 +103,7 @@ describe('the dashboard shell', () => {
     // Markup, not prose: the layout's own comment explains why there is no
     // <main> here, and a grep that counts that mention is checking nothing.
     expect(markupOnly(layout)).not.toMatch(/<main\b/)
-    for (const component of ['AnalyticsWorkspace', 'AudienceWorkspace', 'BillingWorkspace', 'CommandCenter', 'AutomationBuilder', 'CampaignComposer', 'DomainsWorkspace', 'FormsWorkspace', 'IntegrationsWorkspace', 'MessageStudio', 'MonetizationWorkspace', 'PublicationsWorkspace', 'ReputationWorkspace', 'SegmentsWorkspace', 'SendersWorkspace', 'SettingsWorkspace', 'SetupWorkspace', 'SitesWorkspace', 'TeamsWorkspace', 'WorkspaceSurface']) {
+    for (const component of ['AnalyticsWorkspace', 'AudienceWorkspace', 'BillingWorkspace', 'CommandCenter', 'AutomationBuilder', 'CampaignComposer', 'CommerceWorkspace', 'DomainsWorkspace', 'FormsWorkspace', 'IntegrationsWorkspace', 'MessageStudio', 'MonetizationWorkspace', 'PublicationsWorkspace', 'ReputationWorkspace', 'SegmentsWorkspace', 'SendersWorkspace', 'SettingsWorkspace', 'SetupWorkspace', 'SitesWorkspace', 'TeamsWorkspace']) {
       const markup = markupOnly(readFileSync(join(root, `resources/components/CommsHQ/${component}.stx`), 'utf8'))
       expect({ component, mains: (markup.match(/<main\b/g) || []).length }).toEqual({ component, mains: 1 })
       expect(markup).toContain('<main id="main"')

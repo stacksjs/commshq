@@ -59,16 +59,17 @@ describe('interface contracts', () => {
     }
   })
 
-  it('ships every primary product page through the shared state-rich surface', async () => {
-    // `segments` left this list when it started reading `/api/v1/segments`.
-    // The surface holds its figures as literals, so a page stays on it only
-    // until it has an endpoint to read; the pages still here are the ones
-    // that have not been wired yet, not the ones that should stay.
-    const required = ['commerce']
-    for (const page of required) {
-      const source = await Bun.file(new URL(`../../resources/views/dashboard/commshq/${page}.stx`, import.meta.url)).text()
-      expect(source).toContain(`<WorkspaceSurface area="${page}" />`)
-    }
+  it('serves every dashboard page from the API, with no mock surface left', async () => {
+    // Every page here once rendered `WorkspaceSurface`, a component that held
+    // its figures as literals. Each left as it gained an endpoint to read:
+    // `segments` first, `commerce` last. With no page left on it the
+    // component was removed, and it must not come back.
+    expect(await Bun.file(new URL('../../resources/components/CommsHQ/WorkspaceSurface.stx', import.meta.url)).exists()).toBe(false)
+    const root = new URL('../../resources/views/dashboard/', import.meta.url).pathname
+    const views = await Array.fromAsync(new Bun.Glob('**/*.stx').scan({ cwd: root, absolute: true, onlyFiles: true }))
+    expect(views.length).toBeGreaterThan(15)
+    for (const view of views)
+      expect(await Bun.file(view).text(), view).not.toContain('<WorkspaceSurface')
 
     const segments = await Bun.file(new URL('../../resources/views/dashboard/commshq/segments.stx', import.meta.url)).text()
     expect(segments).toContain('<SegmentsWorkspace />')
@@ -97,7 +98,7 @@ describe('interface contracts', () => {
     // `domains` and `senders` followed together, on the sending routes in
     // `routes/api.ts`: a sender is verified only through its domain.
     // `integrations` after them, storing credentials through its own actions.
-    for (const [page, component] of [['domains', 'DomainsWorkspace'], ['senders', 'SendersWorkspace'], ['integrations', 'IntegrationsWorkspace'], ['publications', 'PublicationsWorkspace'], ['teams', 'TeamsWorkspace'], ['onboarding', 'SetupWorkspace'], ['settings', 'SettingsWorkspace'], ['monetization', 'MonetizationWorkspace'], ['analytics', 'AnalyticsWorkspace'], ['sites', 'SitesWorkspace']] as const) {
+    for (const [page, component] of [['domains', 'DomainsWorkspace'], ['senders', 'SendersWorkspace'], ['integrations', 'IntegrationsWorkspace'], ['publications', 'PublicationsWorkspace'], ['teams', 'TeamsWorkspace'], ['onboarding', 'SetupWorkspace'], ['settings', 'SettingsWorkspace'], ['monetization', 'MonetizationWorkspace'], ['analytics', 'AnalyticsWorkspace'], ['sites', 'SitesWorkspace'], ['commerce', 'CommerceWorkspace']] as const) {
       const view = await Bun.file(new URL(`../../resources/views/dashboard/commshq/${page}.stx`, import.meta.url)).text()
       expect(view).toContain(`<${component} />`)
       expect(view).not.toContain('<WorkspaceSurface')
@@ -123,9 +124,6 @@ describe('interface contracts', () => {
     expect(builder).not.toContain('Step inspector')
     expect(builder).not.toContain('Publish version')
     expect(builder).not.toMatch(/setStatus\([^)]*'active'\)/)
-
-    const surface = await Bun.file(new URL('../../resources/components/CommsHQ/WorkspaceSurface.stx', import.meta.url)).text()
-    for (const state of ['populated', 'loading', 'empty', 'error']) expect(surface).toContain(`'${state}'`)
   })
 
   it('publishes a footer-linked comparison page for every competitor', async () => {
