@@ -10,8 +10,7 @@
  * like a styling bug and are not.
  *
  * Navigation only. What each page renders is the page's own business and is
- * declared there, including the `area` the sixteen `<WorkspaceSurface>` pages
- * pass; restating it here would be a second copy with no reader.
+ * declared there; restating it here would be a second copy with no reader.
  */
 
 /** Where the dashboard is mounted. Links are built from this, never typed out. */

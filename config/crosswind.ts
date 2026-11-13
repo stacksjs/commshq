@@ -222,18 +222,10 @@ export default {
     // precedence is required: class attribute order does not decide CSS order.
     'audience-consent-badge': 'sm:!inline !px-2.5 !py-1 !font-bold !text-[#466833] !bg-[#edf5e8] '
       + 'dark:!text-[#acd294] dark:!bg-[#75a65a]/15',
-    // These were flex items. Block-level flex avoids an extra inline baseline
-    // inside the component scope wrapper, preserving the original row heights.
-    //
-    // `workspace-change-badge` stood here too, worn only by the command
-    // center's four change figures ("+18.4%", "99.1%"). Those came from no
-    // query, so they went when that page started reading the API, and a
-    // shortcut no component wears is a utility the next reader has to look up
-    // to discover is dead.
-    'workspace-record-badge': '!flex !py-1 !font-bold !text-[10px] !leading-[inherit] '
-      + '!text-[#466833] !bg-[#eef5e8] dark:!text-[#acd294] dark:!bg-[#75a65a]/15',
-    // The readiness panel is dark in both modes, so this treatment stays fixed.
-    'workspace-check-badge': '!flex !py-1 !font-bold !text-[10px] !leading-[inherit] !text-[#bfe2ab] !bg-white/10',
+    // `workspace-record-badge` and `workspace-check-badge` stood here, worn only
+    // by `WorkspaceSurface`, the component that rendered mock figures for the
+    // pages that had no endpoint yet. The last of those pages reads the API
+    // now, the component is gone, and so are the shortcuts nothing wears.
   },
   theme: {
     extend: {

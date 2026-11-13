@@ -2,7 +2,6 @@ import { describe, expect, test } from 'bun:test'
 import { readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 import theme from '../../config/crosswind'
-import { processComponents } from '../../node_modules/@stacksjs/stx/dist/component-renderer.js'
 import { loadCssEngine } from '../../node_modules/@stacksjs/stx/dist/dev-server/ts-css.js'
 import { mergeCssConfig } from '../../node_modules/@stacksjs/stx/dist/ts-css-config.js'
 
@@ -25,26 +24,11 @@ function markupOnly(value: string): string {
 }
 
 describe('shared workspace badges', () => {
-  for (const [component, samples] of [
-    ['WorkspaceSurface', [{ text: 'Complete', record: { status: 'Complete' } }, { text: 'On', check: { state: 'On' } }]],
-  ] as const) {
-    test(`${component} uses quiet shared badges and preserves its status text`, async () => {
-      const file = resolve(root, `resources/components/CommsHQ/${component}.stx`)
-      const badges = readFileSync(file, 'utf8').match(/<Badge\b[^]*?<\/Badge>/g) || []
-      expect(badges).toHaveLength(samples.length)
-      for (const [index, badge] of badges.entries()) {
-        const html = await processComponents(badge, {
-          ...samples[index],
-          __importedComponents: new Map([['badge', resolve(root, 'node_modules/@stacksjs/components/src/ui/badge/Badge.stx')]]),
-        }, file, { componentsDir: resolve(root, 'resources/components') }, new Set())
-        expect(html).toContain(samples[index].text)
-        expect(html).not.toContain('<Badge')
-        expect(html).not.toContain('[Component Error')
-        expect(html).not.toContain('aria-live=')
-        expect(html).not.toContain('x-cloak')
-      }
-    })
-  }
+  /*
+   * A test here rendered `WorkspaceSurface`'s two <Badge>s. That component
+   * held mock figures for the pages with no endpoint yet; the last of them
+   * reads the API now and the component is gone, with its two shortcuts.
+   */
 
   /*
    * This used to render AudienceWorkspace's two consent pills through <Badge>
@@ -138,24 +122,5 @@ describe('shared workspace badges', () => {
     // Desktop table cells previously used inline pills, unlike mobile cards.
     expect(css).toContain('display: inline !important')
     expect(css).toContain('640px')
-  })
-
-  test('workspace badge utilities retain the compact typography and contextual colors', async () => {
-    const engine = await loadCssEngine()
-    if (!engine) throw new Error('The installed STX CSS engine is required')
-    for (const [shortcut, declarations] of [
-      ['workspace-record-badge', ['#466833', '#acd294', '#eef5e8', '10px']],
-      ['workspace-check-badge', ['#bfe2ab', '10px']],
-    ] as const) {
-      const generator = new engine.CSSGenerator(mergeCssConfig(engine.defaultConfig || engine.config, theme).config)
-      generator.generate(shortcut)
-      const css = generator.toCSS(false, false)
-      expect(css).toContain(`.${shortcut}`)
-      for (const declaration of declarations) expect(css).toContain(`${declaration} !important`)
-      expect(css).toContain('font-weight: 700 !important')
-      expect(css).toContain('line-height: inherit !important')
-      expect(css).toContain('display: flex !important')
-      expect(css).toContain('0.25rem !important')
-    }
   })
 })
