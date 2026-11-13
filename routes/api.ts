@@ -48,6 +48,13 @@ route.post('/v1/sender-identities', 'Actions/Api/V1/Sending/CreateSenderIdentity
 route.post('/v1/integration-credentials', 'Actions/Api/V1/Integrations/StoreIntegrationCredentialAction').middleware('auth').middleware('team').rateLimit(10, 'minute')
 route.delete('/v1/integration-credentials/{id}', 'Actions/Api/V1/Integrations/DeleteIntegrationCredentialAction').middleware('auth').middleware('team').rateLimit(20, 'minute')
 
+// A store is a commerce connection and the webhook endpoint its orders
+// arrive at, created and paused together. The endpoint's secret is guarded,
+// so the generated API could never create one that verifies anything.
+route.get('/v1/commerce/stores', 'Actions/Api/V1/Commerce/ListStoresAction').middleware('auth').middleware('team')
+route.post('/v1/commerce/stores', 'Actions/Api/V1/Commerce/ConnectStoreAction').middleware('auth').middleware('team').rateLimit(10, 'minute')
+route.patch('/v1/commerce/stores/{id}', 'Actions/Api/V1/Commerce/UpdateStoreAction').middleware('auth').middleware('team').rateLimit(20, 'minute')
+
 // A workspace's own people. The framework's team actions do the work; these
 // routes hold the path to the caller's team and check the caller's role
 // first, which the framework's platform-admin routes do not.
@@ -58,7 +65,10 @@ route.delete('/v1/teams/{id}/invitations/{invitationId}', 'Actions/Api/V1/Team/R
 route.patch('/v1/teams/{id}/members/{memberId}', 'Actions/Api/V1/Team/UpdateTeamMemberAction').middleware('auth').middleware('team').rateLimit(30, 'minute')
 route.delete('/v1/teams/{id}/members/{memberId}', 'Actions/Api/V1/Team/RemoveTeamMemberAction').middleware('auth').middleware('team').rateLimit(20, 'minute')
 
-route.post('/webhooks/{provider}/{endpoint}', 'Actions/Webhooks/IngestWebhookAction').rateLimit(300, 'minute')
+// A provider's webhook carries no CommsHQ cookie to pair a CSRF token with,
+// so the check refused every one of them with a 403. The signature, verified
+// against the endpoint's secret, is what authenticates the caller.
+route.post('/webhooks/{provider}/{endpoint}', 'Actions/Webhooks/IngestWebhookAction').skipCsrf().rateLimit(300, 'minute')
 
 // `/coming-soon` is served as an STX view from
 // `storage/framework/defaults/resources/views/coming-soon.stx`. The

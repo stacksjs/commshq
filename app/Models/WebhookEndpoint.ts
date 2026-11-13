@@ -4,7 +4,7 @@ import { schema } from '@stacksjs/validation'
 export default defineModel({
   name: 'WebhookEndpoint', table: 'webhook_endpoints', belongsTo: ['Team'], hasMany: ['WebhookEvent'],
   indexes: [{ name: 'webhook_endpoints_team_name_unique', columns: ['team_id', 'provider', 'name'], unique: true }],
-  traits: { useUuid: true, useTimestamps: true, useApi: { prefix: 'v1', uri: 'webhook-endpoints', routes: ['index', 'store', 'show', 'update', 'destroy'], middleware: ['auth', 'team'] } },
+  traits: { useUuid: true, useTimestamps: true, useApi: { prefix: 'v1', uri: 'webhook-endpoints', routes: ['index', 'show'], middleware: ['auth', 'team'] } },
   attributes: {
     name: { required: true, fillable: true, validation: { rule: schema.string().max(120) }, factory: () => 'Commerce events' },
     provider: { required: true, fillable: true, validation: { rule: schema.enum(['twilio', 'stripe', 'shopify', 'woocommerce', 'mail', 'generic']) }, factory: () => 'generic' },
