@@ -1,0 +1,391 @@
+<script server>
+/* Fixed lists from the module, rendered here rather than looped in the
+ * browser, so the selects are usable in the first paint. */
+import { PAGE_STATUSES } from '../../data/sites-query'
+
+export const linkStatusOptions = PAGE_STATUSES.link
+export const landingStatusOptions = PAGE_STATUSES.landing
+</script>
+
+<script client>
+/**
+ * Sites, reading and writing through the application's own API.
+ *
+ * This page was the `sites` area of `WorkspaceSurface`: 3 live sites, 2
+ * custom domains, 100% TLS coverage and a certificate with 42 days left,
+ * none of it read from anywhere. The application serves no site and
+ * attaches no domain.
+ *
+ * It manages the two kinds of page a site would hold: link pages from
+ * `/api/v1/link-pages` and landing pages from `/api/v1/landing-pages`. It
+ * lists them, creates them as drafts, and archives or restores them. It
+ * never publishes, because no route serves a page; the page says so, and
+ * `sites-query.ts` records the detail.
+ *
+ * Writes carry the CSRF token explicitly, read with `useCookie`, the
+ * composable, since a client script may not reach for the DOM itself.
+ */
+import {
+  draftError,
+  kindOf,
+  listErrorMessage,
+  NOT_SERVED,
+  PAGE_KINDS,
+  pagePayload,
+  PAGES_PER_PAGE,
+  pagesUrl,
+  pageUrl,
+  saveErrorMessage,
+  slugCheckUrl,
+  slugTaken,
+  statusPayload,
+  toPageViews,
+} from '../../data/sites-query'
+
+const kinds = PAGE_KINDS
+const notServed = NOT_SERVED
+
+const kind = state('link')
+const pages = state([])
+const hasMore = state(false)
+const page = state(1)
+const status = state('')
+const loading = state(true)
+const errorText = state('')
+const actionError = state('')
+/* Which control the in-flight load belongs to, so one busy state is announced
+ * rather than three. */
+const busySource = state('refresh')
+/* The page a status change is in flight for, so only its button is busy. */
+const busyId = state(0)
+
+const addOpen = state(false)
+const addName = state('')
+const addSlug = state('')
+const addBio = state('')
+const addLinks = state('')
+const addSeoTitle = state('')
+const addSeoDescription = state('')
+const saving = state(false)
+const addError = state('')
+
+const csrfToken = useCookie('X-CSRF-Token')
+
+const isLink = derived(() => kind() === 'link')
+const kindLabel = derived(() => kindOf(kind()).label)
+const nameLabel = derived(() => kindOf(kind()).nameLabel)
+const newLabel = derived(() => `New ${kindOf(kind()).singular}`)
+const refreshBusy = derived(() => loading() && busySource() === 'refresh')
+const prevBusy = derived(() => loading() && busySource() === 'prev')
+const nextBusy = derived(() => loading() && busySource() === 'next')
+const showEmpty = derived(() => !loading() && !errorText() && pages().length === 0)
+const showList = derived(() => !loading() && !errorText() && pages().length > 0)
+
+async function load(source = 'refresh') {
+  busySource.set(source)
+  loading.set(true)
+  errorText.set('')
+  const asked = kind()
+  try {
+    const response = await fetch(pagesUrl(asked, { page: page(), perPage: PAGES_PER_PAGE, status: status() }), {
+      credentials: 'same-origin',
+      headers: { Accept: 'application/json' },
+    })
+
+    if (!response.ok) {
+      errorText.set(listErrorMessage(response.status))
+      pages.set([])
+      return
+    }
+
+    const body = await response.json()
+    pages.set(toPageViews(asked, body))
+    hasMore.set(body?.has_more_pages === true)
+  }
+  catch {
+    // A network failure, not a refusal: there is no status to explain.
+    errorText.set('Pages could not be loaded. Check your connection and try again.')
+    pages.set([])
+  }
+  finally {
+    loading.set(false)
+  }
+}
+
+function chooseKind(next) {
+  if (next === kind() || loading() || saving())
+    return
+  kind.set(next)
+  status.set('')
+  page.set(1)
+  actionError.set('')
+  addError.set('')
+  void load()
+}
+
+function onStatusChange() {
+  page.set(1)
+  void load()
+}
+
+function nextPage() {
+  if (!hasMore() || loading())
+    return
+  page.update(value => value + 1)
+  void load('next')
+}
+
+function previousPage() {
+  if (page() <= 1 || loading())
+    return
+  page.update(value => value - 1)
+  void load('prev')
+}
+
+function writeHeaders() {
+  return {
+    'Content-Type': 'application/json',
+    'Accept': 'application/json',
+    'X-CSRF-Token': csrfToken() || '',
+  }
+}
+
+async function setStatus(id, next) {
+  const body = statusPayload(next)
+  if (busyId() || !body)
+    return
+  busyId.set(id)
+  actionError.set('')
+  try {
+    const response = await fetch(pageUrl(kind(), id), {
+      method: 'PATCH',
+      credentials: 'same-origin',
+      headers: writeHeaders(),
+      body: JSON.stringify(body),
+    })
+
+    if (!response.ok)
+      actionError.set(saveErrorMessage(response.status))
+    /* Read again either way: on a 404 the list on screen is the stale thing. */
+    await load()
+  }
+  catch {
+    actionError.set('That change could not be saved. Check your connection and try again.')
+  }
+  finally {
+    busyId.set(0)
+  }
+}
+
+function toggleAdd() {
+  addOpen.update(value => !value)
+  addError.set('')
+}
+
+async function addPage() {
+  const asked = kind()
+  const draft = { name: addName(), slug: addSlug(), bio: addBio(), links: addLinks(), seoTitle: addSeoTitle(), seoDescription: addSeoDescription() }
+  const problem = draftError(asked, draft)
+  if (problem) {
+    addError.set(problem)
+    return
+  }
+
+  saving.set(true)
+  addError.set('')
+  try {
+    const payload = pagePayload(asked, draft)
+
+    /* The database does not stop two pages sharing a short name here, so ask
+     * first. `sites-query.ts` records why. */
+    const check = await fetch(slugCheckUrl(asked, payload.slug), { credentials: 'same-origin', headers: { Accept: 'application/json' } })
+    if (!check.ok) {
+      addError.set(saveErrorMessage(check.status))
+      return
+    }
+    if (slugTaken(await check.json())) {
+      addError.set(saveErrorMessage(409))
+      return
+    }
+
+    const response = await fetch(kindOf(asked).endpoint, {
+      method: 'POST',
+      credentials: 'same-origin',
+      headers: writeHeaders(),
+      body: JSON.stringify(payload),
+    })
+
+    if (response.status === 201 || response.ok) {
+      addName.set('')
+      addSlug.set('')
+      addBio.set('')
+      addLinks.set('')
+      addSeoTitle.set('')
+      addSeoDescription.set('')
+      addOpen.set(false)
+      status.set('')
+      page.set(1)
+      await load()
+      return
+    }
+
+    addError.set(saveErrorMessage(response.status))
+  }
+  catch {
+    addError.set('The page could not be saved. Check your connection and try again.')
+  }
+  finally {
+    saving.set(false)
+  }
+}
+
+onMount(() => {
+  void load()
+})
+</script>
+
+<main id="main" class="p-5 sm:p-8 min-h-screen text-fg bg-page">
+  <div class="mx-auto max-w-[1500px]">
+    <header class="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between mb-7">
+      <div>
+        <p class="font-bold text-[11px] text-accent tracking-[0.2em] uppercase">Sites</p>
+        <h1 class="mt-2 font-semibold text-4xl tracking-[-0.04em]">The pages a site will hold, drafted here.</h1>
+        <p class="mt-2 max-w-2xl text-fg-muted text-sm">Link pages gather the places people can find you. Landing pages are single pages with a purpose. Both are kept as drafts for now.</p>
+      </div>
+      <div class="flex gap-2">
+        <button type="button" @click="load()" :disabled="refreshBusy()" :aria-busy="refreshBusy()" class="px-5 min-h-11 font-bold text-fg text-sm bg-panel hover:bg-surface-hover border border-line rounded-pill focus-visible:outline focus-visible:outline-[var(--coral)] focus-visible:outline-2 focus-visible:outline-offset-2 disabled:opacity-60">Refresh</button>
+        <button type="button" @click="toggleAdd()" class="px-5 min-h-11 font-bold text-[var(--coral-ink)] text-sm bg-accent rounded-pill focus-visible:outline focus-visible:outline-[var(--coral)] focus-visible:outline-2 focus-visible:outline-offset-2">{{ newLabel() }}</button>
+      </div>
+    </header>
+
+    <p class="flex gap-3 items-start mb-5 p-4 text-sm bg-panel border border-line rounded-panel">
+      <span aria-hidden="true" class="shrink-0 mt-0.5 h-5 w-5 text-fg-muted i-hugeicons-information-circle"></span>
+      <span>{{ notServed }}</span>
+    </p>
+
+    <div class="inline-flex flex-wrap gap-1 mb-5 p-1 bg-panel border border-line rounded-pill" role="group" aria-label="Kind of page">
+      <template :for="option in kinds">
+        <button type="button" @click="chooseKind(option.key)" :aria-pressed="kind() === option.key" class="px-4 min-h-9 font-bold text-xs rounded-pill focus-visible:outline focus-visible:outline-[var(--coral)] focus-visible:outline-2 focus-visible:outline-offset-2" :class="kind() === option.key ? 'bg-accent text-[var(--coral-ink)]' : 'text-fg-muted hover:bg-surface-hover'">{{ option.label }}</button>
+      </template>
+    </div>
+
+    <section :if="addOpen()" class="mb-5 p-5 bg-panel border border-line rounded-panel" aria-labelledby="add-page-title">
+      <h2 id="add-page-title" class="font-bold text-sm">{{ newLabel() }}</h2>
+      <p class="mt-1 text-fg-muted text-xs">It is saved as a draft.</p>
+      <div class="grid gap-3 sm:grid-cols-2 mt-4">
+        <label class="block font-bold text-xs">
+          {{ nameLabel() }}
+          <input x-model.trim="addName" type="text" autocomplete="off" maxlength="160" class="mt-1 field" placeholder="Find us everywhere">
+        </label>
+        <label class="block font-bold text-xs">
+          Short name
+          <input x-model.trim="addSlug" type="text" autocomplete="off" autocapitalize="off" maxlength="160" class="mt-1 field" placeholder="Left blank, it follows the name">
+        </label>
+      </div>
+
+      <div :if="isLink()" class="grid gap-3 mt-3">
+        <label class="block font-bold text-xs">
+          Bio, if any
+          <input x-model.trim="addBio" type="text" autocomplete="off" maxlength="500" class="mt-1 field" placeholder="One or two lines about who this is">
+        </label>
+        <label class="block font-bold text-xs">
+          Links, one per line
+          <textarea x-model="addLinks" rows="5" autocomplete="off" autocapitalize="off" spellcheck="false" class="mt-1 field" placeholder="Newsletter | https://example.com/newsletter"></textarea>
+          <span class="block mt-1 font-normal text-fg-muted">Write each as a label, a bar, then the address. The address alone works too. Up to 20.</span>
+        </label>
+      </div>
+
+      <div :if="!isLink()" class="grid gap-3 sm:grid-cols-2 mt-3">
+        <label class="block font-bold text-xs">
+          Search title, if any
+          <input x-model.trim="addSeoTitle" type="text" autocomplete="off" maxlength="70" class="mt-1 field" placeholder="What a search result would show">
+        </label>
+        <label class="block font-bold text-xs">
+          Search description, if any
+          <input x-model.trim="addSeoDescription" type="text" autocomplete="off" maxlength="160" class="mt-1 field" placeholder="A sentence under the title">
+        </label>
+      </div>
+
+      <p :if="addError()" class="mt-3 font-bold text-danger text-xs" role="alert">{{ addError() }}</p>
+      <div class="flex gap-2 mt-4">
+        <button type="button" @click="addPage()" :disabled="saving()" :aria-busy="saving()" class="px-5 min-h-11 font-bold text-[var(--coral-ink)] text-sm bg-accent rounded-pill focus-visible:outline focus-visible:outline-[var(--coral)] focus-visible:outline-2 focus-visible:outline-offset-2 disabled:opacity-60">Save draft</button>
+        <button type="button" @click="toggleAdd()" class="px-5 min-h-11 font-bold text-fg text-sm bg-panel hover:bg-surface-hover border border-line rounded-pill focus-visible:outline focus-visible:outline-[var(--coral)] focus-visible:outline-2 focus-visible:outline-offset-2">Cancel</button>
+      </div>
+    </section>
+
+    <p :if="actionError()" class="mb-5 p-4 font-bold text-danger text-sm bg-panel border border-line rounded-panel" role="alert">{{ actionError() }}</p>
+
+    <section class="overflow-hidden bg-panel border border-line rounded-panel" aria-labelledby="pages-title">
+      <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between p-5 border-b border-line">
+        <h2 id="pages-title" class="font-bold">{{ kindLabel() }}</h2>
+        <label :if="isLink()" class="block">
+          <span class="sr-only">Filter link pages by status</span>
+          <select x-model="status" @change="onStatusChange()" class="field">
+            <option value="">Every status</option>
+            @foreach(linkStatusOptions as option)
+              <option value="{{ option.value }}">{{ option.label }}</option>
+            @endforeach
+          </select>
+        </label>
+        <label :if="!isLink()" class="block">
+          <span class="sr-only">Filter landing pages by status</span>
+          <select x-model="status" @change="onStatusChange()" class="field">
+            <option value="">Every status</option>
+            @foreach(landingStatusOptions as option)
+              <option value="{{ option.value }}">{{ option.label }}</option>
+            @endforeach
+          </select>
+        </label>
+      </div>
+
+      {{-- Loading. A row-shaped skeleton rather than a spinner, so the list
+           does not jump height when the rows land. --}}
+      <div :if="loading()" class="p-5 space-y-3" aria-hidden="true">
+        <div class="h-16 bg-surface-sunken rounded-control"></div>
+        <div class="h-16 bg-surface-sunken rounded-control"></div>
+      </div>
+      <p :if="loading()" class="sr-only" role="status">Loading pages</p>
+
+      <div :if="errorText()" class="p-8 text-center" role="alert">
+        <span aria-hidden="true" class="inline-block h-6 w-6 text-danger i-hugeicons-alert-02"></span>
+        <p class="mt-3 font-bold text-sm">{{ errorText() }}</p>
+        <button type="button" @click="load()" :disabled="refreshBusy()" :aria-busy="refreshBusy()" class="mt-4 px-5 min-h-11 font-bold text-fg text-sm bg-panel hover:bg-surface-hover border border-line rounded-pill focus-visible:outline focus-visible:outline-[var(--coral)] focus-visible:outline-2 disabled:opacity-60">Try again</button>
+      </div>
+
+      <div :if="showEmpty()" class="p-10 text-center">
+        <span aria-hidden="true" class="inline-block h-7 w-7 text-fg-muted i-hugeicons-web-design-02"></span>
+        <p class="mt-3 font-bold">No pages match this view.</p>
+        <p class="mt-1 text-fg-muted text-sm">Clear the status filter to see every page of this kind, or draft the first one.</p>
+      </div>
+
+      <div :if="showList()" class="divide-line divide-y">
+        <template :for="item in pages()">
+          <article class="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between p-5">
+            <div class="min-w-0">
+              <h3 class="font-bold text-sm">{{ item.name }}</h3>
+              <p class="mt-0.5 text-fg-muted text-xs">{{ item.statusLabel }}. Short name <code>{{ item.slug }}</code>. <span :if="item.linkSummary">{{ item.linkSummary }}. </span>Last changed {{ item.updatedLabel }}.</p>
+              <p :if="item.searchTitle" class="mt-0.5 text-xs">Search title: {{ item.searchTitle }}</p>
+              <p :if="item.detail" class="mt-0.5 text-xs">{{ item.detail }}</p>
+              <ul :if="item.links.length > 0" class="flex flex-wrap gap-x-4 gap-y-1 m-0 mt-2 p-0 list-none">
+                <template :for="link in item.links">
+                  <li class="text-xs"><a :href="link.url" target="_blank" rel="noopener noreferrer nofollow" class="font-bold text-fg">{{ link.label }}</a> <span class="text-fg-muted">{{ link.host }}</span></li>
+                </template>
+              </ul>
+            </div>
+            <div class="flex flex-wrap gap-2 shrink-0">
+              <button type="button" @click="setStatus(item.id, item.nextStatus)" :disabled="busyId() !== 0" :aria-busy="busyId() === item.id" class="px-4 min-h-11 font-bold text-fg text-sm bg-panel hover:bg-surface-hover border border-line rounded-pill focus-visible:outline focus-visible:outline-[var(--coral)] focus-visible:outline-2 disabled:opacity-50">{{ item.nextLabel }}</button>
+            </div>
+          </article>
+        </template>
+      </div>
+
+      <div :if="showList()" class="flex items-center justify-between p-4 border-line border-t">
+        <p class="m-0 text-fg-muted text-xs">Page {{ page() }}</p>
+        <div class="flex gap-2">
+          <button type="button" @click="previousPage()" :disabled="page() <= 1 || prevBusy()" :aria-busy="prevBusy()" class="px-4 min-h-11 font-bold text-fg text-sm bg-panel hover:bg-surface-hover border border-line rounded-pill focus-visible:outline focus-visible:outline-[var(--coral)] focus-visible:outline-2 disabled:opacity-50">Previous</button>
+          <button type="button" @click="nextPage()" :disabled="!hasMore() || nextBusy()" :aria-busy="nextBusy()" class="px-4 min-h-11 font-bold text-fg text-sm bg-panel hover:bg-surface-hover border border-line rounded-pill focus-visible:outline focus-visible:outline-[var(--coral)] focus-visible:outline-2 disabled:opacity-50">Next</button>
+        </div>
+      </div>
+    </section>
+  </div>
+</main>
