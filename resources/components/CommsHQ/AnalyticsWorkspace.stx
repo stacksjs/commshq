@@ -1,0 +1,192 @@
+<script client>
+/**
+ * Analytics, read from the application's own API.
+ *
+ * This page was the `analytics` area of `WorkspaceSurface`. It told every
+ * account it had 68.4% known visitors, 71.2% retention and a $48.20 reader
+ * LTV, none of which the application measures.
+ *
+ * It asks `GET /api/v1/workspace/analytics` for the counts of what this
+ * workspace did over 7, 30 or 90 days: contacts added, form signups, consent
+ * changes and what happened to each campaign recipient. Nothing is changed
+ * from here.
+ *
+ * `analytics-query.ts` records what the old page showed that this one does
+ * not, and the page says the same in its own words.
+ */
+import { analyticsErrorMessage, analyticsUrl, DEFAULT_DAYS, NOT_MEASURED, PERIODS, toAnalyticsView } from '../../data/analytics-query'
+
+const periods = PERIODS
+const notMeasured = NOT_MEASURED
+
+const days = state(DEFAULT_DAYS)
+const view = state(toAnalyticsView(null))
+const loading = state(true)
+const errorText = state('')
+
+const showData = derived(() => !loading() && !errorText())
+
+async function load() {
+  loading.set(true)
+  errorText.set('')
+  try {
+    const response = await fetch(analyticsUrl(days()), { credentials: 'same-origin', headers: { Accept: 'application/json' } })
+    if (!response.ok) {
+      errorText.set(analyticsErrorMessage(response.status))
+      return
+    }
+    view.set(toAnalyticsView(await response.json(), days()))
+  }
+  catch {
+    // A network failure, not a refusal: there is no status to explain.
+    errorText.set('Analytics could not be loaded. Check your connection and try again.')
+  }
+  finally {
+    loading.set(false)
+  }
+}
+
+function choose(period) {
+  if (period === days() || loading()) return
+  days.set(period)
+  void load()
+}
+
+onMount(() => {
+  void load()
+})
+</script>
+
+<main id="main" class="p-5 sm:p-8 min-h-screen text-fg bg-page">
+  <div class="mx-auto max-w-[1300px]">
+    <header class="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between mb-7">
+      <div>
+        <p class="font-bold text-[11px] text-accent tracking-[0.2em] uppercase">Analytics</p>
+        <h1 class="mt-2 font-semibold text-4xl tracking-[-0.04em]">What this workspace did, counted.</h1>
+        <p class="mt-2 max-w-2xl text-fg-muted text-sm">Contacts added, form signups, consent changes and campaign sending over a period you choose. Every figure is a count of rows this workspace owns.</p>
+      </div>
+      <div class="flex flex-wrap gap-2 items-center">
+        <div class="flex flex-wrap gap-1 p-1 bg-panel border border-line rounded-pill" role="group" aria-label="Period">
+          <template :for="period in periods">
+            <button type="button" @click="choose(period.days)" :aria-pressed="days() === period.days" class="px-4 min-h-9 font-bold text-xs rounded-pill focus-visible:outline focus-visible:outline-[var(--coral)] focus-visible:outline-2 focus-visible:outline-offset-2" :class="days() === period.days ? 'bg-accent text-[var(--coral-ink)]' : 'text-fg-muted hover:bg-surface-hover'">{{ period.label }}</button>
+          </template>
+        </div>
+        <button type="button" @click="load()" :disabled="loading()" :aria-busy="loading()" class="px-5 min-h-11 font-bold text-fg text-sm bg-panel hover:bg-surface-hover border border-line rounded-pill focus-visible:outline focus-visible:outline-[var(--coral)] focus-visible:outline-2 focus-visible:outline-offset-2 disabled:opacity-60">Refresh</button>
+      </div>
+    </header>
+
+    {{-- Loading. Tile-shaped skeletons, so the page does not jump when the
+         counts land. --}}
+    <div :if="loading()" class="grid gap-3 sm:grid-cols-2 xl:grid-cols-4" aria-hidden="true">
+      <div class="h-28 bg-surface-sunken rounded-panel"></div>
+      <div class="h-28 bg-surface-sunken rounded-panel"></div>
+      <div class="h-28 bg-surface-sunken rounded-panel"></div>
+      <div class="h-28 bg-surface-sunken rounded-panel"></div>
+    </div>
+    <p :if="loading()" class="sr-only" role="status">Loading analytics</p>
+
+    <div :if="errorText()" class="p-8 text-center bg-panel border border-line rounded-panel" role="alert">
+      <span aria-hidden="true" class="inline-block h-6 w-6 text-danger i-hugeicons-alert-02"></span>
+      <p class="mt-3 font-bold text-sm">{{ errorText() }}</p>
+      <button type="button" @click="load()" :disabled="loading()" :aria-busy="loading()" class="mt-4 px-5 min-h-11 font-bold text-fg text-sm bg-panel hover:bg-surface-hover border border-line rounded-pill focus-visible:outline focus-visible:outline-[var(--coral)] focus-visible:outline-2 focus-visible:outline-offset-2 disabled:opacity-60">Try again</button>
+    </div>
+
+    <div :if="showData()">
+      <section class="grid gap-3 sm:grid-cols-2 xl:grid-cols-4" aria-label="Totals for the period">
+        <template :for="tile in view().tiles">
+          <article class="p-5 bg-panel border border-line rounded-panel">
+            <p class="text-fg-muted text-xs">{{ tile.label }}</p>
+            <p class="mt-4 font-semibold text-3xl tracking-[-0.04em]">{{ tile.value }}</p>
+            <p class="mt-2 text-fg-muted text-xs">{{ tile.note }}</p>
+          </article>
+        </template>
+      </section>
+
+      <section class="mt-5 p-5 bg-panel border border-line rounded-panel" aria-labelledby="growth-title">
+        <h2 id="growth-title" class="font-bold">Contacts added per day</h2>
+        <p class="mt-1 text-fg-muted text-xs">{{ view().growthSummary }} Days are counted in UTC.</p>
+        <div :if="view().hasGrowth" class="flex gap-px items-end mt-5 h-40" role="img" :aria-label="view().growthSummary">
+          <template :for="day in view().growth">
+            <span class="flex-1 min-w-0 rounded-t-[2px]" :class="day.count > 0 ? 'bg-accent' : 'bg-surface-sunken'" :style="day.barStyle" :title="day.title"></span>
+          </template>
+        </div>
+        <p :if="view().hasGrowth" class="flex justify-between mt-2 text-[11px] text-fg-muted" aria-hidden="true">
+          <span>{{ view().periodLabel }}</span>
+          <span>Today</span>
+        </p>
+      </section>
+
+      <div class="grid gap-5 lg:grid-cols-2 mt-5">
+        <section class="p-5 bg-panel border border-line rounded-panel" aria-labelledby="statuses-title">
+          <h2 id="statuses-title" class="font-bold">Contacts by status</h2>
+          <p class="mt-1 text-fg-muted text-xs">Everyone in the workspace now, not only this period: {{ view().contactTotalLabel }}.</p>
+          <p :if="view().contactStatuses.length === 0" class="mt-5 text-fg-muted text-sm">No contacts yet. Add them on the <a href="/dashboard/commshq/audience" class="font-bold text-accent">Contacts page</a>.</p>
+          <ul :if="view().contactStatuses.length > 0" class="m-0 mt-4 p-0 space-y-3 list-none">
+            <template :for="row in view().contactStatuses">
+              <li>
+                <div class="flex gap-3 justify-between text-sm"><span>{{ row.label }}</span><span class="font-bold">{{ row.countLabel }}</span></div>
+                <div class="overflow-hidden mt-1 h-1.5 bg-surface-sunken rounded-pill" aria-hidden="true"><div class="h-1.5 bg-accent rounded-pill" :style="row.barStyle"></div></div>
+              </li>
+            </template>
+          </ul>
+        </section>
+
+        <section class="p-5 bg-panel border border-line rounded-panel" aria-labelledby="forms-title">
+          <h2 id="forms-title" class="font-bold">Signups by form</h2>
+          <p class="mt-1 text-fg-muted text-xs">Submissions each form accepted in the period.</p>
+          <p :if="view().forms.length === 0" class="mt-5 text-fg-muted text-sm">No form was posted to in this period. Forms are managed on the <a href="/dashboard/commshq/forms" class="font-bold text-accent">Forms page</a>.</p>
+          <ul :if="view().forms.length > 0" class="m-0 mt-4 p-0 space-y-3 list-none">
+            <template :for="row in view().forms">
+              <li>
+                <div class="flex gap-3 justify-between text-sm"><span class="min-w-0 truncate">{{ row.label }}</span><span class="font-bold">{{ row.countLabel }}</span></div>
+                <div class="overflow-hidden mt-1 h-1.5 bg-surface-sunken rounded-pill" aria-hidden="true"><div class="h-1.5 bg-accent rounded-pill" :style="row.barStyle"></div></div>
+              </li>
+            </template>
+          </ul>
+        </section>
+
+        <section class="p-5 bg-panel border border-line rounded-panel" aria-labelledby="sending-title">
+          <h2 id="sending-title" class="font-bold">Campaign sending</h2>
+          <p class="mt-1 text-fg-muted text-xs">What happened to each recipient of the campaigns sent in the period.</p>
+          <p :if="view().outcomes.length === 0" class="mt-5 text-fg-muted text-sm">No campaign was sent in this period. Send one from the <a href="/dashboard/commshq/campaigns" class="font-bold text-accent">Campaigns page</a>.</p>
+          <ul :if="view().outcomes.length > 0" class="m-0 mt-4 p-0 space-y-3 list-none">
+            <template :for="row in view().outcomes">
+              <li>
+                <div class="flex gap-3 justify-between text-sm"><span>{{ row.label }}</span><span class="font-bold">{{ row.countLabel }}</span></div>
+                <div class="overflow-hidden mt-1 h-1.5 bg-surface-sunken rounded-pill" aria-hidden="true"><div class="h-1.5 bg-accent rounded-pill" :style="row.barStyle"></div></div>
+              </li>
+            </template>
+          </ul>
+          <ul :if="view().campaigns.length > 0" class="m-0 mt-5 p-0 list-none border-line border-t divide-line divide-y">
+            <template :for="campaign in view().campaigns">
+              <li class="py-3">
+                <a :href="campaign.href" class="font-bold text-fg text-sm">{{ campaign.name }}</a>
+                <p class="mt-0.5 text-fg-muted text-xs">{{ campaign.summary }}</p>
+              </li>
+            </template>
+          </ul>
+          <p :if="view().moreCampaigns > 0" class="mt-3 text-fg-muted text-xs">{{ view().moreCampaigns }} more sent in this period are counted in the totals above.</p>
+        </section>
+
+        <section class="p-5 bg-panel border border-line rounded-panel" aria-labelledby="consent-title">
+          <h2 id="consent-title" class="font-bold">Consent changes</h2>
+          <p class="mt-1 text-fg-muted text-xs">Entries added to the consent ledger in the period.</p>
+          <p :if="view().consent.length === 0" class="mt-5 text-fg-muted text-sm">Nobody opted in or out in this period.</p>
+          <ul :if="view().consent.length > 0" class="m-0 mt-4 p-0 space-y-3 list-none">
+            <template :for="row in view().consent">
+              <li>
+                <div class="flex gap-3 justify-between text-sm"><span>{{ row.label }}</span><span class="font-bold">{{ row.countLabel }}</span></div>
+                <div class="overflow-hidden mt-1 h-1.5 bg-surface-sunken rounded-pill" aria-hidden="true"><div class="h-1.5 bg-accent rounded-pill" :style="row.barStyle"></div></div>
+              </li>
+            </template>
+          </ul>
+        </section>
+      </div>
+
+      <p class="flex gap-3 items-start mt-5 p-5 text-fg-muted text-sm bg-panel border border-line rounded-panel">
+        <span aria-hidden="true" class="shrink-0 mt-0.5 h-4 w-4 i-hugeicons-information-circle"></span>
+        <span>{{ notMeasured }}</span>
+      </p>
+    </div>
+  </div>
+</main>
