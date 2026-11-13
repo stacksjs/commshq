@@ -25,12 +25,6 @@ const pages: Record<string, WorkspacePage> = {
     records: [{ name: 'Primary Shopify store', detail: 'Orders, carts, products, customers', status: 'Healthy', value: 'Live' }, { name: 'Stripe subscriptions', detail: 'Plans and invoice activity', status: 'Healthy', value: 'Live' }, { name: 'Wholesale CSV', detail: 'Nightly signed import', status: 'Review', value: '2 rows' }],
     checklist: [{ label: 'Signature checks', detail: 'Every provider webhook is verified', state: 'Locked' }, { label: 'Event ledger', detail: 'Immutable normalized events', state: 'Healthy' }, { label: 'Replay safety', detail: 'Idempotency keys retained', state: 'On' }],
   },
-  analytics: {
-    eyebrow: 'First-party analytics', title: 'See the path from attention to revenue.', description: 'Measure acquisition, engagement, automations, referrals, cohorts, retention, attribution, and lifetime value.', primary: 'Create report', icon: 'i-hugeicons-chart-line-data-02',
-    metrics: [{ label: 'Known visitors', value: '68.4%', note: '+4.2 points' }, { label: '30-day retention', value: '71.2%', note: '+2.8 points' }, { label: 'Reader LTV', value: '$48.20', note: '+$6.14' }],
-    records: [{ name: 'Organic publication', detail: 'Search, direct, and RSS', status: 'Leading', value: '$28,412' }, { name: 'Reader referrals', detail: 'Verified recommendation links', status: 'Growing', value: '$18,920' }, { name: 'Commerce recovery', detail: 'Cart and win-back journeys', status: 'Efficient', value: '8.4x ROAS' }],
-    checklist: [{ label: 'Attribution model', detail: 'First-party position based', state: 'Active' }, { label: 'Bot filtering', detail: 'Known agents and abnormal events removed', state: 'Healthy' }, { label: 'Export controls', detail: 'Workspace permissions required', state: 'Locked' }],
-  },
 }
 
 const page = computed(() => pages[area()] || pages.sites)
