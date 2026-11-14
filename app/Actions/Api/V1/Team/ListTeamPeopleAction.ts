@@ -33,20 +33,20 @@ export default new Action({
     const manages = canManageTeam(membership.role)
 
     const [team, members, invitations] = await Promise.all([
-      db.selectFrom('teams' as any).select(['id', 'name'] as any).where('id' as any, '=', teamId).executeTakeFirst() as Promise<{ id: number, name: string } | undefined>,
+      db.selectFrom('teams' as any).select(['id', 'name'] as any).where('id' as any, '=', teamId).executeTakeFirst() as { id: number, name: string } | undefined,
       db.selectFrom('team_members' as any)
         .innerJoin('users' as any, 'users.id' as any, '=' as any, 'team_members.user_id' as any)
         .select(['team_members.id as id', 'team_members.user_id as user_id', 'team_members.role as role', 'team_members.status as status', 'team_members.created_at as created_at', 'users.name as name', 'users.email as email'] as any)
         .where('team_members.team_id' as any, '=', teamId)
         .orderBy('users.name' as any, 'asc')
-        .execute() as Promise<any[]>,
+        .execute() as any[],
       manages
         ? db.selectFrom('team_invitations' as any)
             .select(['id', 'email', 'role', 'status', 'delivery_status', 'expires_at', 'created_at'] as any)
             .where('team_id' as any, '=', teamId)
             .where('status' as any, '=', 'pending')
             .orderBy('created_at' as any, 'desc')
-            .execute() as Promise<any[]>
+            .execute() as any[]
         : Promise.resolve([] as any[]),
     ])
 

@@ -6,6 +6,7 @@
 // would make every compilation that touches a name resolve every module.
 export const emails = {
   'email-verification': '@stacksjs/defaults/resources/emails/email-verification.stx',
+  'license': '@stacksjs/defaults/resources/emails/license.stx',
   'notification': '@stacksjs/defaults/resources/emails/notification.stx',
   'password-changed': '@stacksjs/defaults/resources/emails/password-changed.stx',
   'password-reset': '@stacksjs/defaults/resources/emails/password-reset.stx',

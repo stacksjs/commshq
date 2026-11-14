@@ -1444,6 +1444,21 @@ declare module '@stacksjs/database' {
       site_id: number
       publication_id: number
     }
+    license_activations: {
+      // columns
+      id: number
+      created_at: string
+      updated_at: string | null
+      device_hash: string
+      device_name: string | null
+      platform: string | null
+      app_version: string | null
+      license_seat_id: number | null
+      first_seen_at: string
+      last_seen_at: string
+      released_at: string | null
+      license_key_id: number
+    }
     license_keys: {
       // columns
       id: number
@@ -1452,11 +1467,35 @@ declare module '@stacksjs/database' {
       updated_at: string | null
       key: string
       template: "Standard License" | "Premium License" | "Enterprise License"
-      expiry_date: string
-      status: "active" | "inactive" | "unassigned"
+      expiry_date: string | null
+      status: "active" | "inactive" | "unassigned" | "revoked" | "refunded"
+      tier: "standard" | "lifetime" | "team"
+      updates_until: string | null
+      max_devices: number
+      seats: number
+      email: string | null
+      purchase_reference: string | null
+      payment_reference: string | null
+      provider: string | null
+      amount_paid: number | null
+      amount_refunded: number
+      currency: string | null
+      revoked_at: string | null
       customer_id: number
       product_id: number
       order_id: number
+      team_id: number
+    }
+    license_seats: {
+      // columns
+      id: number
+      created_at: string
+      updated_at: string | null
+      email: string
+      assigned_at: string
+      license_key_id: number
+      team_member_id: number
+      user_id: number
     }
     link_pages: {
       // columns
@@ -2046,6 +2085,12 @@ declare module '@stacksjs/database' {
       paused_at: string | null
       resume_at: string | null
     }
+    queue_workers: {
+      // columns
+      worker_id: string
+      snapshot: string
+      heartbeat_at: number | bigint
+    }
     receipts: {
       // columns
       id: number
@@ -2201,7 +2246,7 @@ declare module '@stacksjs/database' {
       created_at: string
       updated_at: string | null
       deleted_at: string | null
-      method: "GET" | "POST" | "PUT" | "PATCH" | "DELETE" | "OPTIONS" | "HEAD"
+      method: string
       path: string
       status_code: number
       duration_ms: number

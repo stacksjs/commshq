@@ -38,7 +38,7 @@ export default new Action({
       const [endpoint, events, latest, failed] = await Promise.all([
         storeEndpoint(teamId, store.provider),
         (db as any).selectFrom('commerce_events').where('team_id', '=', teamId).where('commerce_connection_id', '=', store.id).count(),
-        db.selectFrom('commerce_events' as any).select(['occurred_at'] as any).where('team_id' as any, '=', teamId).where('commerce_connection_id' as any, '=', store.id).orderBy('occurred_at' as any, 'desc').executeTakeFirst() as Promise<{ occurred_at: string } | undefined>,
+        db.selectFrom('commerce_events' as any).select(['occurred_at'] as any).where('team_id' as any, '=', teamId).where('commerce_connection_id' as any, '=', store.id).orderBy('occurred_at' as any, 'desc').executeTakeFirst() as { occurred_at: string } | undefined,
         (db as any).selectFrom('webhook_events').where('team_id', '=', teamId).where('provider', '=', store.provider).where('status', 'in', ['failed', 'dead_lettered']).count(),
       ])
       return {
