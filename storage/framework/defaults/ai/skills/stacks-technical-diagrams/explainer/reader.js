@@ -258,11 +258,6 @@
   // density. Controls, dialogs and walk-through bars are left out. Browsers that refuse to export a
   // foreignObject canvas (Safari) get a notice pointing to Print / PDF.
   async function pageImage(format = 'png') {
-    // `shell` IS used, by `height` in this same declaration list. The rule does
-    // not look inside the statement that declares the binding, so it reports a
-    // use it is standing on. Disabled rather than renamed to `_shell`, which
-    // would be a lie about a variable that is read.
-    // eslint-disable-next-line pickier/no-unused-vars
     const shell = document.querySelector('.shell'), width = document.documentElement.clientWidth, height = Math.ceil(shell.getBoundingClientRect().height + 48);
     const clone = root.cloneNode(true);
     clone.querySelectorAll('script,dialog,#toast,.skip-link,.tools,.ask-button,.ask-floating,.walk-bar,.walk-start,.interactive,.diagram-fit-status').forEach(element=>element.remove());
@@ -270,8 +265,6 @@
     clone.querySelectorAll('.focusing').forEach(element=>element.classList.remove('focusing'));
     // Inside a foreignObject the page's <html> is not :root, so theme and style rules would drop out;
     // the root's own attribute selects the same element with the same specificity.
-    // Same false positive: `sheet` is read twice by the `if` on this line.
-    // eslint-disable-next-line pickier/no-unused-vars
     const sheet = clone.querySelector('head>style'); if (sheet) sheet.textContent = sheet.textContent.replace(/:root\b/g,'[data-archify-artifact]');
     clone.style.width = `${width}px`;
     const xhtml = new XMLSerializer().serializeToString(clone);
