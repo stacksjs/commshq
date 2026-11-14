@@ -74,11 +74,11 @@
     "serve:validate": "bun scripts/validate-serve.ts"
   },
   "dependencies": {
-    "@stacksjs/components": "0.2.872",
+    "@stacksjs/components": "0.2.875",
     "@stacksjs/stx": "0.2.872",
-    "@stacksjs/ts-cloud": "^0.16.15",
+    "@stacksjs/ts-cloud": "^0.16.127",
     "bun-plugin-stx": "0.2.872",
-    "stacks": "^0.75.582"
+    "stacks": "^0.75.584"
   },
   "workspaces": [
     "storage/framework",
@@ -94,7 +94,7 @@
     "commit-msg": "bun x gitlint --edit \"$1\""
   },
   "devDependencies": {
-    "better-dx": "^0.2.25"
+    "better-dx": "^0.2.40"
   },
   "overrides": {
     "@stacksjs/stx": "0.2.872",
