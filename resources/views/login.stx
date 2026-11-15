@@ -113,12 +113,15 @@ async function handleVerify(e: SubmitEvent): Promise<void> {
 @section('content')
 <div class="max-w-sm w-full">
   <div class="mb-8 text-center">
-    <StxLink to="/" class="font-bold no-underline text-2xl ink">CommsHQ</StxLink>
+    <StxLink to="/" class="inline-flex flex-col gap-3 items-center no-underline" aria-label="CommsHQ home">
+      <span class="auth-mark" aria-hidden="true">C</span>
+      <span class="font-bold text-2xl ink">CommsHQ</span>
+    </StxLink>
     <p class="mt-2 text-sm muted">Sign in to your workspace</p>
   </div>
 
   <div class="px-6 py-7 border border-tone rounded-2xl panel">
-    <form @submit="handleSubmit" class="space-y-4" :show="!twoFactor()">
+    <form @submit="handleSubmit" class="flex flex-col gap-4" :show="!twoFactor()">
       <div>
         <label for="email" class="block mb-1.5 font-medium text-xs ink">Email</label>
         <input id="email" name="email" type="email" required autocomplete="email" class="field" placeholder="you@example.com" :aria-invalid="error() ? 'true' : 'false'" :aria-describedby="error() ? 'login-error' : ''">
@@ -145,7 +148,7 @@ async function handleVerify(e: SubmitEvent): Promise<void> {
     {{-- Second step for TOTP accounts. Hidden until step one reports
         requires_two_factor; the challenge token and remember choice ride in
         signals, so this form only needs the code. --}}
-    <form @submit="handleVerify" class="space-y-4" :show="twoFactor()" style="display:none">
+    <form @submit="handleVerify" class="flex flex-col gap-4" :show="twoFactor()" style="display:none">
       <div>
         <label for="code" class="block mb-1.5 font-medium text-xs ink">Authentication code</label>
         <input id="code" name="code" type="text" inputmode="numeric" autocomplete="one-time-code" maxlength="6" pattern="[0-9]*" placeholder="123456" class="field" :aria-invalid="error() ? 'true' : 'false'" :aria-describedby="error() ? 'login-error' : ''">

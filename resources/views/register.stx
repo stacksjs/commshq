@@ -76,12 +76,15 @@ async function handleSubmit(e: SubmitEvent): Promise<void> {
 @section('content')
 <div class="max-w-sm w-full">
   <div class="mb-8 text-center">
-    <StxLink to="/" class="font-bold no-underline text-2xl ink">CommsHQ</StxLink>
+    <StxLink to="/" class="inline-flex flex-col gap-3 items-center no-underline" aria-label="CommsHQ home">
+      <span class="auth-mark" aria-hidden="true">C</span>
+      <span class="font-bold text-2xl ink">CommsHQ</span>
+    </StxLink>
     <p class="mt-2 text-sm muted">Create your workspace</p>
   </div>
 
   <div class="px-6 py-7 border border-tone rounded-2xl panel">
-    <form @submit="handleSubmit" class="space-y-4">
+    <form @submit="handleSubmit" class="flex flex-col gap-4">
       <div>
         <label for="name" class="block mb-1.5 font-medium text-xs ink">Your name</label>
         <input id="name" name="name" type="text" required autocomplete="name" class="field" placeholder="Ada Lovelace" :aria-invalid="error() ? 'true' : 'false'" :aria-describedby="error() ? 'form-error' : ''">

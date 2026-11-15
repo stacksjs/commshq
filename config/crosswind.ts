@@ -187,6 +187,10 @@ export default {
     'bg-coral': 'bg-accent',
     'border-tone': 'border-line',
 
+    // The logo on the signed-out pages: a coral tile carrying the initial, above
+    // the wordmark.
+    'auth-mark': 'flex items-center justify-center w-11 h-11 rounded-[13px] bg-accent text-[var(--coral-ink)] text-[24px] font-bold leading-none select-none',
+
     // index.stx's two editorial treatments. `reveal`'s reduced-motion guard is
     // `motion-reduce:animate-none` and not `motion-reduce:[animation:none]`,
     // which is a choice now rather than a constraint: the engine used to drop
