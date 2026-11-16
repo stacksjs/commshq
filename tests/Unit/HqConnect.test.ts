@@ -292,6 +292,22 @@ describe('sending', () => {
     expect(s.sent[0]!.replyTo).toEqual([])
   })
 
+  test('a mail server that refuses the app\'s own address still gets the message out from CommsHQ', async () => {
+    const s = setup()
+    const { app } = await s.readyApp()
+    const tried: string[] = []
+    const result = await sendForApp(app, MESSAGE, {
+      ...s.sendDeps,
+      transport: async (message: OutgoingMessage) => {
+        tried.push(message.from.address)
+        return message.signing ? { ok: false, error: '550 5.7.1 Message author is not authorized for this account' } : { ok: true }
+      },
+    })
+
+    expect(tried).toEqual(['noreply@votescape.org', FALLBACK])
+    expect(result).toMatchObject({ ok: true, status: 202, data: { authenticated: 'fallback', from: `Votescape via CommsHQ <${FALLBACK}>` } })
+  })
+
   test('an address on another domain is never used, verified domain or not', async () => {
     const s = setup()
     const { app } = await s.readyApp()

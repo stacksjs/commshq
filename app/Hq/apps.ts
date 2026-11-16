@@ -455,33 +455,44 @@ export async function sendForApp(app: ConnectedApp, body: unknown, deps: SendDep
   const askedDomain = askedAddress ? domainOfAddress(askedAddress) : undefined
   const fromOwn = !!ownDomain && (!askedAddress || askedDomain === ownDomain || askedDomain?.endsWith(`.${ownDomain}`) === true)
 
-  const from = fromOwn
-    ? { name: safeName(asked.name, app.name), address: askedAddress ?? `noreply@${ownDomain}` }
-    : { name: `${safeName(asked.name, app.name)} via CommsHQ`, address: deps.fallbackAddress() }
+  const ownFrom = { name: safeName(asked.name, app.name), address: askedAddress ?? `noreply@${ownDomain}` }
+  const sharedFrom = { name: `${safeName(asked.name, app.name)} via CommsHQ`, address: deps.fallbackAddress() }
   // From CommsHQ's address a reply would reach CommsHQ. It goes to the app.
-  const replies = replyTo.list.length > 0 ? replyTo.list : (!fromOwn && askedAddress ? [askedAddress] : [])
+  const repliesFor = (own: boolean): string[] => replyTo.list.length > 0 ? replyTo.list : (!own && askedAddress ? [askedAddress] : [])
 
   if (!(await store.reserve(app.teamId, 'emails', acceptedAll.length)))
     return { ok: false, status: 402, error: 'The workspace has no email allowance left for this period' }
 
   const id = deps.newId?.() ?? crypto.randomUUID()
-  const sent = await deps.transport({
-    from,
+  type Sent = { ok: boolean, messageId?: string, error?: string }
+  const hand = (own: boolean): Promise<Sent> => deps.transport({
+    from: own ? ownFrom : sharedFrom,
     to: accepted.to,
     cc: accepted.cc,
     bcc: accepted.bcc,
-    replyTo: replies,
+    replyTo: repliesFor(own),
     subject,
     html,
     text,
     headers: { ...allowedHeaders(input.headers), 'X-CommsHQ-Message': id },
-    ...(fromOwn && ownDomain && privateKey ? { signing: { domain: ownDomain, privateKey } } : {}),
-  }).catch((error: unknown) => ({ ok: false, error: error instanceof Error ? error.message : String(error) }) as { ok: boolean, messageId?: string, error?: string })
+    ...(own && ownDomain && privateKey ? { signing: { domain: ownDomain, privateKey } } : {}),
+  }).catch((error: unknown) => ({ ok: false, error: error instanceof Error ? error.message : String(error) }) as Sent)
+
+  let own = fromOwn
+  let sent = await hand(own)
+  // A mail server that will not carry the app's own address still carries
+  // CommsHQ's. The message matters more than whose name is on it, and the
+  // answer says which it was.
+  if (!sent.ok && own) {
+    own = false
+    sent = await hand(own)
+  }
+  const from = own ? ownFrom : sharedFrom
 
   const record: SendRecord = {
     id,
     from: `${from.name} <${from.address}>`,
-    authenticated: fromOwn ? 'domain' : 'fallback',
+    authenticated: own ? 'domain' : 'fallback',
     status: sent.ok ? 'sent' : 'failed',
     accepted: acceptedAll,
     suppressed,
