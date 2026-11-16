@@ -6,7 +6,7 @@ import { response } from '@stacksjs/router'
 import AuditEvent from '../../../../Models/AuditEvent'
 import { activeTeam } from '../../../../Support/activeTeam'
 import { canonicalGraph, graphChecksum, readRunnableGraph, TRIGGER_TYPES, triggerType } from '../../../../Support/automationGraph'
-import { latestVersion, verifiedSender } from '../../../../Support/automationRunner'
+import { enrollContacts, latestVersion, qualifyingContacts, verifiedSender } from '../../../../Support/automationRunner'
 import { canEditWorkspace } from '../../../../Support/workspaceSettings'
 
 /**
@@ -22,8 +22,13 @@ import { canEditWorkspace } from '../../../../Support/workspaceSettings'
  * latest version rather than making an identical one, so this is also how
  * an automation is resumed.
  *
- * An admin or owner only. Once on, an automation sends email to every new
- * subscriber without anyone pressing anything again.
+ * With `enroll_existing: true`, the people who already meet the trigger
+ * (and have never been through this automation) are queued too, up to
+ * `ENROLL_LIMIT`. Without it, only what happens from now on starts a run.
+ * The page asks, and says how many, before sending it.
+ *
+ * An admin or owner only. Once on, an automation sends to everyone its
+ * trigger catches without anyone pressing anything again.
  */
 export default new Action({
   name: 'Publish Automation',
@@ -54,10 +59,11 @@ export default new Action({
 
     const { graph, error } = readRunnableGraph(automation.graph)
     if (!graph) return response.json({ error }, 422)
-    if (!await verifiedSender(teamId, graph.senderIdentityId))
+    // An automation of texts and waits sends no email, so it needs no sender.
+    if (graph.senderIdentityId && !await verifiedSender(teamId, graph.senderIdentityId))
       return response.json({ error: 'The sender must be a verified sender at a verified domain' }, 422)
 
-    const canonical = canonicalGraph(graph)
+    const canonical = canonicalGraph(graph, trigger)
     const checksum = graphChecksum(canonical)
     const latest = await latestVersion(teamId, id)
     const now = new Date().toISOString()
@@ -84,16 +90,20 @@ export default new Action({
       .set({ status: 'active', version, published_at: now, updated_at: now } as any)
       .where('id' as any, '=', id).where('team_id' as any, '=', teamId).execute()
 
+    const enrolled = request.get('enroll_existing') === true
+      ? await enrollContacts(teamId, id, version, trigger, await qualifyingContacts(teamId, id, trigger))
+      : 0
+
     await AuditEvent.forceCreate({
       team_id: teamId,
       user_id: Number(user.id),
       action: reused ? 'automation.resumed' : 'automation.published',
       subjectType: 'Automation',
       subjectId: String(id),
-      metadata: JSON.stringify({ version, steps: graph.steps.length }),
+      metadata: JSON.stringify({ version, trigger, steps: graph.steps.length, enrolled }),
       occurredAt: now,
     })
 
-    return response.json({ data: { id, status: 'active', version, new_version: !reused, published_at: now } })
+    return response.json({ data: { id, status: 'active', version, new_version: !reused, published_at: now, enrolled } })
   },
 })

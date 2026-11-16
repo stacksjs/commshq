@@ -28,6 +28,7 @@ route.patch('/v1/workspace/settings', 'Actions/Api/V1/UpdateWorkspaceSettingsAct
 // update could mark one active with nothing published behind it.
 route.post('/v1/automations/{id}/publish', 'Actions/Api/V1/Automations/PublishAutomationAction').middleware('auth').middleware('team').rateLimit(20, 'minute')
 route.get('/v1/automations/activity', 'Actions/Api/V1/Automations/AutomationActivityAction').middleware('auth').middleware('team')
+route.get('/v1/automations/{id}/qualifying', 'Actions/Api/V1/Automations/QualifyingContactsAction').middleware('auth').middleware('team')
 route.post('/v1/campaigns/{id}/dispatch', 'Actions/Api/V1/DispatchCampaignAction').middleware('auth').middleware('team').rateLimit(20, 'minute')
 route.post('/v1/ai/generate', 'Actions/Api/V1/GenerateAiDraftAction').middleware('auth').middleware('team').rateLimit(10, 'minute')
 route.post('/v1/ai-generations/{id}/decision', 'Actions/Api/V1/DecideAiDraftAction').middleware('auth').middleware('team').rateLimit(30, 'minute')
