@@ -499,3 +499,40 @@ describe('an app\'s signup form', () => {
     expect(s.forms[0]!.status).toBe('archived')
   })
 })
+
+describe('looking a sending domain\'s records up', () => {
+  const notFound = Object.assign(new Error('queryTxt ENOTFOUND'), { code: 'ENOTFOUND' })
+
+  test('asks the zone\'s own nameservers, so a resolver that remembers an earlier miss does not decide', async () => {
+    const { lookupTxtWith } = await import('../../app/Hq/service')
+    const asked: string[] = []
+    const result = await lookupTxtWith('_commshq-verify.votescape.org', {
+      // The machine's resolver still says there is nothing.
+      resolveTxt: async () => { throw notFound },
+      resolveNs: async (zone) => {
+        asked.push(zone)
+        if (zone !== 'votescape.org') throw notFound
+        return ['alex.ns.cloudflare.com', 'melany.ns.cloudflare.com']
+      },
+      resolve4: async name => [name.startsWith('alex') ? '198.51.100.1' : '198.51.100.2'],
+      authoritative: async (addresses, host) => {
+        expect(addresses).toEqual(['198.51.100.1', '198.51.100.2'])
+        expect(host).toBe('_commshq-verify.votescape.org')
+        return [['commshq-verify=abc']]
+      },
+    })
+    expect(result).toEqual({ answer: [['commshq-verify=abc']], failed: false })
+    expect(asked).toEqual(['votescape.org'])
+  })
+
+  test('a name the nameservers do not have is an answer, and an unreachable zone falls back to the resolver', async () => {
+    const { lookupTxtWith } = await import('../../app/Hq/service')
+    const zone = { resolveNs: async () => ['ns.example.net'], resolve4: async () => ['198.51.100.9'] }
+    expect(await lookupTxtWith('x.example.com', { ...zone, resolveTxt: async () => [['cached']], authoritative: async () => { throw notFound } }))
+      .toEqual({ answer: [], failed: false })
+    expect(await lookupTxtWith('x.example.com', { ...zone, resolveTxt: async () => [['from resolver']], authoritative: async () => { throw Object.assign(new Error('timeout'), { code: 'ETIMEOUT' }) } }))
+      .toEqual({ answer: [['from resolver']], failed: false })
+    expect(await lookupTxtWith('x.example.com', { resolveNs: async () => { throw notFound }, resolve4: async () => [], resolveTxt: async () => { throw Object.assign(new Error('servfail'), { code: 'ESERVFAIL' }) }, authoritative: async () => [] }))
+      .toEqual({ answer: [], failed: true })
+  })
+})
