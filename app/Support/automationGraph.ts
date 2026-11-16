@@ -10,14 +10,16 @@ import { createHash } from 'node:crypto'
  * body or quiet-hours rule), so a graph holding one is refused rather than
  * published to stall or to skip a step silently.
  *
- * One trigger: `subscriber_joined`, which `startAutomations` fires when
- * someone confirms an email subscription through a signup form.
+ * Two triggers, fired through `startAutomations`: `subscriber_joined`, when
+ * someone confirms an email subscription through a signup form, and
+ * `purchase_made`, when a connected store records an order from an email
+ * address the workspace already has as a contact (`commerceAttribution`).
  *
  * The page applies the same rules before it saves; a test holds the two
  * sets of limits together.
  */
 export const RUNNABLE_STEP_TYPES = ['send_email', 'delay'] as const
-export const TRIGGER_TYPES = ['subscriber_joined'] as const
+export const TRIGGER_TYPES = ['subscriber_joined', 'purchase_made'] as const
 
 export const MAX_STEPS = 20
 export const SUBJECT_MAX = 200

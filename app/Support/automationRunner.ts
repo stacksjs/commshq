@@ -9,9 +9,11 @@ import { runIdempotencyKey, triggerType } from './automationGraph'
  * Starting runs, and the sender a run sends from.
  *
  * `startAutomations` is called where something happens that an automation
- * can wait for. Today that is one place: someone confirming an email
- * subscription through a signup form, which is `subscriber_joined`. A
- * contact added on the Contacts page has not opted in, so it starts nothing.
+ * can wait for: someone confirming an email subscription through a signup
+ * form (`subscriber_joined`), and a connected store recording an order from
+ * a known contact (`purchase_made`, from `commerceAttribution`). A contact
+ * added on the Contacts page starts nothing. Every email a run sends still
+ * checks the contact's consent first, whatever started it.
  *
  * Each active automation with a published version gets one run per contact,
  * ever: the run's idempotency key is unique, so a second confirmation, or a

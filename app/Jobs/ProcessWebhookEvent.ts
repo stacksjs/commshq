@@ -4,6 +4,7 @@ import { Job } from '@stacksjs/queue'
 import CommerceConnection from '../Models/CommerceConnection'
 import CommerceEvent from '../Models/CommerceEvent'
 import WebhookEvent from '../Models/WebhookEvent'
+import { minorUnits, recordPurchase } from '../Support/commerceAttribution'
 import { appendConsentOnce, ensureSuppressed } from '../Support/consentLedger'
 import { twilioConsentIdempotencyKey } from '../Support/twilioCompliance'
 import { commerceEventType, objectPayload, webhookRecipient } from '../Support/webhookPayload'
@@ -58,18 +59,19 @@ export default new Job({
         const connection = await CommerceConnection.where('team_id', input.teamId).where('provider', event.provider).where('status', 'active').first()
         if (!connection) throw new Error(`No active ${event.provider} connection for team ${input.teamId}`)
         const existing = await CommerceEvent.where('commerce_connection_id', connection.id).where('externalId', event.providerEventId).first()
-        if (!existing) {
-          await CommerceEvent.forceCreate({
-            team_id: input.teamId,
-            commerce_connection_id: connection.id,
-            externalId: event.providerEventId,
-            type: commerceEventType(event.type),
-            amount: Number(payload.total_price || payload.total || 0) * 100,
-            currency: String(payload.currency || 'USD').toUpperCase(),
-            payload: JSON.stringify(payload),
-            occurredAt: String(payload.created_at || new Date().toISOString()),
-          })
-        }
+        const recorded = existing ?? await CommerceEvent.forceCreate({
+          team_id: input.teamId,
+          commerce_connection_id: connection.id,
+          externalId: event.providerEventId,
+          type: commerceEventType(event.type),
+          amount: minorUnits(payload.total_price ?? payload.total),
+          currency: String(payload.currency || 'USD').toUpperCase(),
+          payload: JSON.stringify(payload),
+          occurredAt: String(payload.created_at || new Date().toISOString()),
+        })
+        // On a retry too: matching and crediting are idempotent, and a pass
+        // that died between recording and crediting would otherwise skip it.
+        await recordPurchase(input.teamId, Number(recorded.id))
       }
 
       await WebhookEvent.forceUpdate(event.id, { status: 'processed', processedAt: new Date().toISOString(), error: null })
