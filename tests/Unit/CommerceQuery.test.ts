@@ -178,7 +178,8 @@ describe('the page agrees with the server', () => {
       if (/CommerceEvent\b|commerce_events/.test(await Bun.file(`${root}${file}`).text()))
         readers.push(file)
     }
-    expect(readers.sort()).toEqual(['app/Actions/Api/V1/Commerce/ListStoresAction.ts', 'app/Jobs/ProcessWebhookEvent.ts', 'app/Support/commerceAttribution.ts', 'app/Support/workspaceAnalytics.ts'])
+    // automationRunner reads buyers to enroll in a purchase automation.
+    expect(readers.sort()).toEqual(['app/Actions/Api/V1/Commerce/ListStoresAction.ts', 'app/Jobs/ProcessWebhookEvent.ts', 'app/Support/automationRunner.ts', 'app/Support/commerceAttribution.ts', 'app/Support/workspaceAnalytics.ts'])
     expect(NOT_USED_YET).toContain('credited to the last email they were sent')
     expect(NOT_USED_YET).toContain('Carts and products are not read')
     expect(await source('resources/components/CommsHQ/CommerceWorkspace.stx')).toContain('{{ notUsedYet }}')

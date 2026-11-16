@@ -7,6 +7,7 @@
 export const actions = {
   'Actions/Api/V1/Automations/AutomationActivityAction': '../../../app/Actions/Api/V1/Automations/AutomationActivityAction.ts',
   'Actions/Api/V1/Automations/PublishAutomationAction': '../../../app/Actions/Api/V1/Automations/PublishAutomationAction.ts',
+  'Actions/Api/V1/Automations/QualifyingContactsAction': '../../../app/Actions/Api/V1/Automations/QualifyingContactsAction.ts',
   'Actions/Api/V1/Commerce/ConnectStoreAction': '../../../app/Actions/Api/V1/Commerce/ConnectStoreAction.ts',
   'Actions/Api/V1/Commerce/ListStoresAction': '../../../app/Actions/Api/V1/Commerce/ListStoresAction.ts',
   'Actions/Api/V1/Commerce/UpdateStoreAction': '../../../app/Actions/Api/V1/Commerce/UpdateStoreAction.ts',

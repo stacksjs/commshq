@@ -7,8 +7,9 @@
  * them. The chain itself was run end to end against a local mail sink.
  */
 import { describe, expect, test } from 'bun:test'
-import { MAX_SEND_ATTEMPTS, SEND_BACKOFF_MINUTES } from '../../app/Jobs/ProcessAutomationRun'
-import { canonicalGraph, graphChecksum, messageHtml, readRunnableGraph, runIdempotencyKey, triggerType } from '../../app/Support/automationGraph'
+import { contactTimezone, MAX_SEND_ATTEMPTS, QUIET_HOURS_RECHECK_MINUTES, SEND_BACKOFF_MINUTES } from '../../app/Jobs/ProcessAutomationRun'
+import { canonicalGraph, graphChecksum, messageHtml, readRunnableGraph, runIdempotencyKey, triggerType, versionTrigger } from '../../app/Support/automationGraph'
+import { ENROLL_LIMIT } from '../../app/Support/automationRunner'
 
 async function source(path: string): Promise<string> {
   return Bun.file(new URL(`../../${path}`, import.meta.url)).text()
@@ -41,8 +42,10 @@ describe('what can be turned on', () => {
       [graph([wait('a', 31 * 86_400), mail('b')]), 'between 1 hour and 30 days'],
       [graph([wait('a', 3600.5), mail('b')]), 'between 1 hour and 30 days'],
       [graph([{ id: 'a', type: 'approval', config: {} }, mail('b')]), 'Step 1 is a kind of step that cannot run yet'],
-      [graph([{ id: 'a', type: 'send_sms', config: {} }]), 'Step 1 is a kind of step that cannot run yet'],
-      [graph([wait('a', 3600)]), 'at least one email step'],
+      [graph([{ id: 'a', type: 'send_sms', config: {} }]), 'Step 1 needs a text'],
+      [graph([{ id: 'a', type: 'send_sms', config: { body: 'x'.repeat(641) } }]), 'at most 640'],
+      [graph([{ id: 'a', type: 'review', config: {} }]), 'Step 1 is a kind of step that cannot run yet'],
+      [graph([wait('a', 3600)]), 'at least one message step'],
       [graph([mail('a'), wait('b', 3600)]), 'The last step cannot be a wait'],
       [graph(Array.from({ length: 21 }, (_, i) => mail(`m-${i}`))), 'at most 20 steps'],
     ]
@@ -55,11 +58,11 @@ describe('what can be turned on', () => {
   test('equal graphs share a checksum, so turning on again reuses the version', () => {
     const a = readRunnableGraph(graph([mail('a', 'Hi  there')])).graph!
     const b = readRunnableGraph(JSON.stringify({ edges: [], nodes: [mail('a', 'Hi there')], sender_identity_id: 2, extra: true })).graph!
-    expect(graphChecksum(canonicalGraph(a))).toBe(graphChecksum(canonicalGraph(b)))
+    expect(graphChecksum(canonicalGraph(a, 'subscriber_joined'))).toBe(graphChecksum(canonicalGraph(b, 'subscriber_joined')))
     const c = readRunnableGraph(graph([mail('a', 'Hi there!')])).graph!
-    expect(graphChecksum(canonicalGraph(c))).not.toBe(graphChecksum(canonicalGraph(a)))
+    expect(graphChecksum(canonicalGraph(c, 'subscriber_joined'))).not.toBe(graphChecksum(canonicalGraph(a, 'subscriber_joined')))
     // A version is itself a graph the runner can read back.
-    expect(readRunnableGraph(canonicalGraph(a)).graph).toEqual(a)
+    expect(readRunnableGraph(canonicalGraph(a, 'subscriber_joined')).graph).toEqual(a)
   })
 
   test('the trigger is read from its document', () => {
@@ -76,7 +79,7 @@ describe('the email', () => {
 
   test('every send checks consent, the verified sender and quota, and carries an unsubscribe link', async () => {
     const job = await source('app/Jobs/ProcessAutomationRun.ts')
-    expect(job).toContain("if (contact.status !== 'active' || !await consentAllows(teamId, 'email', address)) {")
+    expect(job).toContain("if (step.type === 'send_email' && (contact.status !== 'active' || !address || !await consentAllows(teamId, 'email', address))) {")
     expect(job).toContain('const sender = await verifiedSender(teamId, senderIdentityId)')
     expect(job).toContain("await assertQuota(teamId, 'email', 1)")
     expect(job).toContain('withUnsubscribe(messageHtml(step.config.body), step.config.body,')
@@ -132,5 +135,70 @@ describe('starting and resuming runs', () => {
 
   test('the resume job runs every minute', async () => {
     expect(await source('app/Scheduler.ts')).toContain("schedule\n    .job('ResumeAutomationRuns')\n    .everyMinute()")
+  })
+})
+
+describe('texts', () => {
+  test('an automation of texts and waits needs no sender', () => {
+    const { graph: read, error } = readRunnableGraph(JSON.stringify({ nodes: [{ id: 't', type: 'send_sms', config: { body: ' Thanks! ' } }, wait('w', 3600), { id: 'u', type: 'send_sms', config: { body: 'Again.' } }] }))
+    expect(error).toBe('')
+    expect(read).toEqual({ senderIdentityId: 0, steps: [{ id: 't', type: 'send_sms', config: { body: 'Thanks!' } }, { id: 'w', type: 'delay', config: { seconds: 3600 } }, { id: 'u', type: 'send_sms', config: { body: 'Again.' } }] })
+    // An email anywhere still needs one.
+    expect(readRunnableGraph(JSON.stringify({ nodes: [{ id: 't', type: 'send_sms', config: { body: 'Hi' } }, mail('m')] })).error).toContain('Choose the sender')
+  })
+
+  test('a text checks a phone and SMS consent, waits out quiet hours, and counts against the SMS quota', async () => {
+    const job = await source('app/Jobs/ProcessAutomationRun.ts')
+    expect(job).toContain("if (contact.status !== 'active' || !phone || !await consentAllows(teamId, 'sms', phone)) {")
+    expect(job).toContain('if (isWithinSmsQuietHours(new Date(), {')
+    expect(job).toContain("await assertQuota(teamId, 'sms', segments)")
+    // Without consent only the text is skipped, never the journey.
+    expect(job).toContain("output: JSON.stringify({ skipped: phone ? 'no sms consent' : 'no phone number' }) })\n          continue")
+  })
+
+  test('a contact\'s own timezone is used when it is a real one', () => {
+    expect(contactTimezone('{"timezone":"Asia/Manila"}')).toBe('Asia/Manila')
+    expect(contactTimezone({ timezone: 'Mars/Olympus' })).toBe('UTC')
+    expect(contactTimezone('not json')).toBe('UTC')
+    expect(contactTimezone(null)).toBe('UTC')
+    expect(QUIET_HOURS_RECHECK_MINUTES).toBe(30)
+  })
+})
+
+describe('the trigger is part of the version', () => {
+  test('changing the trigger changes the checksum, so it has to be put live', () => {
+    const read = readRunnableGraph(graph([mail('a')])).graph!
+    expect(graphChecksum(canonicalGraph(read, 'subscriber_joined'))).not.toBe(graphChecksum(canonicalGraph(read, 'purchase_made')))
+    expect(versionTrigger(canonicalGraph(read, 'purchase_made'))).toBe('purchase_made')
+    expect(versionTrigger(JSON.stringify({ nodes: [] }))).toBe('')
+  })
+
+  test('runs start from the live version\'s trigger, not the saved draft\'s', async () => {
+    const runner = await source('app/Support/automationRunner.ts')
+    expect(runner).toContain('if ((versionTrigger(version.graph) || triggerType(automation.trigger)) !== trigger)')
+    expect(await source('app/Actions/Api/V1/Automations/PublishAutomationAction.ts')).toContain('const canonical = canonicalGraph(graph, trigger)')
+  })
+})
+
+describe('enrolling people who already qualify', () => {
+  test('only when asked, capped, queued rather than sent at once, and once per person', async () => {
+    const publish = await source('app/Actions/Api/V1/Automations/PublishAutomationAction.ts')
+    expect(publish).toContain("const enrolled = request.get('enroll_existing') === true")
+    const runner = await source('app/Support/automationRunner.ts')
+    expect(ENROLL_LIMIT).toBe(5000)
+    expect(runner).toContain('for (const contactId of contactIds.slice(0, ENROLL_LIMIT)) {')
+    expect(runner).toContain("status: 'queued',\n        version,")
+    expect(runner).toContain('idempotency_key: runIdempotencyKey(automationId, trigger, contactId),')
+  })
+
+  test('a subscriber qualifies by their latest email consent, and a suppressed one never does', async () => {
+    const runner = await source('app/Support/automationRunner.ts')
+    expect(runner).toContain("return email !== '' && !suppressed.has(email) && ['confirmed', 'granted'].includes(latest.get(email) ?? '')")
+    expect(runner).toContain(".orderBy('occurred_at' as any, 'asc')")
+  })
+
+  test('the count is a team-scoped route every member may read', async () => {
+    expect(await source('routes/api.ts')).toContain("route.get('/v1/automations/{id}/qualifying', 'Actions/Api/V1/Automations/QualifyingContactsAction').middleware('auth').middleware('team')")
+    expect(await source('app/Actions/Api/V1/Automations/QualifyingContactsAction.ts')).toContain(".where('id' as any, '=', id).where('team_id' as any, '=', teamId)")
   })
 })
