@@ -7,14 +7,18 @@ import { appEnvName, isProductionEnv, OWNER_WORKSPACE, ownerWorkspaceId } from '
  * Give the owner workspace three automations, so the automations page has
  * something to show locally.
  *
- * Two drafts and one archived: the page offers Archive on one and Restore on
- * the other, and a list of one status cannot show that it does. The graphs
- * carry nodes of the types `ProcessAutomationRun` knows (`delay`, `approval`)
- * beside message steps, so the step counts on the page are real counts.
+ * Two drafts and one archived, none on. Each draft shows a different state
+ * of the step editor:
  *
- * None is `active`. Nothing starts a run today, so an active row would look
- * live and do nothing; the page refuses to set that status for the same
- * reason, and seeding one would put on screen the state it will not create.
+ * - "New subscriber welcome" holds only steps that can run (two emails with
+ *   a wait between them). It has no sender, because the demo sender is not
+ *   verified, so the page says that is the one thing missing.
+ * - "First purchase thank you" also holds an approval and an SMS step, kinds
+ *   that cannot run yet, so the page shows how it refuses to turn on until
+ *   they are removed.
+ *
+ * None is seeded on. Turning on freezes a version and sends real email to
+ * real signups; that is a decision for a person, not a seed.
  *
  * `Automation` is the framework's model and declares no `useSeeder`.
  *
@@ -26,18 +30,18 @@ const AUTOMATIONS = [
     name: 'New subscriber welcome',
     status: 'draft',
     nodes: [
-      { id: 'welcome', type: 'send_email', config: { subject: 'Welcome aboard' } },
+      { id: 'welcome', type: 'send_email', config: { subject: 'Welcome aboard', body: 'Thanks for subscribing.\n\nEvery Sunday you will get one letter on making work people remember. Reply any time: a person reads every answer.' } },
       { id: 'wait-three-days', type: 'delay', config: { seconds: 259_200 } },
-      { id: 'best-of', type: 'send_email', config: { subject: 'Three issues to start with' } },
+      { id: 'best-of', type: 'send_email', config: { subject: 'Three issues to start with', body: 'While you wait for Sunday, here are the three issues readers mention most.' } },
     ],
   },
   {
     name: 'First purchase thank you',
     status: 'draft',
     nodes: [
-      { id: 'wait-half-hour', type: 'delay', config: { seconds: 1_800 } },
+      { id: 'wait-an-hour', type: 'delay', config: { seconds: 3_600 } },
       { id: 'review-copy', type: 'approval', config: {} },
-      { id: 'thank-you', type: 'send_email', config: { subject: 'Thank you for your order' } },
+      { id: 'thank-you', type: 'send_email', config: { subject: 'Thank you for your order', body: 'Your order is on its way. If anything is not right, reply to this email.' } },
       { id: 'text-follow-up', type: 'send_sms', config: {} },
     ],
   },
@@ -45,7 +49,7 @@ const AUTOMATIONS = [
     name: 'Spring re-engagement',
     status: 'archived',
     nodes: [
-      { id: 'check-in', type: 'send_email', config: { subject: 'Still want these?' } },
+      { id: 'check-in', type: 'send_email', config: { subject: 'Still want these?', body: 'It has been a while. If these letters are not for you any more, the link below stops them.' } },
     ],
   },
 ] as const
