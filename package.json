@@ -78,7 +78,7 @@
     "@stacksjs/stx": "0.2.889",
     "@stacksjs/ts-cloud": "^0.16.136",
     "bun-plugin-stx": "0.2.889",
-    "stacks": "^0.75.612"
+    "stacks": "^0.75.616"
   },
   "workspaces": [
     "storage/framework",
