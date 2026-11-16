@@ -1,61 +1,86 @@
 /**
- * Reading and drafting automations through the application's own API.
+ * Automations through the application's own API: drafting them, editing
+ * their steps, turning them on, and seeing what they have done.
  *
  * This page was a static builder: a "First purchase welcome" journey at
- * version 6, a five-node canvas with a YES/NO branch, a step palette and a
- * "Ready to test" panel. None of it was read from anywhere, and none of the
- * buttons did anything.
+ * version 6, a five-node canvas and a "Ready to test" panel, none of it read
+ * from anywhere. Later it could list and draft automations but not run
+ * them, because nothing started a run, nothing published a version, and the
+ * run job marked email steps "accepted" without sending them.
  *
- * `Automation` is the framework's model. `config/security.ts` names it, which
- * publishes its CRUD at `/api/automations` behind `auth` and `team`.
+ * ## How an automation runs now
  *
- * ## What exists behind it, and what does not
+ * - **Trigger.** `subscriber_joined`: someone confirms an email
+ *   subscription through a signup form (or signs up on a form without
+ *   double opt-in). Each active automation starts once per contact, ever.
+ *   A contact added on the Contacts page has not opted in and starts
+ *   nothing.
+ * - **Steps.** Send an email, from the automation's sender, or wait between
+ *   1 hour and 30 days. Nothing else can run yet; a saved step of any other
+ *   kind blocks turning the automation on until it is removed.
+ * - **Turning on.** `POST /api/v1/automations/{id}/publish`, an admin or
+ *   owner only, checks the steps and the sender and freezes them as a
+ *   version. A run keeps the version it started on. Saving steps changes
+ *   the draft; the live version changes when it is turned on again.
+ * - **Sending.** Each email checks consent and the sender's verified
+ *   domain first, carries an unsubscribe link, and is retried with backoff
+ *   if it fails. Someone who unsubscribes gets nothing more.
  *
- * The table, and a job: `ProcessAutomationRun` walks the nodes of a published
- * version for one run, parks on `approval` and `delay` nodes, and marks every
- * other node completed. Three things it would need are not there yet:
+ * The automation itself (name, steps, pause, archive) is read and written
+ * through the framework model's generated CRUD at `/api/automations`, which
+ * `config/security.ts` publishes. That PATCH could also set `active`; this
+ * page never sends it, and turning on goes through publish only.
  *
- * - nothing starts a run. No code reads an automation's `trigger`, so no
- *   event creates an `automation_runs` row;
- * - nothing publishes a version. The job reads `automation_versions`, and
- *   that model has no create route and no writer;
- * - a message step sends nothing. The job records it as accepted and moves on.
+ * ## What the page does not do
  *
- * So this page lists automations, saves new ones as drafts and archives them,
- * and stops there. It offers no way to switch one on, because an "active"
- * automation would look live and do nothing. That is said on the page in
- * plain words rather than left for someone to find out.
- *
- * No step editor either: with no way to publish or run a graph, a canvas
- * would be the old mock with a save button.
+ * No branches, no conditions, no SMS steps, no approvals and no triggers
+ * other than a confirmed signup. People who subscribed before an automation
+ * was turned on are not enrolled.
  */
 import { formatSeen } from './contacts-query'
 import { formatCount } from './workspace-summary'
 
 export const AUTOMATIONS_ENDPOINT = '/api/automations'
+export const ACTIVITY_ENDPOINT = '/api/v1/automations/activity'
 export const AUTOMATIONS_PER_PAGE = 25
 
 /** The limit the model's own validation declares. The floor is this page's. */
 export const AUTOMATION_NAME_MIN = 3
 export const AUTOMATION_NAME_MAX = 255
 
+/**
+ * The step limits `app/Support/automationGraph.ts` applies when turning an
+ * automation on. Written out here because a client module cannot import the
+ * server's; a test holds the two together.
+ */
+export const MAX_STEPS = 20
+export const SUBJECT_MAX = 200
+export const BODY_MAX = 20_000
+export const MIN_DELAY_SECONDS = 60 * 60
+export const MAX_DELAY_SECONDS = 30 * 24 * 60 * 60
+/** The shape of a step id the server accepts. */
+export const STEP_ID = /^[a-z0-9-]{1,60}$/
+
 export const AUTOMATION_STATUSES = [
   { value: 'draft', label: 'Draft' },
-  { value: 'active', label: 'Active' },
+  { value: 'active', label: 'On' },
   { value: 'paused', label: 'Paused' },
   { value: 'archived', label: 'Archived' },
 ] as const
 
-/**
- * The trigger a new draft is saved with: the one the model's own factory
- * uses. Nothing reads a trigger yet, so offering a choice of several would be
- * offering names this page made up.
- */
+/** The one trigger anything fires. */
 export const DEFAULT_TRIGGER_TYPE = 'subscriber_joined'
 
 const TRIGGER_LABELS: Record<string, string> = {
-  subscriber_joined: 'When a subscriber joins',
+  subscriber_joined: 'When someone confirms a signup',
 }
+
+export const WAIT_UNITS = [
+  { value: 'hours', label: 'Hours', seconds: 60 * 60 },
+  { value: 'days', label: 'Days', seconds: 24 * 60 * 60 },
+] as const
+
+export const HOW_IT_RUNS = 'An automation that is on starts for each person who confirms a signup through one of your forms, once per person. People who signed up before it was turned on are not enrolled. Each email checks that the person still consents and carries an unsubscribe link.'
 
 function titleCase(value: string): string {
   const spaced = value.replace(/[_-]+/g, ' ').trim()
@@ -91,9 +116,8 @@ export function triggerLabel(trigger: unknown): string {
  * How many steps a graph holds.
  *
  * Counted the way `automationNodes` in `app/Support/automationFlow.ts` reads
- * them, since those are the nodes the job would walk: an entry counts only
- * with a string or number `id` and a string `type`. A test holds the two
- * together.
+ * them: an entry counts only with a string or number `id` and a string
+ * `type`. A test holds the two together.
  */
 export function stepCount(graph: unknown): number {
   const doc = parseDocument(graph) as { nodes?: unknown } | null
@@ -123,6 +147,202 @@ export function automationUrl(id: number): string {
   return `${AUTOMATIONS_ENDPOINT}/${Math.trunc(Number(id))}`
 }
 
+export function publishUrl(id: number): string {
+  return `/api/v1/automations/${Math.trunc(Number(id))}/publish`
+}
+
+// ---------------------------------------------------------------------------
+// Steps
+// ---------------------------------------------------------------------------
+
+export interface EditorStep {
+  /** The node id, kept across edits so a saved step keeps its identity. */
+  id: string
+  kind: 'email' | 'wait' | 'other'
+  subject: string
+  body: string
+  /** For a wait: the amount in `unit`. */
+  amount: number
+  unit: 'hours' | 'days'
+  /** For a step of another kind, its type, so the page can name it. */
+  otherType: string
+  /** One line for the list. */
+  summary: string
+}
+
+/** A wait in the largest unit that divides it evenly. */
+export function waitParts(seconds: number): { amount: number, unit: 'hours' | 'days' } {
+  const day = 24 * 60 * 60
+  if (seconds >= day && seconds % day === 0)
+    return { amount: seconds / day, unit: 'days' }
+  return { amount: Math.max(1, Math.round(seconds / 3600)), unit: 'hours' }
+}
+
+export function waitSeconds(amount: unknown, unit: unknown): number {
+  const per = WAIT_UNITS.find(item => item.value === unit)?.seconds ?? 3600
+  const count = Number(amount)
+  return Number.isFinite(count) ? Math.round(count * per) : 0
+}
+
+function plural(count: number, one: string, many: string): string {
+  return `${formatCount(count)} ${count === 1 ? one : many}`
+}
+
+export function stepSummary(step: Pick<EditorStep, 'kind' | 'subject' | 'amount' | 'unit' | 'otherType'>): string {
+  if (step.kind === 'email')
+    return step.subject.trim() ? `Send an email: ${step.subject.trim()}` : 'Send an email, with no subject yet'
+  if (step.kind === 'wait')
+    return `Wait ${step.unit === 'days' ? plural(step.amount, 'day', 'days') : plural(step.amount, 'hour', 'hours')}`
+  return `${titleCase(step.otherType || 'unknown')}: this kind of step cannot run yet`
+}
+
+function makeStep(id: string, kind: EditorStep['kind'], fields: Partial<EditorStep>): EditorStep {
+  const step: EditorStep = { id, kind, subject: '', body: '', amount: 1, unit: 'days', otherType: '', summary: '', ...fields }
+  step.summary = stepSummary(step)
+  return step
+}
+
+/** A saved graph as editable steps, in order, with its sender. */
+export function toEditorSteps(graph: unknown): { senderId: number, steps: EditorStep[] } {
+  const doc = parseDocument(graph) as { nodes?: unknown, sender_identity_id?: unknown } | null
+  const senderId = Number(doc?.sender_identity_id)
+  const nodes = doc && typeof doc === 'object' && Array.isArray(doc.nodes) ? doc.nodes : []
+  const steps: EditorStep[] = []
+  for (const [index, raw] of nodes.entries()) {
+    const node = raw as { id?: unknown, type?: unknown, config?: Record<string, unknown> } | null
+    const id = typeof node?.id === 'string' || typeof node?.id === 'number' ? String(node.id) : `step-${index + 1}`
+    const config = node?.config && typeof node.config === 'object' ? node.config : {}
+    if (node?.type === 'send_email')
+      steps.push(makeStep(id, 'email', { subject: String(config.subject ?? ''), body: String(config.body ?? '') }))
+    else if (node?.type === 'delay')
+      steps.push(makeStep(id, 'wait', waitParts(Number(config.seconds) || 3600)))
+    else
+      steps.push(makeStep(id, 'other', { otherType: typeof node?.type === 'string' ? node.type : 'unknown' }))
+  }
+  return { senderId: Number.isSafeInteger(senderId) && senderId > 0 ? senderId : 0, steps }
+}
+
+/** An id no other step uses: the shape the server accepts, `[a-z0-9-]`. */
+export function newStepId(kind: 'email' | 'wait', steps: Array<{ id: string }>): string {
+  const prefix = kind === 'email' ? 'email' : 'wait'
+  const used = new Set(steps.map(step => step.id))
+  let number = 1
+  while (used.has(`${prefix}-${number}`))
+    number++
+  return `${prefix}-${number}`
+}
+
+export function newEmailStep(steps: Array<{ id: string }>, subject = '', body = ''): EditorStep {
+  return makeStep(newStepId('email', steps), 'email', { subject, body })
+}
+
+export function newWaitStep(steps: Array<{ id: string }>, amount = 1, unit: 'hours' | 'days' = 'days'): EditorStep {
+  return makeStep(newStepId('wait', steps), 'wait', { amount, unit })
+}
+
+/** The same step with new fields, and its summary brought up to date. */
+export function withFields(step: EditorStep, fields: Partial<EditorStep>): EditorStep {
+  return makeStep(step.id, step.kind, { ...step, ...fields })
+}
+
+/** Move a step up (-1) or down (+1). Out of range is no change. */
+export function moveStep<T>(steps: T[], index: number, direction: -1 | 1): T[] {
+  const target = index + direction
+  if (index < 0 || index >= steps.length || target < 0 || target >= steps.length)
+    return steps
+  const next = [...steps]
+  ;[next[index], next[target]] = [next[target]!, next[index]!]
+  return next
+}
+
+/**
+ * Why one step being edited cannot be kept, by the server's rules. The page
+ * checks a step when it is put in the list, so the list only ever holds
+ * steps that can run (and any of another kind that were already saved).
+ */
+export function stepError(step: Pick<EditorStep, 'kind' | 'subject' | 'body' | 'amount' | 'unit'>): string {
+  if (step.kind === 'email') {
+    const subject = step.subject.replace(/\s+/g, ' ').trim()
+    if (!subject)
+      return 'An email needs a subject.'
+    if (subject.length > SUBJECT_MAX)
+      return `A subject can be at most ${SUBJECT_MAX} characters.`
+    if (!step.body.trim())
+      return 'An email needs a message.'
+    if (step.body.trim().length > BODY_MAX)
+      return `A message can be at most ${BODY_MAX.toLocaleString('en-US')} characters.`
+    return ''
+  }
+  if (step.kind === 'wait') {
+    const amount = Number(step.amount)
+    if (!Number.isInteger(amount) || amount < 1)
+      return 'A wait needs a whole number of hours or days.'
+    const seconds = waitSeconds(amount, step.unit)
+    if (seconds < MIN_DELAY_SECONDS || seconds > MAX_DELAY_SECONDS)
+      return 'A wait must be between 1 hour and 30 days.'
+    return ''
+  }
+  return ''
+}
+
+/**
+ * Whether a whole set of steps could be turned on, and if not, the first
+ * reason. The same order of checks the server makes, so the page says what
+ * the server would.
+ */
+export function readinessError(senderId: number, steps: EditorStep[]): string {
+  if (!senderId)
+    return 'Choose the sender its emails come from.'
+  if (steps.length === 0)
+    return 'This automation has no steps.'
+  if (steps.length > MAX_STEPS)
+    return `An automation can have at most ${MAX_STEPS} steps.`
+  const seen = new Set<string>()
+  for (const [index, step] of steps.entries()) {
+    if (!STEP_ID.test(step.id) || seen.has(step.id))
+      return `Step ${index + 1} has a missing or repeated id.`
+    seen.add(step.id)
+    if (step.kind === 'other')
+      return `Step ${index + 1} is a kind of step that cannot run yet. Remove it to turn this automation on.`
+    const problem = stepError(step)
+    if (problem)
+      return `Step ${index + 1}: ${problem}`
+  }
+  if (!steps.some(step => step.kind === 'email'))
+    return 'An automation needs at least one email step.'
+  if (steps[steps.length - 1]!.kind === 'wait')
+    return 'The last step cannot be a wait: nothing would follow it.'
+  return ''
+}
+
+/**
+ * The graph to save. A step of another kind is kept as it was saved, so
+ * saving does not quietly delete it; turning on still refuses until it is
+ * removed.
+ */
+export function graphPayload(senderId: number, steps: EditorStep[], original: unknown = null): { graph: string } {
+  const doc = parseDocument(original) as { nodes?: unknown[] } | null
+  const originals = new Map<string, unknown>()
+  for (const node of (doc && Array.isArray(doc.nodes) ? doc.nodes : []))
+    originals.set(String((node as { id?: unknown })?.id ?? ''), node)
+
+  const nodes = steps.map((step) => {
+    if (step.kind === 'email')
+      return { id: step.id, type: 'send_email', config: { subject: step.subject.replace(/\s+/g, ' ').trim(), body: step.body.trim() } }
+    if (step.kind === 'wait')
+      return { id: step.id, type: 'delay', config: { seconds: waitSeconds(step.amount, step.unit) } }
+    return originals.get(step.id) ?? { id: step.id, type: step.otherType || 'unknown', config: {} }
+  })
+  const graph: Record<string, unknown> = { nodes, edges: [] }
+  if (senderId > 0)
+    graph.sender_identity_id = senderId
+  return { graph: JSON.stringify(graph) }
+}
+
+// ---------------------------------------------------------------------------
+// Rows
+// ---------------------------------------------------------------------------
+
 export interface AutomationRow {
   id: number
   name?: string | null
@@ -134,6 +354,52 @@ export interface AutomationRow {
   updated_at?: string | null
 }
 
+export interface ActivityRow {
+  automation_id: number
+  version?: number | null
+  unpublished_changes?: boolean | null
+  runs?: Record<string, unknown> | null
+  emails_sent?: number | null
+}
+
+export interface Activity {
+  byId: Map<number, ActivityRow>
+  canPublish: boolean
+}
+
+export function toActivity(body: { data?: ActivityRow[], can_publish?: unknown } | null | undefined): Activity {
+  return {
+    byId: new Map((body?.data ?? []).map(row => [Number(row.automation_id), row])),
+    // Only a literal true: a missing answer is not permission.
+    canPublish: body?.can_publish === true,
+  }
+}
+
+const RUN_STATUS_ORDER: Array<[key: string, label: string]> = [
+  ['running', 'running'],
+  ['queued', 'about to start'],
+  ['waiting', 'waiting'],
+  ['completed', 'finished'],
+  ['cancelled', 'stopped'],
+  ['failed', 'failed'],
+]
+
+function count(value: unknown): number {
+  const number = Number(value)
+  return Number.isFinite(number) && number > 0 ? Math.floor(number) : 0
+}
+
+/** "3 people: 1 waiting, 2 finished. 4 emails sent." or that nobody has started. */
+export function activityLabel(activity: ActivityRow | undefined): string {
+  const runs = activity?.runs ?? {}
+  const total = RUN_STATUS_ORDER.reduce((sum, [key]) => sum + count(runs[key]), 0)
+  if (total === 0)
+    return 'Nobody has started it yet.'
+  const parts = RUN_STATUS_ORDER.filter(([key]) => count(runs[key]) > 0).map(([key, label]) => `${formatCount(count(runs[key]))} ${label}`)
+  const sent = count(activity?.emails_sent)
+  return `${plural(total, 'person', 'people')}: ${parts.join(', ')}. ${plural(sent, 'email', 'emails')} sent.`
+}
+
 export interface AutomationView {
   id: number
   name: string
@@ -141,18 +407,34 @@ export interface AutomationView {
   statusLabel: string
   triggerLabel: string
   stepsLabel: string
+  graph: string
   publishedLabel: string
   updatedLabel: string
-  /** A row that is `active` or `paused` got there some other way; it can be stood down. */
+  activityLabel: string
+  /** The saved steps differ from the live version. */
+  changesNote: string
+  canEdit: boolean
   canPause: boolean
   canArchive: boolean
   canRestore: boolean
+  /** Turn on (a draft) or Resume (paused), when the caller may. */
+  turnOnLabel: string
 }
 
-/** Normalize one API row into the shape the list renders. */
-export function toAutomationView(row: AutomationRow, locale?: string): AutomationView {
+/** Normalize one API row, with what it has done, into the shape the list renders. */
+export function toAutomationView(row: AutomationRow, activity?: ActivityRow, canPublish = false, locale?: string): AutomationView {
   const status = String(row.status || 'draft')
   const steps = stepCount(row.graph)
+  const version = count(activity?.version)
+  const live = status === 'active' || status === 'paused'
+
+  let turnOnLabel = ''
+  if (canPublish && status === 'draft')
+    turnOnLabel = 'Turn on'
+  else if (canPublish && status === 'paused')
+    turnOnLabel = activity?.unpublished_changes ? 'Resume with changes' : 'Resume'
+  else if (canPublish && status === 'active' && activity?.unpublished_changes)
+    turnOnLabel = 'Put changes live'
 
   return {
     id: row.id,
@@ -161,17 +443,26 @@ export function toAutomationView(row: AutomationRow, locale?: string): Automatio
     statusLabel: statusLabel(status),
     triggerLabel: triggerLabel(row.trigger),
     stepsLabel: steps === 0 ? 'No steps yet' : `${formatCount(steps, locale)} ${steps === 1 ? 'step' : 'steps'}`,
-    publishedLabel: row.published_at ? `Published ${formatSeen(row.published_at, locale)}` : 'Never published',
+    graph: typeof row.graph === 'string' ? row.graph : JSON.stringify(row.graph ?? { nodes: [], edges: [] }),
+    publishedLabel: version > 0 ? `Version ${formatCount(version)}, turned on ${formatSeen(row.published_at, locale)}` : 'Never turned on',
     updatedLabel: formatSeen(row.updated_at, locale),
+    activityLabel: version > 0 ? activityLabel(activity) : '',
+    changesNote: live && activity?.unpublished_changes ? 'The saved steps differ from the live version. People keep getting the live version until the changes are put live.' : '',
+    canEdit: status !== 'archived',
     canPause: status === 'active',
     canArchive: status !== 'archived',
     canRestore: status === 'archived',
+    turnOnLabel,
   }
 }
 
-export function toAutomationViews(body: { data?: AutomationRow[] } | null | undefined, locale?: string): AutomationView[] {
-  return (body?.data ?? []).map(row => toAutomationView(row, locale))
+export function toAutomationViews(body: { data?: AutomationRow[] } | null | undefined, activity?: Activity, locale?: string): AutomationView[] {
+  return (body?.data ?? []).map(row => toAutomationView(row, activity?.byId.get(Number(row.id)), activity?.canPublish ?? false, locale))
 }
+
+// ---------------------------------------------------------------------------
+// Writes
+// ---------------------------------------------------------------------------
 
 /** Why a draft cannot be saved. */
 export function draftError(draft: { name?: string }): string {
@@ -189,7 +480,7 @@ export const EMPTY_GRAPH = JSON.stringify({ nodes: [], edges: [] })
 /**
  * The request body for a new automation.
  *
- * Always a draft at version 1, with the default trigger and an empty graph.
+ * Always a draft at version 1, with the one trigger and an empty graph.
  * `trigger` and `graph` are required by the model, so they are always sent.
  */
 export function automationPayload(draft: { name?: string }): { name: string, status: 'draft', version: 1, trigger: string, graph: string } {
@@ -203,8 +494,8 @@ export function automationPayload(draft: { name?: string }): { name: string, sta
 }
 
 /**
- * The statuses this page may set. Never `active`: nothing would run, and the
- * row would say otherwise.
+ * The statuses this page sets through the generated update. Never `active`:
+ * turning on goes through publish, which checks the steps first.
  */
 export const SETTABLE_STATUSES = ['draft', 'paused', 'archived'] as const
 
@@ -236,4 +527,19 @@ export function saveErrorMessage(status: number): string {
   if (status === 403)
     return 'That request was refused. Reload the page and try again.'
   return `The automation could not be saved (${status}).`
+}
+
+/** What to tell someone when turning on failed; a 422 carries the server's reason. */
+export function publishErrorMessage(status: number, reason?: unknown): string {
+  if (status === 422 && typeof reason === 'string' && reason.trim())
+    return `It cannot be turned on yet. ${reason.trim()}`
+  if (status === 403)
+    return 'Turning an automation on needs an admin or owner role.'
+  if (status === 409)
+    return 'Restore this automation as a draft before turning it on.'
+  if (status === 404)
+    return 'That automation no longer exists. The list has been refreshed.'
+  if (status === 429)
+    return 'Too many attempts just now. Wait a minute and try again.'
+  return `The automation could not be turned on (${status}).`
 }

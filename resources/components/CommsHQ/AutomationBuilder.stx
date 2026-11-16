@@ -10,31 +10,54 @@ export const statusOptions = AUTOMATION_STATUSES
 /**
  * Automations, reading and writing through the application's own API.
  *
- * This page was a static builder: a sample journey at version 6, a canvas of
- * five nodes, a step palette and a panel saying it was ready to test. None of
- * it was read from anywhere and none of its buttons did anything.
+ * This page was a static builder with a sample journey that did nothing,
+ * and then a list that could draft automations but not run them.
  *
- * It lists automations from `GET /api/automations`, saves new ones as drafts,
- * and archives or restores them. It does not switch one on. Nothing starts a
- * run yet and a message step sends nothing, so an active automation would
- * look live and do nothing; `automations-query.ts` records what is missing.
- * The page says so where the list begins.
+ * It lists automations from `GET /api/automations` with what each has done
+ * from `GET /api/v1/automations/activity`, saves new ones as drafts, edits
+ * their steps (send an email, or wait), and turns them on, resumes them or
+ * puts edited steps live through `POST /api/v1/automations/{id}/publish`.
+ * Turning on is two presses and offered only to an admin or owner: from
+ * then on, everyone who confirms a signup gets the emails.
+ *
+ * The step editor edits one step at a time in a form of its own, rather
+ * than binding inputs inside the list, and checks each step by the
+ * server's rules before it joins the list. `automations-query.ts` records
+ * how a run works and what the page does not do.
  *
  * Writes carry the CSRF token explicitly, read with `useCookie`, the
  * composable, since a client script may not reach for the DOM itself.
  */
 import {
+  ACTIVITY_ENDPOINT,
   automationPayload,
   AUTOMATIONS_ENDPOINT,
   AUTOMATIONS_PER_PAGE,
   automationsUrl,
   automationUrl,
   draftError,
+  graphPayload,
+  HOW_IT_RUNS,
   listErrorMessage,
+  moveStep,
+  newEmailStep,
+  newWaitStep,
+  publishErrorMessage,
+  publishUrl,
+  readinessError,
   saveErrorMessage,
   statusPayload,
+  stepError,
+  toActivity,
   toAutomationViews,
+  toEditorSteps,
+  WAIT_UNITS,
+  withFields,
 } from '../../data/automations-query'
+import { toSenderOptions, verifiedSendersUrl } from '../../data/campaigns-query'
+
+const howItRuns = HOW_IT_RUNS
+const waitUnits = WAIT_UNITS
 
 const automations = state([])
 const hasMore = state(false)
@@ -46,13 +69,38 @@ const actionError = state('')
 /* Which control the in-flight load belongs to, so one busy state is announced
  * rather than three. */
 const busySource = state('refresh')
-/* The automation a status change is in flight for, so only its button is busy. */
+/* The automation a change is in flight for, so only its buttons are busy. */
 const busyId = state(0)
+/* The automation whose Turn on is waiting for its second press. */
+const confirmId = state(0)
 
 const addOpen = state(false)
 const addName = state('')
 const saving = state(false)
 const addError = state('')
+
+/* The step editor: one automation at a time. */
+const editId = state(0)
+const editName = state('')
+const editGraph = state('')
+const editSteps = state([])
+const editSenderId = state(0)
+const editSaving = state(false)
+const editError = state('')
+const editSaved = state('')
+const senders = state([])
+const sendersLoading = state(false)
+const sendersError = state('')
+
+/* The step being written: a new one, or one from the list by id. */
+const stepOpen = state(false)
+const stepId = state('')
+const stepKind = state('email')
+const stepSubject = state('')
+const stepBody = state('')
+const stepAmount = state('1')
+const stepUnit = state('days')
+const stepProblem = state('')
 
 const csrfToken = useCookie('X-CSRF-Token')
 
@@ -61,16 +109,19 @@ const prevBusy = derived(() => loading() && busySource() === 'prev')
 const nextBusy = derived(() => loading() && busySource() === 'next')
 const showEmpty = derived(() => !loading() && !errorText() && automations().length === 0)
 const showList = derived(() => !loading() && !errorText() && automations().length > 0)
+const readiness = derived(() => readinessError(editSenderId(), editSteps()))
+const readinessText = derived(() => (readiness() ? `Not ready to turn on. ${readiness()}` : 'Ready to turn on once saved.'))
+const stepTitle = derived(() => `${stepId() ? 'Edit' : 'Add'} ${stepKind() === 'email' ? 'an email' : 'a wait'}`)
 
 async function load(source = 'refresh') {
   busySource.set(source)
   loading.set(true)
   errorText.set('')
   try {
-    const response = await fetch(automationsUrl({ page: page(), perPage: AUTOMATIONS_PER_PAGE, status: status() }), {
-      credentials: 'same-origin',
-      headers: { Accept: 'application/json' },
-    })
+    const [response, activityResponse] = await Promise.all([
+      fetch(automationsUrl({ page: page(), perPage: AUTOMATIONS_PER_PAGE, status: status() }), { credentials: 'same-origin', headers: { Accept: 'application/json' } }),
+      fetch(ACTIVITY_ENDPOINT, { credentials: 'same-origin', headers: { Accept: 'application/json' } }),
+    ])
 
     if (!response.ok) {
       errorText.set(listErrorMessage(response.status))
@@ -79,7 +130,9 @@ async function load(source = 'refresh') {
     }
 
     const body = await response.json()
-    automations.set(toAutomationViews(body))
+    /* Without activity the list still shows, with nobody able to turn anything on. */
+    const activity = toActivity(activityResponse.ok ? await activityResponse.json() : null)
+    automations.set(toAutomationViews(body, activity))
     hasMore.set(body?.has_more_pages === true)
   }
   catch {
@@ -120,12 +173,13 @@ function writeHeaders() {
 }
 
 async function setStatus(id, next) {
-  /* `statusPayload` returns nothing for `active`, which this page never sets. */
+  /* `statusPayload` returns nothing for `active`, which goes through publish. */
   const payload = statusPayload(next)
   if (busyId() || !payload)
     return
   busyId.set(id)
   actionError.set('')
+  confirmId.set(0)
   try {
     const response = await fetch(automationUrl(id), {
       method: 'PATCH',
@@ -145,6 +199,38 @@ async function setStatus(id, next) {
   finally {
     busyId.set(0)
   }
+}
+
+/* Two presses: once on, it sends to everyone who confirms a signup. */
+async function turnOn(id) {
+  if (busyId())
+    return
+  if (confirmId() !== id) {
+    confirmId.set(id)
+    actionError.set('')
+    return
+  }
+  confirmId.set(0)
+  busyId.set(id)
+  actionError.set('')
+  try {
+    const response = await fetch(publishUrl(id), { method: 'POST', credentials: 'same-origin', headers: writeHeaders() })
+    if (!response.ok) {
+      const body = await response.json().catch(() => ({}))
+      actionError.set(publishErrorMessage(response.status, body?.error))
+    }
+    await load()
+  }
+  catch {
+    actionError.set('The automation could not be turned on. Check your connection and try again.')
+  }
+  finally {
+    busyId.set(0)
+  }
+}
+
+function cancelConfirm() {
+  confirmId.set(0)
 }
 
 function toggleAdd() {
@@ -189,6 +275,155 @@ async function addAutomation() {
   }
 }
 
+async function loadSenders() {
+  sendersLoading.set(true)
+  sendersError.set('')
+  try {
+    const response = await fetch(verifiedSendersUrl(), { credentials: 'same-origin', headers: { Accept: 'application/json' } })
+    if (!response.ok) {
+      sendersError.set('Senders could not be loaded. Close the editor and open it again.')
+      return
+    }
+    senders.set(toSenderOptions(await response.json()))
+  }
+  catch {
+    sendersError.set('Senders could not be loaded. Check your connection and try again.')
+  }
+  finally {
+    sendersLoading.set(false)
+  }
+}
+
+function openEditor(id, name, graph) {
+  if (editId() === id) {
+    closeEditor()
+    return
+  }
+  const read = toEditorSteps(graph)
+  editId.set(id)
+  editName.set(name)
+  editGraph.set(graph)
+  editSteps.set(read.steps)
+  editSenderId.set(read.senderId)
+  editError.set('')
+  editSaved.set('')
+  stepOpen.set(false)
+  void loadSenders()
+}
+
+function closeEditor() {
+  editId.set(0)
+  stepOpen.set(false)
+  editError.set('')
+  editSaved.set('')
+}
+
+function chooseSender(id) {
+  editSenderId.set(id)
+  editSaved.set('')
+}
+
+function startStep(kind) {
+  stepOpen.set(true)
+  stepId.set('')
+  stepKind.set(kind)
+  stepSubject.set('')
+  stepBody.set('')
+  stepAmount.set('1')
+  stepUnit.set('days')
+  stepProblem.set('')
+}
+
+function editStep(id) {
+  const step = editSteps().find(item => item.id === id)
+  if (!step || step.kind === 'other')
+    return
+  stepOpen.set(true)
+  stepId.set(step.id)
+  stepKind.set(step.kind)
+  stepSubject.set(step.subject)
+  stepBody.set(step.body)
+  stepAmount.set(String(step.amount))
+  stepUnit.set(step.unit)
+  stepProblem.set('')
+}
+
+function chooseUnit(unit) {
+  stepUnit.set(unit)
+}
+
+function keepStep() {
+  const fields = { subject: stepSubject(), body: stepBody(), amount: Number(stepAmount()), unit: stepUnit() }
+  const problem = stepError({ kind: stepKind(), ...fields })
+  if (problem) {
+    stepProblem.set(problem)
+    return
+  }
+  const steps = editSteps()
+  if (stepId()) {
+    editSteps.set(steps.map(step => (step.id === stepId() ? withFields(step, fields) : step)))
+  }
+  else {
+    const fresh = stepKind() === 'email' ? newEmailStep(steps, fields.subject, fields.body) : newWaitStep(steps, fields.amount, fields.unit)
+    editSteps.set([...steps, withFields(fresh, fields)])
+  }
+  stepOpen.set(false)
+  editSaved.set('')
+}
+
+function cancelStep() {
+  stepOpen.set(false)
+  stepProblem.set('')
+}
+
+function moveUp(id) {
+  editSteps.set(moveStep(editSteps(), editSteps().findIndex(step => step.id === id), -1))
+  editSaved.set('')
+}
+
+function moveDown(id) {
+  editSteps.set(moveStep(editSteps(), editSteps().findIndex(step => step.id === id), 1))
+  editSaved.set('')
+}
+
+function removeStep(id) {
+  editSteps.set(editSteps().filter(step => step.id !== id))
+  if (stepId() === id)
+    stepOpen.set(false)
+  editSaved.set('')
+}
+
+async function saveSteps() {
+  const id = editId()
+  if (!id || editSaving())
+    return
+  editSaving.set(true)
+  editError.set('')
+  editSaved.set('')
+  try {
+    const payload = graphPayload(editSenderId(), editSteps(), editGraph())
+    const response = await fetch(automationUrl(id), {
+      method: 'PATCH',
+      credentials: 'same-origin',
+      headers: writeHeaders(),
+      body: JSON.stringify(payload),
+    })
+    if (!response.ok) {
+      editError.set(saveErrorMessage(response.status))
+      return
+    }
+    editGraph.set(payload.graph)
+    editSaved.set(readiness() ? 'Steps saved as a draft.' : 'Steps saved.')
+    await load()
+  }
+  catch {
+    editError.set('The steps could not be saved. Check your connection and try again.')
+  }
+  finally {
+    editSaving.set(false)
+  }
+}
+
 onMount(() => {
   void load()
 })
@@ -200,7 +435,7 @@ onMount(() => {
       <div>
         <p class="font-bold text-[11px] text-accent tracking-[0.2em] uppercase">Automations</p>
         <h1 class="mt-2 font-semibold text-4xl tracking-[-0.04em]">Journeys that start themselves.</h1>
-        <p class="mt-2 max-w-2xl text-fg-muted text-sm">The automations this workspace has drafted, with the trigger and steps each one holds.</p>
+        <p class="mt-2 max-w-2xl text-fg-muted text-sm">Emails that go out on their own when someone joins, with waits between them. Draft the steps, then turn it on.</p>
       </div>
       <div class="flex gap-2">
         <button type="button" @click="load()" :disabled="refreshBusy()" :aria-busy="refreshBusy()" class="px-5 min-h-11 font-bold text-fg text-sm bg-panel hover:bg-surface-hover border border-line rounded-pill focus-visible:outline focus-visible:outline-[var(--coral)] focus-visible:outline-2 focus-visible:outline-offset-2 disabled:opacity-60">Refresh</button>
@@ -210,12 +445,12 @@ onMount(() => {
 
     <p class="flex gap-3 items-start mb-5 p-4 text-sm bg-panel border border-line rounded-panel">
       <span aria-hidden="true" class="shrink-0 mt-0.5 h-5 w-5 text-fg-muted i-hugeicons-information-circle"></span>
-      <span>Automations cannot be switched on yet. You can draft and archive them here, but nothing starts a run and no step sends a message, so there is no Activate control.</span>
+      <span>{{ howItRuns }}</span>
     </p>
 
     <section :if="addOpen()" class="mb-5 p-5 bg-panel border border-line rounded-panel" aria-labelledby="add-automation-title">
       <h2 id="add-automation-title" class="font-bold text-sm">Draft an automation</h2>
-      <p class="mt-1 text-fg-muted text-xs">It is saved as a draft that starts when a subscriber joins, with no steps.</p>
+      <p class="mt-1 text-fg-muted text-xs">It is saved as a draft with no steps. It starts for each person who confirms a signup once it is turned on.</p>
       <label class="block mt-4 max-w-xl font-bold text-xs">
         Name
         <input x-model.trim="addName" type="text" autocomplete="off" maxlength="255" class="mt-1 field" placeholder="New subscriber welcome">
@@ -228,6 +463,83 @@ onMount(() => {
     </section>
 
     <p :if="actionError()" class="mb-5 p-4 font-bold text-danger text-sm bg-panel border border-line rounded-panel" role="alert">{{ actionError() }}</p>
+
+    <section :if="editId() !== 0" class="mb-5 p-5 bg-panel border border-line rounded-panel" aria-labelledby="edit-steps-title">
+      <div class="flex flex-wrap gap-3 items-start justify-between">
+        <div>
+          <h2 id="edit-steps-title" class="font-bold text-sm">Steps for {{ editName() }}</h2>
+          <p class="mt-1 text-fg-muted text-xs">Saving keeps these as the draft. An automation that is on keeps sending its live version until the changes are put live.</p>
+        </div>
+        <button type="button" @click="closeEditor()" class="px-4 min-h-11 font-bold text-fg text-sm bg-panel hover:bg-surface-hover border border-line rounded-pill focus-visible:outline focus-visible:outline-[var(--coral)] focus-visible:outline-2">Close</button>
+      </div>
+
+      <h3 class="mt-5 font-bold text-xs">Sent from</h3>
+      <p :if="sendersLoading()" class="mt-2 text-fg-muted text-xs" role="status">Loading senders</p>
+      <p :if="sendersError()" class="mt-2 font-bold text-danger text-xs" role="alert">{{ sendersError() }}</p>
+      <p :if="!sendersLoading() && !sendersError() && senders().length === 0" class="mt-2 text-xs">No verified sender yet. Add one on the <a href="/dashboard/commshq/senders" class="font-bold text-accent">Senders page</a> at a verified domain.</p>
+      <div :if="senders().length > 0" class="flex flex-wrap gap-2 mt-2" role="group" aria-label="Sender">
+        <template :for="sender in senders()">
+          <button type="button" @click="chooseSender(sender.id)" :aria-pressed="editSenderId() === sender.id" class="px-4 min-h-11 font-bold text-sm border border-line rounded-pill focus-visible:outline focus-visible:outline-[var(--coral)] focus-visible:outline-2" :class="editSenderId() === sender.id ? 'bg-accent text-[var(--coral-ink)]' : 'bg-panel text-fg hover:bg-surface-hover'">{{ sender.label }}</button>
+        </template>
+      </div>
+
+      <h3 class="mt-5 font-bold text-xs">Steps, in order</h3>
+      <p :if="editSteps().length === 0" class="mt-2 text-fg-muted text-sm">No steps yet. Start with an email.</p>
+      <ol :if="editSteps().length > 0" class="m-0 mt-2 p-0 list-none border border-line divide-line divide-y rounded-control">
+        <template :for="step in editSteps()">
+          <li class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between p-3">
+            <p class="m-0 min-w-0 text-sm" :class="step.kind === 'other' ? 'font-bold text-danger' : ''">{{ step.summary }}</p>
+            <div class="flex flex-wrap gap-1 shrink-0">
+              <button :if="step.kind !== 'other'" type="button" @click="editStep(step.id)" class="px-3 min-h-11 font-bold text-fg text-xs bg-panel hover:bg-surface-hover border border-line rounded-pill focus-visible:outline focus-visible:outline-[var(--coral)] focus-visible:outline-2">Edit</button>
+              <button type="button" @click="moveUp(step.id)" class="px-3 min-h-11 font-bold text-fg text-xs bg-panel hover:bg-surface-hover border border-line rounded-pill focus-visible:outline focus-visible:outline-[var(--coral)] focus-visible:outline-2" aria-label="Move up"><span aria-hidden="true" class="inline-block h-4 w-4 i-hugeicons-arrow-up-01"></span></button>
+              <button type="button" @click="moveDown(step.id)" class="px-3 min-h-11 font-bold text-fg text-xs bg-panel hover:bg-surface-hover border border-line rounded-pill focus-visible:outline focus-visible:outline-[var(--coral)] focus-visible:outline-2" aria-label="Move down"><span aria-hidden="true" class="inline-block h-4 w-4 i-hugeicons-arrow-down-01"></span></button>
+              <button type="button" @click="removeStep(step.id)" class="px-3 min-h-11 font-bold text-fg text-xs bg-panel hover:bg-surface-hover border border-line rounded-pill focus-visible:outline focus-visible:outline-[var(--coral)] focus-visible:outline-2">Remove</button>
+            </div>
+          </li>
+        </template>
+      </ol>
+
+      <div :if="!stepOpen()" class="flex flex-wrap gap-2 mt-3">
+        <button type="button" @click="startStep('email')" class="px-4 min-h-11 font-bold text-fg text-sm bg-panel hover:bg-surface-hover border border-line rounded-pill focus-visible:outline focus-visible:outline-[var(--coral)] focus-visible:outline-2">Add an email</button>
+        <button type="button" @click="startStep('wait')" class="px-4 min-h-11 font-bold text-fg text-sm bg-panel hover:bg-surface-hover border border-line rounded-pill focus-visible:outline focus-visible:outline-[var(--coral)] focus-visible:outline-2">Add a wait</button>
+      </div>
+
+      <div :if="stepOpen()" class="mt-3 p-4 bg-surface-sunken rounded-control">
+        <h4 class="font-bold text-xs">{{ stepTitle() }}</h4>
+        <div :if="stepKind() === 'email'" class="grid gap-3 mt-3">
+          <label class="block font-bold text-xs">
+            Subject
+            <input x-model="stepSubject" type="text" autocomplete="off" maxlength="200" class="mt-1 field" placeholder="Welcome aboard">
+          </label>
+          <label class="block font-bold text-xs">
+            Message
+            <textarea x-model="stepBody" rows="7" class="mt-1 field" placeholder="Write it as plain text. A blank line starts a new paragraph."></textarea>
+            <span class="block mt-1 font-normal text-fg-muted">An unsubscribe link is added at the end.</span>
+          </label>
+        </div>
+        <div :if="stepKind() === 'wait'" class="flex flex-wrap gap-3 items-end mt-3">
+          <label class="block font-bold text-xs">
+            Wait for
+            <input x-model="stepAmount" type="number" min="1" max="720" step="1" inputmode="numeric" class="mt-1 w-28 field">
+          </label>
+          <div class="flex gap-1" role="group" aria-label="Unit">
+            <template :for="unit in waitUnits">
+              <button type="button" @click="chooseUnit(unit.value)" :aria-pressed="stepUnit() === unit.value" class="px-4 min-h-11 font-bold text-sm border border-line rounded-pill focus-visible:outline focus-visible:outline-[var(--coral)] focus-visible:outline-2" :class="stepUnit() === unit.value ? 'bg-accent text-[var(--coral-ink)]' : 'bg-panel text-fg hover:bg-surface-hover'">{{ unit.label }}</button>
+            </template>
+          </div>
+        </div>
+        <p :if="stepProblem()" class="mt-3 font-bold text-danger text-xs" role="alert">{{ stepProblem() }}</p>
+        <div class="flex gap-2 mt-3">
+          <button type="button" @click="keepStep()" class="px-4 min-h-11 font-bold text-[var(--coral-ink)] text-sm bg-accent rounded-pill focus-visible:outline focus-visible:outline-[var(--coral)] focus-visible:outline-2">Keep this step</button>
+          <button type="button" @click="cancelStep()" class="px-4 min-h-11 font-bold text-fg text-sm bg-panel hover:bg-surface-hover border border-line rounded-pill focus-visible:outline focus-visible:outline-[var(--coral)] focus-visible:outline-2">Cancel</button>
+        </div>
+      </div>
+
+      <p class="mt-4 text-xs" :class="readiness() ? 'text-fg-muted' : 'font-bold'">{{ readinessText() }}</p>
+      <p :if="editError()" class="mt-2 font-bold text-danger text-xs" role="alert">{{ editError() }}</p>
+      <p :if="editSaved()" class="mt-2 font-bold text-xs" role="status">{{ editSaved() }}</p>
+      <button type="button" @click="saveSteps()" :disabled="editSaving()" :aria-busy="editSaving()" class="mt-3 px-5 min-h-11 font-bold text-[var(--coral-ink)] text-sm bg-accent rounded-pill focus-visible:outline focus-visible:outline-[var(--coral)] focus-visible:outline-2 focus-visible:outline-offset-2 disabled:opacity-60">Save steps</button>
+    </section>
 
     <section class="overflow-hidden bg-panel border border-line rounded-panel" aria-labelledby="automations-title">
       <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between p-5 border-b border-line">
@@ -265,17 +577,25 @@ onMount(() => {
 
       <div :if="showList()" class="divide-line divide-y">
         <template :for="automation in automations()">
-          <article class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between p-5">
-            <div class="min-w-0">
-              <h3 class="font-bold text-sm">{{ automation.name }}</h3>
-              <p class="mt-0.5 text-fg-muted text-xs">{{ automation.statusLabel }}. {{ automation.triggerLabel }}. {{ automation.stepsLabel }}.</p>
-              <p class="mt-0.5 text-fg-muted text-xs">{{ automation.publishedLabel }}. Last changed {{ automation.updatedLabel }}.</p>
+          <article class="p-5">
+            <div class="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+              <div class="min-w-0">
+                <h3 class="font-bold text-sm">{{ automation.name }}</h3>
+                <p class="mt-0.5 text-fg-muted text-xs">{{ automation.statusLabel }}. {{ automation.triggerLabel }}. {{ automation.stepsLabel }}.</p>
+                <p class="mt-0.5 text-fg-muted text-xs">{{ automation.publishedLabel }}. Last changed {{ automation.updatedLabel }}.</p>
+                <p :if="automation.activityLabel" class="mt-0.5 text-xs">{{ automation.activityLabel }}</p>
+                <p :if="automation.changesNote" class="mt-1 font-bold text-xs">{{ automation.changesNote }}</p>
+              </div>
+              <div class="flex flex-wrap gap-2 shrink-0">
+                <button :if="automation.turnOnLabel" type="button" @click="turnOn(automation.id)" :disabled="busyId() !== 0" :aria-busy="busyId() === automation.id" class="px-4 min-h-11 font-bold text-[var(--coral-ink)] text-sm bg-accent rounded-pill focus-visible:outline focus-visible:outline-[var(--coral)] focus-visible:outline-2 disabled:opacity-50">{{ confirmId() === automation.id ? 'Yes, start sending' : automation.turnOnLabel }}</button>
+                <button :if="confirmId() === automation.id" type="button" @click="cancelConfirm()" class="px-4 min-h-11 font-bold text-fg text-sm bg-panel hover:bg-surface-hover border border-line rounded-pill focus-visible:outline focus-visible:outline-[var(--coral)] focus-visible:outline-2">Not yet</button>
+                <button :if="automation.canEdit" type="button" @click="openEditor(automation.id, automation.name, automation.graph)" :aria-expanded="editId() === automation.id" class="px-4 min-h-11 font-bold text-fg text-sm bg-panel hover:bg-surface-hover border border-line rounded-pill focus-visible:outline focus-visible:outline-[var(--coral)] focus-visible:outline-2">Edit steps</button>
+                <button :if="automation.canPause" type="button" @click="setStatus(automation.id, 'paused')" :disabled="busyId() !== 0" :aria-busy="busyId() === automation.id" class="px-4 min-h-11 font-bold text-fg text-sm bg-panel hover:bg-surface-hover border border-line rounded-pill focus-visible:outline focus-visible:outline-[var(--coral)] focus-visible:outline-2 disabled:opacity-50">Pause</button>
+                <button :if="automation.canArchive" type="button" @click="setStatus(automation.id, 'archived')" :disabled="busyId() !== 0" :aria-busy="busyId() === automation.id" class="px-4 min-h-11 font-bold text-fg text-sm bg-panel hover:bg-surface-hover border border-line rounded-pill focus-visible:outline focus-visible:outline-[var(--coral)] focus-visible:outline-2 disabled:opacity-50">Archive</button>
+                <button :if="automation.canRestore" type="button" @click="setStatus(automation.id, 'draft')" :disabled="busyId() !== 0" :aria-busy="busyId() === automation.id" class="px-4 min-h-11 font-bold text-fg text-sm bg-panel hover:bg-surface-hover border border-line rounded-pill focus-visible:outline focus-visible:outline-[var(--coral)] focus-visible:outline-2 disabled:opacity-50">Restore as draft</button>
+              </div>
             </div>
-            <div class="flex gap-2 shrink-0">
-              <button :if="automation.canPause" type="button" @click="setStatus(automation.id, 'paused')" :disabled="busyId() !== 0" :aria-busy="busyId() === automation.id" class="px-4 min-h-11 font-bold text-fg text-sm bg-panel hover:bg-surface-hover border border-line rounded-pill focus-visible:outline focus-visible:outline-[var(--coral)] focus-visible:outline-2 disabled:opacity-50">Pause</button>
-              <button :if="automation.canArchive" type="button" @click="setStatus(automation.id, 'archived')" :disabled="busyId() !== 0" :aria-busy="busyId() === automation.id" class="px-4 min-h-11 font-bold text-fg text-sm bg-panel hover:bg-surface-hover border border-line rounded-pill focus-visible:outline focus-visible:outline-[var(--coral)] focus-visible:outline-2 disabled:opacity-50">Archive</button>
-              <button :if="automation.canRestore" type="button" @click="setStatus(automation.id, 'draft')" :disabled="busyId() !== 0" :aria-busy="busyId() === automation.id" class="px-4 min-h-11 font-bold text-fg text-sm bg-panel hover:bg-surface-hover border border-line rounded-pill focus-visible:outline focus-visible:outline-[var(--coral)] focus-visible:outline-2 disabled:opacity-50">Restore as draft</button>
-            </div>
+            <p :if="confirmId() === automation.id" class="mt-3 text-xs" role="status">From now on, everyone who confirms a signup through one of your forms gets these emails. People who joined earlier are not enrolled.</p>
           </article>
         </template>
       </div>

@@ -116,7 +116,8 @@ describe('interface contracts', () => {
     expect(composer).not.toContain('Best send window')
 
     // `automations` was a static builder of its own too. It reads
-    // `/api/automations` now, and it offers no way to switch one on.
+    // `/api/automations` now, and turns one on only through publish, which
+    // checks its steps first.
     const automations = await Bun.file(new URL('../../resources/views/dashboard/commshq/automations.stx', import.meta.url)).text()
     const builder = await Bun.file(new URL('../../resources/components/CommsHQ/AutomationBuilder.stx', import.meta.url)).text()
     expect(automations).toContain('<AutomationBuilder />')
@@ -124,6 +125,7 @@ describe('interface contracts', () => {
     expect(builder).not.toContain('Step inspector')
     expect(builder).not.toContain('Publish version')
     expect(builder).not.toMatch(/setStatus\([^)]*'active'\)/)
+    expect(builder).toContain('publishUrl(id)')
   })
 
   it('publishes a footer-linked comparison page for every competitor', async () => {
