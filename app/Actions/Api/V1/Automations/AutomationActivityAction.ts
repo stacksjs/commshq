@@ -3,7 +3,7 @@ import { Action } from '@stacksjs/actions'
 import { db, sql } from '@stacksjs/database'
 import { response } from '@stacksjs/router'
 import { activeTeam } from '../../../../Support/activeTeam'
-import { canonicalGraph, graphChecksum, readRunnableGraph } from '../../../../Support/automationGraph'
+import { canonicalGraph, graphChecksum, readRunnableGraph, triggerType } from '../../../../Support/automationGraph'
 import { canEditWorkspace } from '../../../../Support/workspaceSettings'
 
 /**
@@ -25,8 +25,8 @@ export default new Action({
     const teamId = membership?.teamId ?? null
     if (!teamId) return response.json({ error: 'Active team required' }, 403)
 
-    const [automations, versions, runs, sent] = await Promise.all([
-      db.selectFrom('automations' as any).select(['id', 'graph'] as any).where('team_id' as any, '=', teamId).execute() as unknown as Promise<Array<{ id: number, graph: unknown }>>,
+    const [automations, versions, runs, sent, texts] = await Promise.all([
+      db.selectFrom('automations' as any).select(['id', 'graph', 'trigger'] as any).where('team_id' as any, '=', teamId).execute() as unknown as Promise<Array<{ id: number, graph: unknown, trigger: unknown }>>,
       // The latest version of each, with its checksum, to compare the saved steps against.
       (db as any).selectFrom('automation_versions').select(['automation_id', 'version', 'checksum'])
         .where('team_id', '=', teamId).orderBy('version', 'asc').execute() as Promise<Array<{ automation_id: number, version: number, checksum: string }>>,
@@ -37,30 +37,40 @@ export default new Action({
         .where('automation_step_runs.team_id', '=', teamId).where('automation_runs.team_id', '=', teamId)
         .where('automation_step_runs.type', '=', 'send_email').where('automation_step_runs.status', '=', 'completed')
         .groupBy('automation_runs.automation_id').execute() as Promise<Array<{ automation_id: number, n: number }>>,
+      // Texts actually handed to the provider; a skipped one records `skipped`, not `sent`.
+      (db as any).selectFrom('automation_step_runs').innerJoin('automation_runs', 'automation_runs.id', '=', 'automation_step_runs.automation_run_id')
+        .select(['automation_runs.automation_id as automation_id', 'automation_step_runs.output as output'])
+        .where('automation_step_runs.team_id', '=', teamId).where('automation_runs.team_id', '=', teamId)
+        .where('automation_step_runs.type', '=', 'send_sms').where('automation_step_runs.status', '=', 'completed')
+        .execute() as Promise<Array<{ automation_id: number, output: unknown }>>,
     ])
 
-    const byId = new Map<number, { automation_id: number, version: number, checksum: string, unpublished_changes: boolean, runs: Record<string, number>, emails_sent: number }>()
+    const byId = new Map<number, { automation_id: number, version: number, checksum: string, unpublished_changes: boolean, runs: Record<string, number>, emails_sent: number, texts_sent: number }>()
     const entry = (id: number) => {
       const key = Number(id)
       if (!byId.has(key))
-        byId.set(key, { automation_id: key, version: 0, checksum: '', unpublished_changes: false, runs: {}, emails_sent: 0 })
+        byId.set(key, { automation_id: key, version: 0, checksum: '', unpublished_changes: false, runs: {}, emails_sent: 0, texts_sent: 0 })
       return byId.get(key)!
     }
     // Ascending, so the last one written for an automation is its latest.
     for (const row of versions) Object.assign(entry(row.automation_id), { version: Number(row.version) || 0, checksum: String(row.checksum) })
     for (const row of runs) entry(row.automation_id).runs[String(row.status)] = Number(row.n) || 0
     for (const row of sent) entry(row.automation_id).emails_sent = Number(row.n) || 0
+    for (const row of texts) {
+      if (String(row.output ?? '').includes('"sent":true'))
+        entry(row.automation_id).texts_sent += 1
+    }
 
     for (const automation of automations) {
       const item = entry(automation.id)
       if (!item.version)
         continue
       const { graph } = readRunnableGraph(automation.graph)
-      item.unpublished_changes = !graph || graphChecksum(canonicalGraph(graph)) !== item.checksum
+      item.unpublished_changes = !graph || graphChecksum(canonicalGraph(graph, triggerType(automation.trigger))) !== item.checksum
     }
 
     // The checksum is only for the comparison above; it is not the page's business.
-    const data = [...byId.values()].map(item => ({ automation_id: item.automation_id, version: item.version, unpublished_changes: item.unpublished_changes, runs: item.runs, emails_sent: item.emails_sent }))
+    const data = [...byId.values()].map(item => ({ automation_id: item.automation_id, version: item.version, unpublished_changes: item.unpublished_changes, runs: item.runs, emails_sent: item.emails_sent, texts_sent: item.texts_sent }))
     return response.json({ data, can_publish: canEditWorkspace(membership?.role) })
   },
 })

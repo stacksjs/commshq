@@ -4,6 +4,7 @@ import { db } from '@stacksjs/database'
 import { mail } from '@stacksjs/email'
 import { log } from '@stacksjs/logging'
 import { Job } from '@stacksjs/queue'
+import { estimateSmsSegments, isWithinSmsQuietHours, sendSms } from '@stacksjs/sms'
 import { withUnsubscribe } from '../Mail/unsubscribe'
 import { messageHtml, readRunnableGraph } from '../Support/automationGraph'
 import type { RunnableStep } from '../Support/automationGraph'
@@ -30,6 +31,11 @@ import { createPublicToken } from '../Support/signedToken'
  * dead-lettered and the run fails, so the queue's retries and this cannot
  * both send the same email.
  *
+ * An email step needs the contact's email consent, and without it the run
+ * ends. A text step needs a phone number and SMS consent, and without them
+ * only that text is skipped. A text due inside quiet hours is held and
+ * looked at again every `QUIET_HOURS_RECHECK_MINUTES`.
+ *
  * It replaced a job that marked every email step "accepted" without sending
  * it, and whose wait step, once due, waited again forever.
  */
@@ -39,6 +45,32 @@ interface AutomationPayload { runId: number, teamId: number }
 /** Minutes between attempts at a failed send. Five attempts in all. */
 export const SEND_BACKOFF_MINUTES = [5, 30, 120, 720]
 export const MAX_SEND_ATTEMPTS = SEND_BACKOFF_MINUTES.length + 1
+
+/** How long a text held for quiet hours waits before it is looked at again. */
+export const QUIET_HOURS_RECHECK_MINUTES = 30
+
+/** The contact's own timezone when its properties name a real one, else UTC. */
+export function contactTimezone(properties: unknown): string {
+  let doc: unknown = properties
+  if (typeof properties === 'string') {
+    try {
+      doc = JSON.parse(properties)
+    }
+    catch {
+      return 'UTC'
+    }
+  }
+  const zone = doc && typeof doc === 'object' ? (doc as { timezone?: unknown }).timezone : undefined
+  if (typeof zone !== 'string' || !zone.trim())
+    return 'UTC'
+  try {
+    new Intl.DateTimeFormat('en-US', { timeZone: zone.trim() })
+    return zone.trim()
+  }
+  catch {
+    return 'UTC'
+  }
+}
 
 /** Long enough to outlive any inbox it sits in, as for campaigns. */
 const UNSUBSCRIBE_LINK_TTL_MS = 400 * 24 * 60 * 60 * 1000
@@ -138,11 +170,11 @@ export default new Job({
       return { failed: 'version' }
     }
 
-    const contact = await db.selectFrom('contacts' as any).select(['id', 'email', 'status'] as any)
+    const contact = await db.selectFrom('contacts' as any).select(['id', 'email', 'phone', 'status', 'properties'] as any)
       .where('id' as any, '=', Number(run.subject_id)).where('team_id' as any, '=', teamId)
-      .executeTakeFirst() as { id: number, email: string | null, status: string } | undefined
-    if (!contact || !contact.email) {
-      await finish(runId, teamId, 'cancelled', 'The contact no longer exists or has no email address')
+      .executeTakeFirst() as { id: number, email: string | null, phone: string | null, status: string, properties: unknown } | undefined
+    if (!contact) {
+      await finish(runId, teamId, 'cancelled', 'The contact no longer exists')
       return { cancelled: 'contact' }
     }
 
@@ -197,7 +229,7 @@ export default new Job({
         continue
       }
 
-      // Re-read before each send: a pause or archive takes effect between emails.
+      // Re-read before each send: a pause or archive takes effect between messages.
       const current = await automationStatus(teamId, automationId)
       if (current !== 'active') {
         if (current === 'archived' || current === null) {
@@ -208,18 +240,47 @@ export default new Job({
         return { paused: true }
       }
 
-      const address = String(contact.email).trim().toLowerCase()
-      if (contact.status !== 'active' || !await consentAllows(teamId, 'email', address)) {
+      const address = String(contact.email ?? '').trim().toLowerCase()
+      const phone = String(contact.phone ?? '').trim()
+
+      if (step.type === 'send_email' && (contact.status !== 'active' || !address || !await consentAllows(teamId, 'email', address))) {
+        // Email is what these journeys are mostly made of: someone who has
+        // left the list leaves the journey.
         await setStep(stepId, teamId, { status: 'cancelled', output: JSON.stringify({ skipped: 'no consent' }) })
         await finish(runId, teamId, 'cancelled', 'The contact no longer consents to email')
         return { cancelled: 'consent' }
       }
 
+      if (step.type === 'send_sms') {
+        if (contact.status !== 'active' || !phone || !await consentAllows(teamId, 'sms', phone)) {
+          // A text is skipped, not the journey: most people on an email list
+          // never gave a number, or never agreed to texts.
+          await setStep(stepId, teamId, { status: 'completed', completed_at: nowIso(), output: JSON.stringify({ skipped: phone ? 'no sms consent' : 'no phone number' }) })
+          continue
+        }
+        if (isWithinSmsQuietHours(new Date(), { startHour: Number(config.sms?.quietHours?.startHour ?? 20), endHour: Number(config.sms?.quietHours?.endHour ?? 8), timezone: contactTimezone(contact.properties) })) {
+          const later = new Date(Date.now() + QUIET_HOURS_RECHECK_MINUTES * 60_000).toISOString()
+          await setStep(stepId, teamId, { status: 'waiting', available_at: later, output: JSON.stringify({ held: 'quiet hours' }) })
+          await setRun(runId, teamId, { status: 'waiting', current_node_id: step.id })
+          return { quietHours: step.id, until: later }
+        }
+      }
+
       await setStep(stepId, teamId, { status: 'running', error: null })
       await setRun(runId, teamId, { current_node_id: step.id })
       try {
-        const messageId = await sendEmail(teamId, { id: Number(contact.id), email: address }, graph.senderIdentityId, step)
-        await setStep(stepId, teamId, { status: 'completed', completed_at: nowIso(), output: JSON.stringify({ sent: true, messageId: messageId ?? null }) })
+        if (step.type === 'send_sms') {
+          const segments = estimateSmsSegments(step.config.body).segments
+          await assertQuota(teamId, 'sms', segments)
+          const result = await sendSms({ to: phone, body: step.config.body, statusCallback: config.sms?.drivers?.twilio?.statusCallback } as any)
+          if (!result?.success)
+            throw new Error(result?.error || 'SMS provider rejected the message')
+          await setStep(stepId, teamId, { status: 'completed', completed_at: nowIso(), output: JSON.stringify({ sent: true, messageId: result.messageId ?? null, segments }) })
+        }
+        else {
+          const messageId = await sendEmail(teamId, { id: Number(contact.id), email: address }, graph.senderIdentityId, step)
+          await setStep(stepId, teamId, { status: 'completed', completed_at: nowIso(), output: JSON.stringify({ sent: true, messageId: messageId ?? null }) })
+        }
       }
       catch (sendError) {
         const message = (sendError instanceof Error ? sendError.message : String(sendError)).slice(0, 2000)
