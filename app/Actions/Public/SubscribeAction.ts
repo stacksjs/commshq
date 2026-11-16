@@ -9,6 +9,7 @@ import FormDefinition from '../../Models/FormDefinition'
 import FormSubmission from '../../Models/FormSubmission'
 import { buildConfirmationMessage } from '../../Mail/ConfirmSubscription'
 import { joinAudience } from '../../Support/audienceMembership'
+import { startAutomations } from '../../Support/automationRunner'
 import { appendConsentOnce, consentIdempotencyKey } from '../../Support/consentLedger'
 import { formSender } from '../../Support/formSender'
 import { originAllowed, parseFormSettings, wantsHtml } from '../../Support/formSettings'
@@ -69,6 +70,11 @@ export default new Action({
     })
 
     await joinAudience(teamId, form.audience_id ? Number(form.audience_id) : null, Number(contact.id), form.doubleOptIn ? 'pending' : 'active')
+
+    // Without double opt-in the signup is the confirmation. With it, the
+    // confirmation link starts automations instead.
+    if (!form.doubleOptIn)
+      await startAutomations(teamId, 'subscriber_joined', Number(contact.id))
 
     if (form.doubleOptIn) {
       // Number(): Postgres bigint ids arrive as strings, and a token's ids must be integers to verify.

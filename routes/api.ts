@@ -24,6 +24,10 @@ route.get('/v1/workspace/setup', 'Actions/Api/V1/WorkspaceSetupAction').middlewa
 route.get('/v1/workspace/analytics', 'Actions/Api/V1/WorkspaceAnalyticsAction').middleware('auth').middleware('team')
 route.get('/v1/workspace/settings', 'Actions/Api/V1/ShowWorkspaceSettingsAction').middleware('auth').middleware('team')
 route.patch('/v1/workspace/settings', 'Actions/Api/V1/UpdateWorkspaceSettingsAction').middleware('auth').middleware('team').rateLimit(20, 'minute')
+// Turning an automation on freezes its steps as a version; the generated
+// update could mark one active with nothing published behind it.
+route.post('/v1/automations/{id}/publish', 'Actions/Api/V1/Automations/PublishAutomationAction').middleware('auth').middleware('team').rateLimit(20, 'minute')
+route.get('/v1/automations/activity', 'Actions/Api/V1/Automations/AutomationActivityAction').middleware('auth').middleware('team')
 route.post('/v1/campaigns/{id}/dispatch', 'Actions/Api/V1/DispatchCampaignAction').middleware('auth').middleware('team').rateLimit(20, 'minute')
 route.post('/v1/ai/generate', 'Actions/Api/V1/GenerateAiDraftAction').middleware('auth').middleware('team').rateLimit(10, 'minute')
 route.post('/v1/ai-generations/{id}/decision', 'Actions/Api/V1/DecideAiDraftAction').middleware('auth').middleware('team').rateLimit(30, 'minute')

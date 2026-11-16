@@ -5,6 +5,7 @@ import { response } from '@stacksjs/router'
 import Contact from '../../Models/Contact'
 import FormDefinition from '../../Models/FormDefinition'
 import { joinAudience } from '../../Support/audienceMembership'
+import { startAutomations } from '../../Support/automationRunner'
 import { appendConsentOnce, consentIdempotencyKey, findConsentByKey } from '../../Support/consentLedger'
 import { parseFormSettings } from '../../Support/formSettings'
 import { pageResponse } from '../../Support/publicResponse'
@@ -49,6 +50,9 @@ export default new Action({
     await contact.update({ status: 'active' })
     if (form) await joinAudience(payload.teamId, form.audience_id ? Number(form.audience_id) : null, Number(contact.id), 'active')
     await appendConsentOnce({ teamId: payload.teamId, recipient, channel: payload.channel, action: 'confirmed', source: 'double_opt_in', idempotencyKey, proof: JSON.stringify({ tokenPurpose: payload.purpose, formId: payload.formId }) })
+    // A confirmed email subscriber is who `subscriber_joined` automations wait for.
+    if (payload.channel === 'email')
+      await startAutomations(payload.teamId, 'subscriber_joined', Number(contact.id))
     return response.redirect(landingUrl)
   },
 })
