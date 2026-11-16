@@ -16,11 +16,14 @@
  *
  * ## What the page does not show
  *
- * No attributed revenue, no recovered carts, no return on spend: an event
- * is recorded, and nothing yet matches it to a contact, a campaign or an
- * automation. `NOT_USED_YET` says so on the page. No revenue total either:
- * events arrive in whatever currency the store uses, and adding them up
- * across currencies would be a number that means nothing.
+ * What an order leads to is shown on the Analytics page, not here: each one
+ * is matched to a contact by the buyer's email, credited to the last email
+ * that contact was sent, and can start a purchase automation
+ * (`app/Support/commerceAttribution.ts`). This page only says whether the
+ * buyer is a contact. No recovered carts and no return on spend: carts are
+ * not read, and nothing records what an email cost. `NOT_USED_YET` says so.
+ * No revenue total either: events arrive in whatever currency the store
+ * uses, and adding them up across currencies would mean nothing.
  *
  * Only Shopify and WooCommerce, the two providers whose webhooks become
  * commerce events. Only orders, fulfilments and refunds, the three kinds
@@ -68,7 +71,7 @@ export const EVENT_TYPES = [
   { value: 'order_refunded', label: 'Refund' },
 ] as const
 
-export const NOT_USED_YET = 'Orders, fulfilments and refunds your store sends are recorded here. They are not yet matched to contacts, credited to campaigns or used to start automations, and carts and products are not read.'
+export const NOT_USED_YET = 'Orders, fulfilments and refunds your store sends are recorded here. An order from someone who is already a contact is credited to the last email they were sent, which the Analytics page shows, and can start a purchase automation. Carts and products are not read.'
 
 function titleCase(value: string): string {
   const spaced = value.replace(/[_-]+/g, ' ').trim()
@@ -205,6 +208,7 @@ export interface EventRow {
   currency?: string | null
   occurred_at?: string | null
   commerce_connection_id?: number | null
+  contact_id?: number | null
 }
 
 export interface EventView {
@@ -213,6 +217,8 @@ export interface EventView {
   amountLabel: string
   reference: string
   occurredLabel: string
+  /** Whether the buyer's email matched a contact. Who they are is not shown here. */
+  buyerLabel: string
   storeId: number
 }
 
@@ -240,6 +246,7 @@ export function toEventView(row: EventRow, locale?: string): EventView {
     reference: String(row.external_id ?? '').trim(),
     occurredLabel: formatSeen(row.occurred_at, locale),
     storeId: count(row.commerce_connection_id),
+    buyerLabel: count(row.contact_id) > 0 ? 'Buyer is a contact' : 'Buyer is not a contact',
   }
 }
 

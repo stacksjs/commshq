@@ -449,7 +449,7 @@ onMount(() => {
           <li class="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between px-5 py-3">
             <div class="min-w-0">
               <p class="font-bold text-sm">{{ event.typeLabel }} <span :if="event.amountLabel" class="font-normal">{{ event.amountLabel }}</span></p>
-              <p class="text-fg-muted text-xs truncate">Reference <code>{{ event.reference }}</code></p>
+              <p class="text-fg-muted text-xs truncate">Reference <code>{{ event.reference }}</code>. {{ event.buyerLabel }}.</p>
             </div>
             <p class="shrink-0 text-fg-muted text-xs">{{ event.occurredLabel }}</p>
           </li>

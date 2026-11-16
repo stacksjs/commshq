@@ -167,9 +167,10 @@ describe('the page agrees with the server', () => {
     expect(payload).toContain(`export function commerceEventType(type: unknown): ${EVENT_TYPES.map(item => `'${item.value}'`).join(' | ')}`)
   })
 
-  test('still true: nothing reads a commerce event except this page', async () => {
-    // The notice says events are not matched to contacts, campaigns or
-    // automations. The job writes them; nothing else may read them yet.
+  test('what reads a commerce event is known, and the notice says what each does', async () => {
+    // The job writes them; attribution matches and credits them; analytics
+    // and the stores list count them. A new reader is a new claim the
+    // notice may need to make.
     const root = new URL('../../', import.meta.url).pathname
     const files = await Array.fromAsync(new Bun.Glob('app/{Actions,Jobs,Support,Listeners}/**/*.ts').scan({ cwd: root, onlyFiles: true }))
     const readers = []
@@ -177,8 +178,9 @@ describe('the page agrees with the server', () => {
       if (/CommerceEvent\b|commerce_events/.test(await Bun.file(`${root}${file}`).text()))
         readers.push(file)
     }
-    expect(readers.sort()).toEqual(['app/Actions/Api/V1/Commerce/ListStoresAction.ts', 'app/Jobs/ProcessWebhookEvent.ts'])
-    expect(NOT_USED_YET).toContain('not yet matched to contacts')
+    expect(readers.sort()).toEqual(['app/Actions/Api/V1/Commerce/ListStoresAction.ts', 'app/Jobs/ProcessWebhookEvent.ts', 'app/Support/commerceAttribution.ts', 'app/Support/workspaceAnalytics.ts'])
+    expect(NOT_USED_YET).toContain('credited to the last email they were sent')
+    expect(NOT_USED_YET).toContain('Carts and products are not read')
     expect(await source('resources/components/CommsHQ/CommerceWorkspace.stx')).toContain('{{ notUsedYet }}')
   })
 })

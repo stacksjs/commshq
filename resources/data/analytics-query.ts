@@ -7,18 +7,26 @@
  * application records a visit, an open, a click or an attributed sale, so
  * those figures had no source.
  *
- * `GET /api/v1/workspace/analytics?days=N` counts the four things the
- * application does write (contacts added, form signups, consent changes and
- * campaign recipients), and this module turns the counts into what the page
- * shows. Every figure on the page is one of those counts or a sum of them.
+ * `GET /api/v1/workspace/analytics?days=N` counts what the application
+ * does write (contacts added, form signups, consent changes, campaign
+ * recipients, store orders and refunds, and the orders credited to an
+ * email), and this module turns the counts into what the page shows. Every
+ * figure on the page is one of those counts or a sum of them.
+ *
+ * ## Revenue
+ *
+ * Kept per currency and never added across currencies. An order is
+ * credited to an email only when the buyer is a contact who was sent a
+ * campaign or automation email in the days before; the page says how many
+ * days, and that it is last touch, so the figure is read as what it is.
  *
  * ## What the page does not show
  *
- * No opens, clicks, visits, retention, lifetime value, attribution or
- * revenue by channel. `NOT_MEASURED` says so on the page itself, so an
- * absent number is not read as a zero. No "Create report" button either:
- * there are no saved reports to create.
+ * No opens, clicks, visits, retention or lifetime value. `NOT_MEASURED`
+ * says so on the page itself, so an absent number is not read as a zero.
+ * No "Create report" button either: there are no saved reports to create.
  */
+import { formatAmount } from './commerce-query'
 export const ANALYTICS_ENDPOINT = '/api/v1/workspace/analytics'
 
 /**
@@ -33,7 +41,7 @@ export const PERIODS = [
 
 export const DEFAULT_DAYS = 30
 
-export const NOT_MEASURED = 'Opens, clicks, site visits, retention and revenue attribution are not on this page. CommsHQ does not record them yet, so there is nothing to count.'
+export const NOT_MEASURED = 'Opens, clicks, site visits and retention are not on this page. CommsHQ does not record them yet, so there is nothing to count.'
 
 const DASHBOARD = '/dashboard/commshq'
 
@@ -91,6 +99,24 @@ export interface CampaignView {
   summary: string
 }
 
+export interface RevenueSourceView {
+  key: string
+  label: string
+  href: string
+  ordersLabel: string
+  revenueLabel: string
+}
+
+export interface RevenueView {
+  hasOrders: boolean
+  ordersLine: string
+  refundsLine: string
+  contactsLine: string
+  creditedLine: string
+  windowNote: string
+  sources: RevenueSourceView[]
+}
+
 export interface AnalyticsView {
   days: number
   periodLabel: string
@@ -106,6 +132,7 @@ export interface AnalyticsView {
   campaigns: CampaignView[]
   /** How many campaigns sent in the period are not in the list. */
   moreCampaigns: number
+  revenue: RevenueView
 }
 
 /** A count that is a whole number of zero or more; anything else is zero. */
@@ -170,7 +197,67 @@ interface AnalyticsBody {
     signups?: { total?: unknown, byForm?: Array<{ id?: unknown, name?: unknown, count?: unknown }> | null } | null
     consent?: { byAction?: Array<{ action?: unknown, count?: unknown }> | null } | null
     sending?: { recipients?: unknown, outcomes?: Record<string, unknown> | null, campaigns?: Array<{ id?: unknown, name?: unknown, outcomes?: Record<string, unknown> | null }> | null, campaignCount?: unknown } | null
+    commerce?: CommerceBody | null
   } | null
+}
+
+interface MoneyBody { currency?: unknown, amount?: unknown, count?: unknown }
+
+interface CommerceBody {
+  orders?: { count?: unknown, revenue?: MoneyBody[] | null, fromContacts?: unknown } | null
+  refunds?: { count?: unknown, amount?: MoneyBody[] | null } | null
+  credited?: { orders?: unknown, revenue?: MoneyBody[] | null, bySource?: Array<{ source?: unknown, id?: unknown, name?: unknown, orders?: unknown, revenue?: MoneyBody[] | null }> | null } | null
+  windowDays?: unknown
+}
+
+/** Amounts in their own currencies, largest first, joined: "$1,240.00 and €80.00". */
+export function moneyList(rows: MoneyBody[] | null | undefined, locale = 'en-US'): string {
+  const parts = (rows ?? [])
+    .map(row => ({ amount: toCount(row.amount), label: formatAmount(toCount(row.amount), String(row.currency || 'USD'), locale) }))
+    .filter(row => row.amount > 0 && row.label)
+    .sort((a, b) => b.amount - a.amount)
+    .map(row => row.label)
+  if (parts.length <= 1)
+    return parts[0] ?? ''
+  return `${parts.slice(0, -1).join(', ')} and ${parts[parts.length - 1]}`
+}
+
+/** What the store sent in the period, and what of it an email is credited with. */
+export function toRevenueView(commerce: CommerceBody | null | undefined, periodLabel: string): RevenueView {
+  const orders = toCount(commerce?.orders?.count)
+  const fromContacts = Math.min(orders, toCount(commerce?.orders?.fromContacts))
+  const refunds = toCount(commerce?.refunds?.count)
+  const creditedOrders = toCount(commerce?.credited?.orders)
+  const days = toCount(commerce?.windowDays)
+  const period = periodLabel.toLowerCase()
+
+  const ordersMoney = moneyList(commerce?.orders?.revenue)
+  const refundsMoney = moneyList(commerce?.refunds?.amount)
+  const creditedMoney = moneyList(commerce?.credited?.revenue)
+
+  const sources = (commerce?.credited?.bySource ?? []).map((row) => {
+    const source = row.source === 'automation' ? 'automation' : 'campaign'
+    const id = toCount(row.id)
+    const name = String(row.name ?? '').trim() || (source === 'automation' ? 'An automation that was deleted' : 'A campaign that was deleted')
+    const count = toCount(row.orders)
+    return {
+      key: `${source}:${id}`,
+      label: `${source === 'automation' ? 'Automation' : 'Campaign'}: ${name}`,
+      href: `${DASHBOARD}/${source === 'automation' ? 'automations' : 'campaigns'}`,
+      ordersLabel: plural(count, 'order', 'orders'),
+      revenueLabel: moneyList(row.revenue) || 'No amount',
+    }
+  })
+
+  return {
+    hasOrders: orders > 0 || refunds > 0,
+    ordersLine: orders === 0 ? `No orders came in during the ${period}.` : `${plural(orders, 'order', 'orders')}${ordersMoney ? ` worth ${ordersMoney}` : ''}.`,
+    refundsLine: refunds === 0 ? '' : `${plural(refunds, 'refund', 'refunds')}${refundsMoney ? ` of ${refundsMoney}` : ''}.`,
+    contactsLine: orders === 0 ? '' : `${formatCount(fromContacts)} of them from people who are already contacts.`,
+    creditedLine: creditedOrders === 0 ? 'No order was credited to an email.' : `${plural(creditedOrders, 'order', 'orders')}${creditedMoney ? ` worth ${creditedMoney}` : ''} credited to an email.`,
+    windowNote: `An order is credited to the last campaign or automation email its buyer was sent in the ${days > 0 ? plural(days, 'day', 'days') : 'days'} before it. Orders from people who are not contacts, or who were sent nothing, are not credited.`,
+    sources,
+  }
 }
 
 function campaignSummary(outcomes: Record<string, unknown>): string {
@@ -262,6 +349,7 @@ export function toAnalyticsView(body: AnalyticsBody | null | undefined, fallback
     outcomes: withBars(outcomes),
     campaigns,
     moreCampaigns: Math.max(0, toCount(sending.campaignCount) - campaigns.length),
+    revenue: toRevenueView(data.commerce, offered.label),
   }
 }
 

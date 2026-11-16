@@ -183,6 +183,27 @@ onMount(() => {
         </section>
       </div>
 
+      <section class="mt-5 p-5 bg-panel border border-line rounded-panel" aria-labelledby="revenue-title">
+        <h2 id="revenue-title" class="font-bold">Store revenue</h2>
+        <p class="mt-1 text-fg-muted text-xs">Orders and refunds your connected stores sent in the period, in the currencies they were paid in.</p>
+        <p :if="!view().revenue.hasOrders" class="mt-5 text-fg-muted text-sm">{{ view().revenue.ordersLine }} Connect a store on the <a href="/dashboard/commshq/commerce" class="font-bold text-accent">Commerce page</a>.</p>
+        <div :if="view().revenue.hasOrders" class="mt-4 space-y-1 text-sm">
+          <p class="font-bold">{{ view().revenue.ordersLine }}</p>
+          <p :if="view().revenue.contactsLine">{{ view().revenue.contactsLine }}</p>
+          <p :if="view().revenue.refundsLine">{{ view().revenue.refundsLine }}</p>
+          <p class="pt-2 font-bold">{{ view().revenue.creditedLine }}</p>
+        </div>
+        <ul :if="view().revenue.sources.length > 0" class="m-0 mt-3 p-0 list-none border-line border-t divide-line divide-y">
+          <template :for="source in view().revenue.sources">
+            <li class="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between py-3">
+              <a :href="source.href" class="font-bold text-fg text-sm">{{ source.label }}</a>
+              <p class="m-0 text-xs">{{ source.ordersLabel }}, {{ source.revenueLabel }}</p>
+            </li>
+          </template>
+        </ul>
+        <p :if="view().revenue.hasOrders" class="mt-3 text-fg-muted text-xs">{{ view().revenue.windowNote }}</p>
+      </section>
+
       <p class="flex gap-3 items-start mt-5 p-5 text-fg-muted text-sm bg-panel border border-line rounded-panel">
         <span aria-hidden="true" class="shrink-0 mt-0.5 h-4 w-4 i-hugeicons-information-circle"></span>
         <span>{{ notMeasured }}</span>
