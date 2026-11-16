@@ -109,10 +109,14 @@ export function dkimAnswerMatches(answer: unknown, expectedRecord: string): bool
   const expected = dkimRecordKey(expectedRecord)
   if (!Array.isArray(answer) || !expected)
     return false
-  return answer.some((record) => {
-    const joined = Array.isArray(record) ? record.join('') : String(record ?? '')
-    return dkimRecordKey(joined) === expected
-  })
+  const strings = (record: unknown): string => (Array.isArray(record) ? record.join('') : String(record ?? ''))
+  if (answer.some(record => dkimRecordKey(strings(record)) === expected))
+    return true
+  // A key longer than 255 characters is one record in several strings. Node
+  // answers it as one entry holding them all, and Bun as an entry for each,
+  // as though they were separate records. Put back together in the order
+  // they came, they are the record that was published.
+  return dkimRecordKey(answer.map(strings).join('')) === expected
 }
 
 /**

@@ -536,3 +536,19 @@ describe('looking a sending domain\'s records up', () => {
       .toEqual({ answer: [], failed: true })
   })
 })
+
+describe('a DKIM record too long for one string', () => {
+  test('matches whether the runtime answers its strings together or apart', async () => {
+    const { dkimAnswerMatches } = await import('../../app/Hq/sendingDomain')
+    const key = 'MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA'.repeat(9)
+    const record = `v=DKIM1; k=rsa; p=${key}`
+    const first = record.slice(0, 255)
+    const rest = record.slice(255)
+    // Node: one record, two strings. Bun: each string as an entry of its own.
+    expect(dkimAnswerMatches([[first, rest]], record)).toBe(true)
+    expect(dkimAnswerMatches([[first], [rest]], record)).toBe(true)
+    // Another key, or half of this one, is not it.
+    expect(dkimAnswerMatches([[first]], record)).toBe(false)
+    expect(dkimAnswerMatches([[`v=DKIM1; k=rsa; p=${key.slice(1)}A`]], record)).toBe(false)
+  })
+})
