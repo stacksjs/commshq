@@ -103,6 +103,37 @@ declare module '@stacksjs/database' {
       currency: string
       properties: string
     }
+    app_keys: {
+      // columns
+      id: number
+      uuid: string
+      created_at: string
+      updated_at: string | null
+      kind: "send" | "read"
+      key_hash: string
+      hint: string
+      created_by: number
+      last_used_at: string
+      revoked_at: string
+      team_id: number
+      connected_app_id: number
+    }
+    app_sends: {
+      // columns
+      id: number
+      uuid: string
+      created_at: string
+      updated_at: string | null
+      idempotency_key: string
+      from_address: string
+      authenticated: "domain" | "fallback"
+      status: "sent" | "failed"
+      recipients: unknown
+      suppressed: unknown
+      subject: string
+      team_id: number
+      connected_app_id: number
+    }
     attribution_events: {
       // columns
       id: number
@@ -772,6 +803,18 @@ declare module '@stacksjs/database' {
       lifted_at: string
       team_id: number
     }
+    connected_apps: {
+      // columns
+      id: number
+      uuid: string
+      created_at: string
+      updated_at: string | null
+      name: string
+      name_key: string
+      created_by: number
+      team_id: number
+      sender_domain_id: number
+    }
     consent_events: {
       // columns
       id: number
@@ -1360,6 +1403,20 @@ declare module '@stacksjs/database' {
       last_used_date: string
       template_id: string
       customer_id: number
+    }
+    hq_connect_codes: {
+      // columns
+      id: number
+      uuid: string
+      created_at: string
+      updated_at: string | null
+      code_hash: string
+      app: string
+      status: string
+      sealed_grant: string
+      claim: string
+      expires_at: number
+      team_id: number
     }
     integration_credentials: {
       // columns
@@ -2329,6 +2386,19 @@ declare module '@stacksjs/database' {
       estimated_count: number
       refreshed_at: string
       team_id: number
+    }
+    sender_domain_keys: {
+      // columns
+      id: number
+      uuid: string
+      created_at: string
+      updated_at: string | null
+      selector: string
+      public_key: string
+      private_key_sealed: string
+      dkim_verified_at: string
+      team_id: number
+      sender_domain_id: number
     }
     sender_domains: {
       // columns

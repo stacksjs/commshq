@@ -13,9 +13,9 @@ import { appEnvName, isProductionEnv, OWNER_WORKSPACE, ownerWorkspaceId } from '
  * - "New subscriber welcome" holds only steps that can run (two emails with
  *   a wait between them). It has no sender, because the demo sender is not
  *   verified, so the page says that is the one thing missing.
- * - "First purchase thank you" also holds an approval and an SMS step, kinds
- *   that cannot run yet, so the page shows how it refuses to turn on until
- *   they are removed.
+ * - "First purchase thank you" starts on an order and also holds an approval
+ *   step, a kind that cannot run, and a text step with no message yet, so the
+ *   page shows how it refuses to turn on until they are fixed.
  *
  * None is seeded on. Turning on freezes a version and sends real email to
  * real signups; that is a decision for a person, not a seed.
@@ -29,6 +29,7 @@ const AUTOMATIONS = [
   {
     name: 'New subscriber welcome',
     status: 'draft',
+    trigger: 'subscriber_joined',
     nodes: [
       { id: 'welcome', type: 'send_email', config: { subject: 'Welcome aboard', body: 'Thanks for subscribing.\n\nEvery Sunday you will get one letter on making work people remember. Reply any time: a person reads every answer.' } },
       { id: 'wait-three-days', type: 'delay', config: { seconds: 259_200 } },
@@ -38,6 +39,7 @@ const AUTOMATIONS = [
   {
     name: 'First purchase thank you',
     status: 'draft',
+    trigger: 'purchase_made',
     nodes: [
       { id: 'wait-an-hour', type: 'delay', config: { seconds: 3_600 } },
       { id: 'review-copy', type: 'approval', config: {} },
@@ -48,6 +50,7 @@ const AUTOMATIONS = [
   {
     name: 'Spring re-engagement',
     status: 'archived',
+    trigger: 'subscriber_joined',
     nodes: [
       { id: 'check-in', type: 'send_email', config: { subject: 'Still want these?', body: 'It has been a while. If these letters are not for you any more, the link below stops them.' } },
     ],
@@ -91,7 +94,7 @@ export default class WorkspaceAutomationsSeeder extends Seeder {
         name: automation.name,
         status: automation.status,
         version: 1,
-        trigger: JSON.stringify({ type: 'subscriber_joined' }),
+        trigger: JSON.stringify({ type: automation.trigger }),
         graph: JSON.stringify({ nodes: automation.nodes, edges: [] }),
         published_at: null,
         created_at: now,
