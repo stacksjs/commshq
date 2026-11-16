@@ -1,14 +1,14 @@
 import { config } from '@stacksjs/config'
 import { mail } from '@stacksjs/email'
 import { log } from '@stacksjs/logging'
-import { assertUsageAvailable, deliveryIdempotencyKey } from '@stacksjs/newsletter'
+import { deliveryIdempotencyKey } from '@stacksjs/newsletter'
 import { Campaign, CampaignSend } from '@stacksjs/orm'
 import { Job } from '@stacksjs/queue'
 import { estimateSmsSegments, isWithinSmsQuietHours, sendSms } from '@stacksjs/sms'
 import { createPublicToken } from '../Support/signedToken'
 import { withUnsubscribe } from '../Mail/unsubscribe'
 import CampaignRecipient from '../Models/CampaignRecipient'
-import UsageMeter from '../Models/UsageMeter'
+import { assertQuota, consentAllows } from '../Support/emailDelivery'
 
 /** Long enough to outlive any inbox it sits in. */
 const UNSUBSCRIBE_LINK_TTL_MS = 400 * 24 * 60 * 60 * 1000
@@ -20,20 +20,6 @@ interface DispatchCampaignPayload {
 
 function parseSnapshot(value: unknown): Record<string, any> {
   return typeof value === 'string' ? JSON.parse(value) : value as Record<string, any>
-}
-
-async function consentAllows(teamId: number, channel: 'email' | 'sms', recipient: string): Promise<boolean> {
-  const suppression = await CommunicationSuppression.where('team_id', teamId).where('channel', channel).where('recipient', recipient).first()
-  if (suppression && !suppression.liftedAt) return false
-  const consent = await ConsentEvent.where('team_id', teamId).where('channel', channel).where('recipient', recipient).orderByDesc('occurredAt').first()
-  return !!consent && ['granted', 'confirmed'].includes(String(consent.action))
-}
-
-async function assertCampaignQuota(teamId: number, channel: 'email' | 'sms', requested: number): Promise<void> {
-  const meterKey = channel === 'sms' ? 'sms_segments' : 'emails'
-  const meter = await UsageMeter.where('team_id', teamId).where('key', meterKey).orderByDesc('periodStart').first()
-  const limit = !meter ? 0 : meter.includedQuantity == null ? null : Number(meter.includedQuantity)
-  assertUsageAvailable([{ meter: meterKey, used: Number(meter?.quantity || 0), limit, requested }])
 }
 
 export default new Job({
@@ -52,7 +38,7 @@ export default new Job({
 
     const channel: 'email' | 'sms' = campaign.type === 'sms' ? 'sms' : 'email'
     const pending = await CampaignRecipient.where('team_id', payload.teamId).where('campaign_id', payload.campaignId).where('status', 'queued').limit(100).get()
-    await assertCampaignQuota(payload.teamId, channel, pending.length)
+    await assertQuota(payload.teamId, channel, pending.length)
     await campaign.update({ status: 'sending' })
 
     let sent = 0
