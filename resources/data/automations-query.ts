@@ -10,11 +10,12 @@
  *
  * ## How an automation runs now
  *
- * - **Trigger.** `subscriber_joined`: someone confirms an email
- *   subscription through a signup form (or signs up on a form without
- *   double opt-in). Each active automation starts once per contact, ever.
- *   A contact added on the Contacts page has not opted in and starts
- *   nothing.
+ * - **Trigger.** Chosen when the automation is drafted. `subscriber_joined`:
+ *   someone confirms an email subscription through a signup form (or signs
+ *   up on a form without double opt-in). `purchase_made`: a connected store
+ *   sends an order from an email address that is already a contact. Each
+ *   active automation starts once per contact, ever. A contact added on the
+ *   Contacts page starts nothing.
  * - **Steps.** Send an email, from the automation's sender, or wait between
  *   1 hour and 30 days. Nothing else can run yet; a saved step of any other
  *   kind blocks turning the automation on until it is removed.
@@ -33,9 +34,9 @@
  *
  * ## What the page does not do
  *
- * No branches, no conditions, no SMS steps, no approvals and no triggers
- * other than a confirmed signup. People who subscribed before an automation
- * was turned on are not enrolled.
+ * No branches, no conditions, no SMS steps and no approvals. The trigger
+ * cannot be changed after drafting. Nothing that happened before an
+ * automation was turned on starts it.
  */
 import { formatSeen } from './contacts-query'
 import { formatCount } from './workspace-summary'
@@ -68,19 +69,25 @@ export const AUTOMATION_STATUSES = [
   { value: 'archived', label: 'Archived' },
 ] as const
 
-/** The one trigger anything fires. */
+/**
+ * The triggers something fires, in the order the page offers them. A test
+ * holds this list to `TRIGGER_TYPES` in `app/Support/automationGraph.ts`.
+ */
+export const TRIGGERS = [
+  { value: 'subscriber_joined', label: 'When someone confirms a signup', detail: 'Starts for each person who confirms a signup through one of your forms.' },
+  { value: 'purchase_made', label: 'When a contact places an order', detail: 'Starts when a connected store sends an order from someone who is already a contact.' },
+] as const
+
 export const DEFAULT_TRIGGER_TYPE = 'subscriber_joined'
 
-const TRIGGER_LABELS: Record<string, string> = {
-  subscriber_joined: 'When someone confirms a signup',
-}
+const TRIGGER_LABELS: Record<string, string> = Object.fromEntries(TRIGGERS.map(trigger => [trigger.value, trigger.label]))
 
 export const WAIT_UNITS = [
   { value: 'hours', label: 'Hours', seconds: 60 * 60 },
   { value: 'days', label: 'Days', seconds: 24 * 60 * 60 },
 ] as const
 
-export const HOW_IT_RUNS = 'An automation that is on starts for each person who confirms a signup through one of your forms, once per person. People who signed up before it was turned on are not enrolled. Each email checks that the person still consents and carries an unsubscribe link.'
+export const HOW_IT_RUNS = 'An automation that is on starts when its trigger happens, once per person: a confirmed signup, or an order from someone who is already a contact. Nothing that happened before it was turned on starts it. Each email checks that the person still consents and carries an unsubscribe link.'
 
 function titleCase(value: string): string {
   const spaced = value.replace(/[_-]+/g, ' ').trim()
@@ -483,12 +490,13 @@ export const EMPTY_GRAPH = JSON.stringify({ nodes: [], edges: [] })
  * Always a draft at version 1, with the one trigger and an empty graph.
  * `trigger` and `graph` are required by the model, so they are always sent.
  */
-export function automationPayload(draft: { name?: string }): { name: string, status: 'draft', version: 1, trigger: string, graph: string } {
+export function automationPayload(draft: { name?: string, trigger?: string }): { name: string, status: 'draft', version: 1, trigger: string, graph: string } {
+  const trigger = TRIGGERS.some(item => item.value === draft.trigger) ? String(draft.trigger) : DEFAULT_TRIGGER_TYPE
   return {
     name: (draft.name ?? '').trim(),
     status: 'draft',
     version: 1,
-    trigger: JSON.stringify({ type: DEFAULT_TRIGGER_TYPE }),
+    trigger: JSON.stringify({ type: trigger }),
     graph: EMPTY_GRAPH,
   }
 }
