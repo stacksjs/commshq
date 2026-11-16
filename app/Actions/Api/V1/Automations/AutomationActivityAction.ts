@@ -1,6 +1,6 @@
 import type { RequestInstance } from '@stacksjs/types'
 import { Action } from '@stacksjs/actions'
-import { db } from '@stacksjs/database'
+import { db, sql } from '@stacksjs/database'
 import { response } from '@stacksjs/router'
 import { activeTeam } from '../../../../Support/activeTeam'
 import { canonicalGraph, graphChecksum, readRunnableGraph } from '../../../../Support/automationGraph'
@@ -30,10 +30,10 @@ export default new Action({
       // The latest version of each, with its checksum, to compare the saved steps against.
       (db as any).selectFrom('automation_versions').select(['automation_id', 'version', 'checksum'])
         .where('team_id', '=', teamId).orderBy('version', 'asc').execute() as Promise<Array<{ automation_id: number, version: number, checksum: string }>>,
-      (db as any).selectFrom('automation_runs').selectRaw('automation_id, status, count(*) as n')
+      (db as any).selectFrom('automation_runs').select(['automation_id', 'status']).selectRaw(sql`count(*) as n`)
         .where('team_id', '=', teamId).groupBy('automation_id').groupBy('status').execute() as Promise<Array<{ automation_id: number, status: string, n: number }>>,
       (db as any).selectFrom('automation_step_runs').innerJoin('automation_runs', 'automation_runs.id', '=', 'automation_step_runs.automation_run_id')
-        .selectRaw('automation_runs.automation_id as automation_id, count(*) as n')
+        .select(['automation_runs.automation_id as automation_id']).selectRaw(sql`count(*) as n`)
         .where('automation_step_runs.team_id', '=', teamId).where('automation_runs.team_id', '=', teamId)
         .where('automation_step_runs.type', '=', 'send_email').where('automation_step_runs.status', '=', 'completed')
         .groupBy('automation_runs.automation_id').execute() as Promise<Array<{ automation_id: number, n: number }>>,

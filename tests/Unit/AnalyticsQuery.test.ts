@@ -83,11 +83,11 @@ describe('the server', () => {
     expect(model).toContain(`schema.enum([${RECIPIENT_STATUSES.map(status => `'${status}'`).join(', ')}])`)
   })
 
-  test('still true: nothing records an open, a click or an attributed sale', async () => {
+  test('still true: nothing records an open or a click', async () => {
     // The page says these are not measured. The day application code starts
     // writing them, this fails and the page gets the numbers instead.
     const code = (await sourcesUnder('app/{Actions,Jobs,Support,Listeners}/**/*.ts')).join('\n')
-    expect(code).not.toMatch(/DeliveryEvent\b|delivery_events|AttributionEvent\b|attribution_events/)
+    expect(code).not.toMatch(/DeliveryEvent\b|delivery_events|opened_at|clicked_at/)
     expect(NOT_MEASURED).toContain('Opens, clicks')
     expect(await source('resources/components/CommsHQ/AnalyticsWorkspace.stx')).toContain('{{ notMeasured }}')
   })
@@ -179,5 +179,26 @@ describe('what the page shows', () => {
     expect(analyticsErrorMessage(403)).toContain('not an active member')
     expect(analyticsErrorMessage(503)).toContain('not answering')
     expect(analyticsErrorMessage(418)).toContain('(418)')
+  })
+})
+
+describe('queries that run on Postgres', () => {
+  /*
+   * Production runs Postgres and the tests run SQLite. Given `selectRaw`
+   * alone, the builder writes `SELECT *, count(*) ...`, which SQLite runs
+   * and Postgres refuses beside a GROUP BY: the analytics page answered 500
+   * in production while every test passed. These are the shapes that broke.
+   */
+  test('every aggregate names its grouped columns, and is built with the tagged sql', async () => {
+    const files = await Array.fromAsync(new Bun.Glob('app/**/*.ts').scan({ cwd: new URL('../../', import.meta.url).pathname, onlyFiles: true }))
+    for (const file of files) {
+      const code = await source(file)
+      for (const call of code.match(/[^\n]*selectRaw\([^\n]*/g) ?? []) {
+        expect({ file, call, tagged: /selectRaw\(sql`/.test(call) }).toEqual({ file, call, tagged: true })
+        expect({ file, call, named: /\.select\(\[/.test(call) }).toEqual({ file, call, named: true })
+      }
+      // Taking part of a timestamp is spelled differently in every database.
+      expect({ file, sqliteOnly: /substr\(|strftime\(|julianday\(/.test(code) }).toEqual({ file, sqliteOnly: false })
+    }
   })
 })
