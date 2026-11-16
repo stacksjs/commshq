@@ -18,5 +18,9 @@ export default {
     scan: true,
     subdomain: 'mail',
     mode: 'server',
+    // CommsHQ sends for the domains its apps have verified. The mail server
+    // lets this mailbox carry a message for another domain only when that
+    // domain's own published key signed it, which app/Hq does for every send.
+    relay: 'no-reply',
   },
 } satisfies EmailConfig
