@@ -32,6 +32,8 @@ export interface FormSettings {
    * answered by the router for every origin; this is the check that decides.
    */
   allowedOrigins: string[]
+  /** The connected app this form was made for: its confirmation comes from the app's own address. */
+  connectedApp?: string
 }
 
 function httpUrl(value: unknown): string | undefined {
@@ -67,7 +69,9 @@ export function parseFormSettings(schemaDocument: unknown): FormSettings {
     ? [...new Set(doc.allowedOrigins.map(normalizeOrigin).filter((origin): origin is string => !!origin))]
     : []
 
-  return { listName, senderIdentityId, successUrl: httpUrl(doc.successUrl), allowedOrigins }
+  const connectedApp = typeof doc.connectedApp === 'string' && /^[0-9a-f-]{36}$/i.test(doc.connectedApp) ? doc.connectedApp : undefined
+
+  return { listName, senderIdentityId, successUrl: httpUrl(doc.successUrl), allowedOrigins, connectedApp }
 }
 
 /** Whether a browser on `origin` may call the form. No Origin header is a server, or a plain form post. */

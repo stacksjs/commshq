@@ -15,6 +15,9 @@ export default defineModel({
     // shared addresses can carry (app/Hq/standing.ts). Cleared by a person.
     sendingPausedAt: { required: false, fillable: false, validation: { rule: schema.timestamp() }, factory: () => null },
     sendingPausedReason: { required: false, fillable: false, validation: { rule: schema.string().max(500) }, factory: () => null },
+    // The address on its own domain the app last sent from. Mail CommsHQ
+    // writes for the app, a signup confirmation, is from it too.
+    fromAddress: { required: false, fillable: false, validation: { rule: schema.string().max(254) }, factory: () => null },
     createdBy: { required: false, fillable: false, validation: { rule: schema.number().min(1) }, factory: () => null },
   },
   dashboard: { highlight: true, section: 'management', icon: 'i-hugeicons-plug-01' },

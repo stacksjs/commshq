@@ -30,6 +30,13 @@ export default function () {
     .everyFiveMinutes()
     .setTimeZone('UTC')
 
+  // Bounces and spam complaints, read from the mailbox they come back to:
+  // what the sending limits in app/Hq/standing.ts count.
+  schedule
+    .job('ProcessReturnedMail')
+    .everyFiveMinutes()
+    .setTimeZone('UTC')
+
   schedule
     .job('EvaluateReputationAlerts')
     .everyFiveMinutes()

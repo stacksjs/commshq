@@ -79,6 +79,14 @@ export function memoryAppStore(options: {
       row.dkimVerifiedAt = null
       return { ...row }
     },
+    async findAppById(teamId, appId) {
+      return apps.find(a => a.teamId === teamId && a.id === appId) ?? null
+    },
+    async rememberFrom(appId, address) {
+      const app = apps.find(a => a.id === appId)
+      if (app)
+        app.fromAddress = address
+    },
     async setAppDomain(appId, domainId) {
       apps.find(a => a.id === appId)!.senderDomainId = domainId
     },

@@ -11,7 +11,7 @@ import type { OutgoingMessage } from '../../app/Hq/apps'
 import { describe, expect, test } from 'bun:test'
 import { createHqService, createMemoryConnectCodeStore } from '@stacksjs/hq/service'
 import { hqServiceContract } from '@stacksjs/hq/testing'
-import { addressOf, allowedHeaders, authenticateSendKey, ConnectRefusedError, createCommshqAdapter, registerSendingDomain, sendForApp, signupFormForApp, signupFormSlug, siteOrigin, upsertContactForApp, verifySendingDomain } from '../../app/Hq/apps'
+import { addressOf, allowedHeaders, authenticateSendKey, ConnectRefusedError, createCommshqAdapter, registerSendingDomain, senderForApp, sendForApp, signupFormForApp, signupFormSlug, siteOrigin, upsertContactForApp, verifySendingDomain } from '../../app/Hq/apps'
 import { signDkim, verifyDkim } from '@stacksjs/email'
 import { bearerKey, hashAppKey, looksLikeAppKey, newAppKey } from '../../app/Hq/keys'
 import { dkimAnswerMatches, recordsForApi, sendingDomainRecords } from '../../app/Hq/sendingDomain'
@@ -368,6 +368,43 @@ describe('sending', () => {
     expect((third as { error: string }).error).toContain('reader@example.com')
   })
 
+  test('the workspace\'s owners are told when the numbers pause their app', async () => {
+    const s = setup({ counts: { sentLastWeek: 1_000, bouncesLastWeek: 90 } })
+    const { app } = await s.readyApp()
+    const told: string[] = []
+    await sendForApp(app, MESSAGE, { ...s.sendDeps, notifyPaused: async (paused, reason) => { told.push(`${paused.name}: ${reason}`) } })
+    expect(told).toHaveLength(1)
+    expect(told[0]).toContain('Votescape: 90 of the last')
+    // A notice that cannot be sent does not turn the refusal into an error.
+    const again = setup({ counts: { sentLastWeek: 1_000, bouncesLastWeek: 90 } })
+    const other = await again.readyApp()
+    expect(await sendForApp(other.app, MESSAGE, { ...again.sendDeps, notifyPaused: async () => { throw new Error('mail down') } })).toMatchObject({ ok: false, status: 403 })
+  })
+
+  test('mail CommsHQ writes for an app is from the address the app last sent from, signed, once its domain is ready', async () => {
+    const s = setup()
+    const { app } = await s.readyApp()
+    // Before it has sent: a no-reply address on its domain.
+    expect((await senderForApp(s.store, app.teamId, app.id, () => true))?.from).toEqual({ name: 'Votescape', address: 'noreply@votescape.org' })
+
+    await sendForApp(app, { ...MESSAGE, from: { name: 'Votescape', address: 'hello@votescape.org' } }, s.sendDeps)
+    const sender = await senderForApp(s.store, app.teamId, app.id, () => true)
+    expect(sender?.from).toEqual({ name: 'Votescape', address: 'hello@votescape.org' })
+    expect(sender?.signing.domain).toBe('votescape.org')
+    expect(sender?.signing.privateKey).toContain('PRIVATE KEY')
+
+    // Not for another workspace, an unknown app, or a mailer that cannot sign.
+    expect(await senderForApp(s.store, 999, app.id, () => true)).toBeNull()
+    expect(await senderForApp(s.store, app.teamId, 'no-such-app', () => true)).toBeNull()
+    expect(await senderForApp(s.store, app.teamId, app.id, () => false)).toBeNull()
+  })
+
+  test('an app whose domain is not ready has no sender of its own', async () => {
+    const s = setup()
+    const { app } = await s.connect()
+    expect(await senderForApp(s.store, app.teamId, app.id, () => true)).toBeNull()
+  })
+
   test('an address on another domain is never used, verified domain or not', async () => {
     const s = setup()
     const { app } = await s.readyApp()
@@ -516,6 +553,7 @@ describe('an app\'s signup form', () => {
       listName: 'Votescape',
       successUrl: 'https://votescape.org/?subscribed=1',
       allowedOrigins: ['https://votescape.org'],
+      connectedApp: app.id,
     })
 
     const again = await signupFormForApp(app, { origin: 'https://votescape.org/' }, formDeps(s.store))

@@ -84,7 +84,14 @@ export default new Action({
       // No `driver`: the worker sends with the app's configured mailer. The
       // one passed here was `config.email.default`, which is unset, and the
       // queue it went to (`emails`) had no worker reading it either.
-      await job('SendEmail', { message: buildConfirmationMessage(email, confirmationUrl, { listName: settings.listName, ...sender }) })
+      const message = buildConfirmationMessage(email, confirmationUrl, { listName: settings.listName, ...sender })
+      // A form made for a connected app, with no sender chosen in the
+      // dashboard: the confirmation comes from the app's own address, signed
+      // with its domain's key, which only the job that sends it reads.
+      const forApp = sender ? undefined : settings.connectedApp
+      await (forApp
+        ? job('SendAppMail', { message, teamId, appId: forApp })
+        : job('SendEmail', { message }))
         .withIdempotencyKey(`confirmation:${consentKey}`)
         .onQueue('emails')
         .dispatch()

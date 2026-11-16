@@ -29,6 +29,8 @@ export interface ConnectedApp {
   name: string
   /** The app's sending domain row, once it has registered one. */
   senderDomainId: number | null
+  /** The address on its own domain the app last sent from: what mail CommsHQ sends for it is from. */
+  fromAddress?: string | null
 }
 
 export interface SenderDomainRow {
@@ -65,6 +67,9 @@ export interface AppStore {
   addKey: (appId: string, kind: 'send' | 'read', keyHash: string, hint: string, userId: number | null) => Promise<void>
   /** The app a live key of this kind belongs to. A revoked key finds nothing. */
   findAppByKey: (kind: 'send' | 'read', keyHash: string) => Promise<ConnectedApp | null>
+  findAppById: (teamId: number, appId: string) => Promise<ConnectedApp | null>
+  /** Keep the address an app sent from on its own domain. */
+  rememberFrom: (appId: string, address: string) => Promise<void>
   touchKey?: (keyHash: string) => Promise<void>
 
   findDomain: (domain: string) => Promise<SenderDomainRow | null>
@@ -342,6 +347,8 @@ export interface SendDeps {
   canSign: () => boolean
   newId?: () => string
   now?: () => Date
+  /** Tell the workspace's owners their app was paused, and why. Never fails a send. */
+  notifyPaused?: (app: ConnectedApp, reason: string) => Promise<void>
   /** Counts one message to one address; false once the address has had its hour's worth. */
   recipientAllowed?: (appId: string, address: string, now: Date) => boolean
 }
@@ -474,6 +481,7 @@ export async function sendForApp(app: ConnectedApp, body: unknown, deps: SendDep
   const unhealthy = healthProblem(counts)
   if (unhealthy) {
     await store.pauseSending(app.id, unhealthy, now)
+    await deps.notifyPaused?.(app, unhealthy).catch(() => {})
     return { ok: false, status: 403, error: `Sending for ${app.name} has been paused: ${unhealthy}. Nothing was sent. Contact CommsHQ support to have it reviewed.` }
   }
   const shape = messageProblem({ fromName: safeName(asked.name, app.name), ownDomain: fromOwn ? ownDomain : null, html, text })
@@ -537,11 +545,42 @@ export async function sendForApp(app: ConnectedApp, body: unknown, deps: SendDep
   }
   await store.recordSend(app.id, app.teamId, { ...record, idempotencyKey, recipients: acceptedAll, subject })
 
+  if (sent.ok && own && app.fromAddress !== from.address)
+    await store.rememberFrom(app.id, from.address).catch(() => {})
+
   if (!sent.ok) {
     await store.release(app.teamId, 'emails', acceptedAll.length)
     return { ok: false, status: 502, error: 'The mail server did not accept the message. Nothing was sent, and it can be sent again.' }
   }
   return { ok: true, status: 202, data: record }
+}
+
+// --- Mail CommsHQ sends for an app ---
+
+export interface AppSender {
+  from: { name: string, address: string }
+  signing: { domain: string, privateKey: string }
+}
+
+/**
+ * Who mail that CommsHQ itself writes for an app is from: a signup form's
+ * confirmation, say. The app's own address, signed with its domain's key,
+ * once that domain is ready; null until then, and the caller sends as
+ * CommsHQ. The address is the one the app last sent from, or `noreply@` its
+ * domain when it has not sent yet.
+ */
+export async function senderForApp(store: AppStore, teamId: number, appId: string, canSign: () => boolean): Promise<AppSender | null> {
+  const app = await store.findAppById(teamId, appId)
+  if (!app?.senderDomainId || !canSign())
+    return null
+  const row = await store.findDomainById(app.senderDomainId)
+  if (!domainIsReady(row) || row.teamId !== teamId)
+    return null
+  const privateKey = await store.domainPrivateKey(row.id)
+  if (!privateKey)
+    return null
+  const remembered = app.fromAddress && (domainOfAddress(app.fromAddress) === row.domain || domainOfAddress(app.fromAddress)?.endsWith(`.${row.domain}`)) ? app.fromAddress : null
+  return { from: { name: safeName(app.name, 'CommsHQ'), address: remembered ?? `noreply@${row.domain}` }, signing: { domain: row.domain, privateKey } }
 }
 
 // --- The signup form ---
@@ -600,7 +639,8 @@ export async function signupFormForApp(app: ConnectedApp, body: unknown, deps: {
   const asked = typeof input.listName === 'string' && input.listName.trim() ? input.listName.trim().slice(0, 120) : undefined
 
   const slug = signupFormSlug(app)
-  const settings = { successUrl: `${site}/?subscribed=1`, allowedOrigins: [site] }
+  // `connectedApp` is what lets the confirmation come from the app's own address.
+  const settings = { successUrl: `${site}/?subscribed=1`, allowedOrigins: [site], connectedApp: app.id }
   let form = await deps.store.findSignupForm(app.teamId, slug)
 
   if (!form) {
@@ -619,7 +659,7 @@ export async function signupFormForApp(app: ConnectedApp, body: unknown, deps: {
       return { ok: false, status: 409, error: 'This app\'s signup form is not active. Activate it in the dashboard to take signups again.' }
     const current = form.document
     const origins = Array.isArray(current.allowedOrigins) ? current.allowedOrigins : []
-    const changed = current.successUrl !== settings.successUrl || origins.length !== 1 || origins[0] !== site || (asked !== undefined && current.listName !== asked)
+    const changed = current.successUrl !== settings.successUrl || origins.length !== 1 || origins[0] !== site || current.connectedApp !== app.id || (asked !== undefined && current.listName !== asked)
     // Everything else in the document is kept: its fields, and a sender chosen in the dashboard.
     if (changed)
       await deps.store.setSignupFormDocument(app.teamId, slug, { ...current, ...(asked !== undefined ? { listName: asked } : {}), ...settings })

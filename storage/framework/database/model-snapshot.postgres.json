@@ -23822,6 +23822,15 @@
             "isNullable": true,
             "hasDefault": false,
             "maxLength": 500
+          },
+          {
+            "name": "from_address",
+            "type": "string",
+            "isPrimaryKey": false,
+            "isUnique": false,
+            "isNullable": true,
+            "hasDefault": false,
+            "maxLength": 254
           }
         ],
         "indexes": [
@@ -24073,7 +24082,7 @@
       }
     ]
   },
-  "hash": "eb78311ddef6d8857a0e7f45f5615d50d2850db0d7fa3145dd0f2f350187d5ba",
+  "hash": "7979e898437a2d26ad24699c2b82e423367d21e8fe9bfda39a4d4ffbde6aee21",
   "dialect": "postgres",
-  "updatedAt": "2026-11-16T20:41:11.923Z"
+  "updatedAt": "2026-11-16T22:34:34.319Z"
 }

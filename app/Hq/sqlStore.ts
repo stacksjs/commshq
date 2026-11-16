@@ -32,7 +32,7 @@ const marks = (count: number): string => Array.from({ length: count }, () => '?'
 function toApp(row: Row | undefined): ConnectedApp | null {
   if (!row)
     return null
-  return { id: String(row.uuid), teamId: Number(row.team_id), name: String(row.name), senderDomainId: row.sender_domain_id == null ? null : Number(row.sender_domain_id) }
+  return { id: String(row.uuid), teamId: Number(row.team_id), name: String(row.name), senderDomainId: row.sender_domain_id == null ? null : Number(row.sender_domain_id), fromAddress: row.from_address ? String(row.from_address) : null }
 }
 
 const DOMAIN_COLUMNS = 'd.id, d.team_id, d.domain, d.status, d.dns_records, k.dkim_verified_at'
@@ -119,7 +119,7 @@ export function createSqlAppStore(options: SqlStoreOptions): AppStore {
     },
 
     async findApp(teamId, name) {
-      return toApp((await query('SELECT uuid, team_id, name, sender_domain_id FROM connected_apps WHERE team_id = ? AND name_key = ? LIMIT 1', [teamId, name.toLowerCase()]))[0])
+      return toApp((await query('SELECT uuid, team_id, name, sender_domain_id, from_address FROM connected_apps WHERE team_id = ? AND name_key = ? LIMIT 1', [teamId, name.toLowerCase()]))[0])
     },
 
     async createApp(teamId, name, userId) {
@@ -144,7 +144,7 @@ export function createSqlAppStore(options: SqlStoreOptions): AppStore {
 
     async findAppByKey(kind, keyHash) {
       return toApp((await query(
-        'SELECT a.uuid, a.team_id, a.name, a.sender_domain_id FROM app_keys k JOIN connected_apps a ON a.id = k.connected_app_id WHERE k.key_hash = ? AND k.kind = ? AND k.revoked_at IS NULL LIMIT 1',
+        'SELECT a.uuid, a.team_id, a.name, a.sender_domain_id, a.from_address FROM app_keys k JOIN connected_apps a ON a.id = k.connected_app_id WHERE k.key_hash = ? AND k.kind = ? AND k.revoked_at IS NULL LIMIT 1',
         [keyHash, kind],
       ))[0])
     },
@@ -185,6 +185,14 @@ export function createSqlAppStore(options: SqlStoreOptions): AppStore {
         [crypto.randomUUID(), domainId, owner?.team_id ?? null, DKIM_SELECTOR, input.publicKey, seal(input.privateKey, options.appKey()), at, at],
       )
       return (await this.findDomainById(domainId))!
+    },
+
+    async findAppById(teamId, appId) {
+      return toApp((await query('SELECT uuid, team_id, name, sender_domain_id, from_address FROM connected_apps WHERE team_id = ? AND uuid = ? LIMIT 1', [teamId, appId]))[0])
+    },
+
+    async rememberFrom(appId, address) {
+      await query('UPDATE connected_apps SET from_address = ?, updated_at = ? WHERE uuid = ?', [address.slice(0, 254), now(), appId])
     },
 
     async setAppDomain(appId, domainId) {

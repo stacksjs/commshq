@@ -143,6 +143,41 @@ export async function transport(message: OutgoingMessage): Promise<{ ok: boolean
     : { ok: true, messageId: (result as { messageId?: string } | undefined)?.messageId }
 }
 
+/**
+ * Tell a workspace's owners and admins that an app's sending was paused.
+ *
+ * From CommsHQ itself, to the people who can do something about it, with the
+ * numbers that caused it. A copy goes to CommsHQ's abuse mailbox, where the
+ * person who lifts the pause (`buddy sending:resume`) reads it.
+ */
+export async function notifyPaused(app: { name: string, teamId: number }, reason: string): Promise<void> {
+  const rows = await sqlRun(
+    'SELECT u.email FROM team_members m JOIN users u ON u.id = m.user_id WHERE m.team_id = ? AND m.status = ? AND m.role IN (?, ?)',
+    [app.teamId, 'active', 'owner', 'admin'],
+  )
+  const owners = [...new Set(rows.map(row => String(row.email || '').toLowerCase()).filter(email => email.includes('@')))].slice(0, 20)
+  if (owners.length === 0)
+    return
+  const domain = fallbackAddress().split('@')[1] || 'commshq.org'
+  const text = [
+    `Sending for ${app.name} has been paused.`,
+    '',
+    `Why: ${reason}.`,
+    '',
+    'CommsHQ sends every app\'s mail from addresses they share, so mail that bounces or is marked as spam lowers delivery for everyone. Nothing more will be sent for this app until the pause is lifted.',
+    '',
+    'What to do: remove addresses that were not collected by a signup, confirm new signups by email, and reply to this message to have the pause reviewed.',
+  ].join('\n')
+  await emailPackage.mail.send({
+    to: owners,
+    bcc: [`abuse@${domain}`],
+    replyTo: [`abuse@${domain}`],
+    subject: `Sending for ${app.name} is paused`,
+    text,
+    tag: 'transactional',
+  } as any)
+}
+
 export const commshqAdapter = createCommshqAdapter({
   store: sqlAppStore,
   codes: sqlConnectCodeStore(db as any, { dialect: IS_POSTGRES ? 'postgres' : 'sqlite' }),

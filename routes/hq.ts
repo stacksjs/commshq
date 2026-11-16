@@ -26,7 +26,7 @@ import { authenticateSendKey, ConnectRefusedError, registerSendingDomain, sendFo
 import { bearerKey } from '../app/Hq/keys'
 import { rateLimit } from '../app/Hq/limits'
 import { MAX_PER_RECIPIENT_PER_HOUR } from '../app/Hq/standing'
-import { appOrigin, canSignOutbound, fallbackAddress, hq, lookupTxt, sqlAppStore, transport } from '../app/Hq/service'
+import { appOrigin, canSignOutbound, fallbackAddress, hq, lookupTxt, notifyPaused, sqlAppStore, transport } from '../app/Hq/service'
 
 function json(data: unknown, status = 200, extraHeaders: Record<string, string> = {}): Response {
   return new Response(JSON.stringify(data), {
@@ -172,7 +172,7 @@ route.post('/api/v1/send', async (request: RouterRequest) => {
   const app = await appFor(request, 'send', SEND_LIMIT)
   if (app instanceof Response)
     return app
-  const result = await sendForApp(app, request.jsonBody, { store: sqlAppStore, transport, fallbackAddress, canSign: canSignOutbound, recipientAllowed })
+  const result = await sendForApp(app, request.jsonBody, { store: sqlAppStore, transport, fallbackAddress, canSign: canSignOutbound, recipientAllowed, notifyPaused })
   return result.ok ? json(result.data, result.status) : json({ error: result.error }, result.status)
 }).skipCsrf().rateLimit(600, 'minute')
 

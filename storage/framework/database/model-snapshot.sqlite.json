@@ -23810,6 +23810,15 @@
             "isNullable": true,
             "hasDefault": false,
             "maxLength": 500
+          },
+          {
+            "name": "from_address",
+            "type": "string",
+            "isPrimaryKey": false,
+            "isUnique": false,
+            "isNullable": true,
+            "hasDefault": false,
+            "maxLength": 254
           }
         ],
         "indexes": [
@@ -24061,7 +24070,7 @@
       }
     ]
   },
-  "hash": "af7b71046deed96791d4d1b623dce1e9468a328b30ceffae6f9c21aaccabd9f2",
+  "hash": "7ffd3b4680846f1004983bcd799111393bcbf1b64ec3902aeba726750b636213",
   "dialect": "sqlite",
-  "updatedAt": "2026-11-16T20:41:11.749Z"
+  "updatedAt": "2026-11-16T22:34:34.107Z"
 }

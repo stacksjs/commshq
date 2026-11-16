@@ -412,6 +412,7 @@ describe('an app\'s signup form, in the tables the public form endpoint reads', 
       listName: 'Votescape',
       successUrl: 'https://votescape.org/?subscribed=1',
       allowedOrigins: ['https://votescape.org'],
+      connectedApp: app.id,
     })
     const audience = w.db.query('SELECT id, uuid, name, channel, team_id FROM audiences WHERE name = \'Votescape subscribers\'').all() as any[]
     expect(audience).toHaveLength(1)

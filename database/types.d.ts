@@ -130,6 +130,7 @@ declare module '@stacksjs/database' {
       status: "sent" | "failed"
       recipients: unknown
       suppressed: unknown
+      recipient_count: number
       subject: string
       team_id: number
       connected_app_id: number
@@ -811,6 +812,9 @@ declare module '@stacksjs/database' {
       updated_at: string | null
       name: string
       name_key: string
+      sending_paused_at: string
+      sending_paused_reason: string
+      from_address: string
       created_by: number
       team_id: number
       sender_domain_id: number
