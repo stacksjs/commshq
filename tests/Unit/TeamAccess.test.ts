@@ -10,7 +10,7 @@
  */
 import { describe, expect, test } from 'bun:test'
 import { canManageTeam, inviteRefusal, isOwner, memberChangeRefusal } from '../../app/Support/teamAccess'
-import { afterSignIn, DASHBOARD_PATH, invitationPath, withReturn } from '../../resources/data/auth-redirect'
+import { afterSignIn, connectPath, DASHBOARD_PATH, invitationPath, withConnectReturn, withReturn } from '../../resources/data/auth-redirect'
 import {
   acceptErrorMessage,
   ASSIGNABLE_ROLES,
@@ -200,6 +200,28 @@ describe('where sign-in may send you', () => {
     // A repeated query parameter arrives as a list; only its first value counts.
     expect(afterSignIn([`/team-invitations/${TOKEN}`, 'https://evil.example'])).toBe(`/team-invitations/${TOKEN}`)
     expect(afterSignIn(['https://evil.example'])).toBe(DASHBOARD_PATH)
+  })
+
+  test('back to a connect approve page with its code, and nothing that only looks like one', () => {
+    const code = 'T-7-D_wNoBcWEsXJYgHokh4DB4GtngYPGzdFVM11amk'
+    expect(afterSignIn(`/cli/connect?code=${code}`)).toBe(`/cli/connect?code=${code}`)
+    for (const next of [
+      '/cli/connect', '/cli/connect?code=short', `/cli/connect?code=${code}&next=https://evil.example`,
+      `https://evil.example/cli/connect?code=${code}`, `//evil.example/cli/connect?code=${code}`,
+      `/cli/connect?code=${code}#x`, `/cli/connect/../login?code=${code}`,
+    ])
+      expect(afterSignIn(next)).toBe(DASHBOARD_PATH)
+    expect(connectPath('bad code')).toBe('')
+    expect(withConnectReturn('/login', code)).toBe(`/login?next=${encodeURIComponent(`/cli/connect?code=${code}`)}`)
+    expect(withConnectReturn('/register', '')).toBe('/register')
+  })
+
+  test('the approve page sends a signed-out person to sign in and back, in the same tab', async () => {
+    const view = await source('resources/views/cli/connect.stx')
+    expect(view).toContain('withConnectReturn(\'/login\', code)')
+    expect(view).toContain('href="{{ signInHref }}"')
+    // A new tab is how the approve page got left behind.
+    expect(view).not.toContain('target="_blank"')
   })
 
   test('the links from the accept page carry the way back', () => {

@@ -12,6 +12,7 @@
  * no terminal at all.
  */
 import { hq } from '../../../app/Hq/service'
+import { withConnectReturn } from '../../data/auth-redirect'
 
 useSeoMeta({
   title: 'Connect an app - CommsHQ',
@@ -39,6 +40,10 @@ if (authToken) {
 // Looked up only for a signed-in viewer. A pending code answers the app's
 // name. An unknown, expired or already approved one answers nothing, and the
 // page says the same thing for all three so it cannot be used to test codes.
+// Signing in comes straight back here, where the confirmation code is asked for.
+const signInHref = withConnectReturn('/login', code)
+const registerHref = withConnectReturn('/register', code)
+
 let appName = ''
 let pending = false
 if (signedIn && code) {
@@ -116,10 +121,10 @@ async function approve(e: Event): Promise<void> {
     @if (!signedIn)
       <div class="text-center">
         <h1 class="font-semibold text-xl tracking-tight ink">Sign in to connect your app</h1>
-        <p class="mt-2 text-sm muted">Your terminal is waiting for you to approve this connection. Sign in, then come back to this tab and reload it.</p>
+        <p class="mt-2 text-sm muted">Your terminal is waiting for you to approve this connection. Sign in and you will come straight back here to enter the confirmation code it is showing.</p>
         <div class="flex flex-col gap-2.5 mt-6">
-          <a href="/login" target="_blank" rel="noopener" class="block px-4 py-2.5 w-full font-semibold no-underline text-[var(--coral-ink)] text-center text-sm bg-coral rounded-xl">Sign in</a>
-          <a href="/register" target="_blank" rel="noopener" class="block px-4 py-2.5 w-full font-medium no-underline text-center text-sm border border-tone rounded-xl ink">Create an account</a>
+          <a href="{{ signInHref }}" class="block px-4 py-2.5 w-full font-semibold no-underline text-[var(--coral-ink)] text-center text-sm bg-coral rounded-xl">Sign in</a>
+          <a href="{{ registerHref }}" class="block px-4 py-2.5 w-full font-medium no-underline text-center text-sm border border-tone rounded-xl ink">Create an account</a>
         </div>
       </div>
     @endif
