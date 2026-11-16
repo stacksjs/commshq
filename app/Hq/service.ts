@@ -21,6 +21,7 @@ import { DKIM_SELECTOR } from './sendingDomain'
 
 export const sqlAppStore: AppStore = createSqlAppStore({
   run: sqlRun,
+  json: IS_POSTGRES ? 'CAST(CAST(? AS TEXT) AS jsonb)' : '?',
   appKey: () => String(config.app?.key || process.env.APP_KEY || ''),
   joinAudience: async (teamId, audienceId, contactId) => {
     const { joinAudience } = await import('../Support/audienceMembership')

@@ -23,6 +23,14 @@ export interface SqlStoreOptions {
   appKey: () => string
   /** Join a contact to an audience, both by their row ids. */
   joinAudience: (teamId: number, audienceId: number, contactId: number) => Promise<void>
+  /**
+   * How a JSON value is written, as SQL around its `?`. A plain `?` on
+   * SQLite, where JSON is text. On Postgres the driver sees a string bound to
+   * a `jsonb` column and stores it as a JSON *string*, a list inside quotes:
+   * it reads back the same, but no query can look inside it. Binding it as
+   * text and casting, `CAST(CAST(? AS TEXT) AS jsonb)`, stores the value.
+   */
+  json?: string
 }
 
 const text = (value: unknown): string | null => (value === null || value === undefined ? null : String(value))
@@ -72,6 +80,8 @@ function toDocument(value: unknown): Record<string, unknown> {
 
 export function createSqlAppStore(options: SqlStoreOptions): AppStore {
   const query = options.run
+  /** The placeholder of a JSON value. */
+  const J = options.json ?? '?'
 
   async function appRowId(appId: string): Promise<number | null> {
     const row = (await query('SELECT id FROM connected_apps WHERE uuid = ? LIMIT 1', [appId]))[0]
@@ -165,7 +175,7 @@ export function createSqlAppStore(options: SqlStoreOptions): AppStore {
     async createDomain(input) {
       const at = now()
       const created = (await query(
-        'INSERT INTO sender_domains (team_id, uuid, domain, status, selector, dns_records, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?) RETURNING id',
+        `INSERT INTO sender_domains (team_id, uuid, domain, status, selector, dns_records, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ${J}, ?, ?) RETURNING id`,
         [input.teamId, crypto.randomUUID(), input.domain, 'pending', DKIM_SELECTOR, JSON.stringify(input.dnsRecords), at, at],
       ))[0]
       const id = Number(created?.id)
@@ -178,7 +188,7 @@ export function createSqlAppStore(options: SqlStoreOptions): AppStore {
 
     async attachDomainKey(domainId, input) {
       const at = now()
-      await query('UPDATE sender_domains SET dns_records = ?, updated_at = ? WHERE id = ?', [JSON.stringify(input.dnsRecords), at, domainId])
+      await query(`UPDATE sender_domains SET dns_records = ${J}, updated_at = ? WHERE id = ?`, [JSON.stringify(input.dnsRecords), at, domainId])
       const owner = (await query('SELECT team_id FROM sender_domains WHERE id = ? LIMIT 1', [domainId]))[0]
       await query(
         'INSERT INTO sender_domain_keys (uuid, sender_domain_id, team_id, selector, public_key, private_key_sealed, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
@@ -325,14 +335,14 @@ export function createSqlAppStore(options: SqlStoreOptions): AppStore {
       // A key that failed before is the same row, sent this time.
       if (record.idempotencyKey) {
         const updated = await query(
-          'UPDATE app_sends SET uuid = ?, from_address = ?, authenticated = ?, status = ?, recipients = ?, suppressed = ?, subject = ?, recipient_count = ?, updated_at = ? WHERE connected_app_id = ? AND idempotency_key = ? RETURNING id',
+          `UPDATE app_sends SET uuid = ?, from_address = ?, authenticated = ?, status = ?, recipients = ${J}, suppressed = ${J}, subject = ?, recipient_count = ?, updated_at = ? WHERE connected_app_id = ? AND idempotency_key = ? RETURNING id`,
           [...values, id, record.idempotencyKey],
         )
         if (updated.length > 0)
           return
       }
       await query(
-        'INSERT INTO app_sends (uuid, from_address, authenticated, status, recipients, suppressed, subject, recipient_count, updated_at, connected_app_id, team_id, idempotency_key, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+        `INSERT INTO app_sends (uuid, from_address, authenticated, status, recipients, suppressed, subject, recipient_count, updated_at, connected_app_id, team_id, idempotency_key, created_at) VALUES (?, ?, ?, ?, ${J}, ${J}, ?, ?, ?, ?, ?, ?, ?)`,
         [...values, id, teamId, record.idempotencyKey, at],
       )
     },
@@ -344,12 +354,15 @@ export function createSqlAppStore(options: SqlStoreOptions): AppStore {
         let stored: Record<string, unknown> = {}
         try {
           stored = (typeof existing.properties === 'string' ? JSON.parse(existing.properties) : existing.properties) ?? {}
+          // Written before JSON was cast on its way in: a string holding the object.
+          if (typeof stored === 'string')
+            stored = JSON.parse(stored)
         }
         catch { /* a column that does not parse is replaced by what was sent */ }
         const properties = input.properties ? JSON.stringify({ ...stored, ...input.properties }) : null
         // Only what was sent is changed: a name left out is a name kept.
         await query(
-          'UPDATE contacts SET first_name = COALESCE(?, first_name), last_name = COALESCE(?, last_name), properties = COALESCE(?, properties), updated_at = ? WHERE id = ?',
+          `UPDATE contacts SET first_name = COALESCE(?, first_name), last_name = COALESCE(?, last_name), properties = COALESCE(${J}, properties), updated_at = ? WHERE id = ?`,
           [input.firstName ?? null, input.lastName ?? null, properties, at, existing.id],
         )
         let uuid = text(existing.uuid)
@@ -362,7 +375,7 @@ export function createSqlAppStore(options: SqlStoreOptions): AppStore {
 
       const uuid = crypto.randomUUID()
       await query(
-        'INSERT INTO contacts (uuid, team_id, email, first_name, last_name, status, source, properties, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+        `INSERT INTO contacts (uuid, team_id, email, first_name, last_name, status, source, properties, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ${J}, ?, ?)`,
         [uuid, teamId, input.email, input.firstName ?? null, input.lastName ?? null, 'active', input.source, input.properties ? JSON.stringify(input.properties) : null, at, at],
       )
       return { id: uuid, created: true }
@@ -413,14 +426,14 @@ export function createSqlAppStore(options: SqlStoreOptions): AppStore {
       // `double_opt_in` is left to its default, which is on. A second caller
       // loses to the unique slug and reads the first one's form back.
       await query(
-        'INSERT INTO form_definitions (uuid, team_id, name, slug, kind, schema_document, status, audience_id, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT (team_id, slug) DO NOTHING',
+        `INSERT INTO form_definitions (uuid, team_id, name, slug, kind, schema_document, status, audience_id, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ${J}, ?, ?, ?, ?) ON CONFLICT (team_id, slug) DO NOTHING`,
         [crypto.randomUUID(), input.teamId, input.name, input.slug, 'inline', JSON.stringify(input.document), 'active', audience?.id ?? null, at, at],
       )
       return (await this.findSignupForm(input.teamId, input.slug))!
     },
 
     async setSignupFormDocument(teamId, slug, document) {
-      await query('UPDATE form_definitions SET schema_document = ?, updated_at = ? WHERE team_id = ? AND slug = ?', [JSON.stringify(document), now(), teamId, slug])
+      await query(`UPDATE form_definitions SET schema_document = ${J}, updated_at = ? WHERE team_id = ? AND slug = ?`, [JSON.stringify(document), now(), teamId, slug])
     },
   }
 

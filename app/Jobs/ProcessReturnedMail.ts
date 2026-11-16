@@ -12,9 +12,12 @@ const LOOKBACK_MS = 14 * 86_400_000
 /** The workspaces whose apps wrote to an address lately: the ones its bounce belongs to. */
 export async function teamsThatWroteTo(recipient: string, now: Date = new Date()): Promise<number[]> {
   const since = new Date(now.getTime() - LOOKBACK_MS).toISOString()
-  // `recipients` is a JSON list of lower-cased addresses, so a quoted match is exact.
-  const needle = `%"${recipient.replace(/[\\%_]/g, '\\$&')}"%`
-  const rows = await sqlRun('SELECT DISTINCT team_id FROM app_sends WHERE created_at >= ? AND status = ? AND recipients LIKE ? ESCAPE \'\\\'', [since, 'sent', needle])
+  // `recipients` is a JSON list of lower-cased addresses, so a quoted match
+  // is exact. `!` escapes the address's own `_` and `%`. The backslashes are
+  // dropped first for rows written before JSON was cast on its way into
+  // Postgres, which hold the list as a string with its quotes escaped.
+  const needle = `%"${recipient.replace(/[!%_]/g, '!$&')}"%`
+  const rows = await sqlRun('SELECT DISTINCT team_id FROM app_sends WHERE created_at >= ? AND status = ? AND REPLACE(CAST(recipients AS TEXT), ?, ?) LIKE ? ESCAPE ?', [since, 'sent', '\\', '', needle, '!'])
   return rows.map(row => Number(row.team_id)).filter(id => Number.isInteger(id) && id > 0)
 }
 
@@ -36,7 +39,13 @@ export default new Job({
       // Not a report: an auto-reply or a person writing back. Read, and left.
       if (!returned)
         return true
-      for (const teamId of await teamsThatWroteTo(returned.recipient)) {
+      const teams = await teamsThatWroteTo(returned.recipient).catch((error: unknown) => {
+        // Said out loud: a report that cannot be recorded stays unread and is
+        // tried again, and silence here is a bounce nobody ever counts.
+        log.error(`[commshq:returned-mail] could not look up who wrote to a returned address: ${error instanceof Error ? error.message : String(error)}`)
+        throw error
+      })
+      for (const teamId of teams) {
         await ensureSuppressed({ teamId, channel: 'email', recipient: returned.recipient, reason: returned.kind, source: 'returned_mail' })
         if (returned.kind === 'bounce')
           bounces++
