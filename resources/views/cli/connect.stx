@@ -1,0 +1,158 @@
+<script server>
+/**
+ * The approve page for `buddy hq:connect commshq` (routes/hq.ts).
+ *
+ * The CLI opens this URL with the code it was issued. A signed-in admin or
+ * owner confirms, and the CLI collects the app's send key and read key on its
+ * next poll. Loading the page creates nothing: only the button does.
+ *
+ * The confirmation code is deliberately NOT rendered here. The person types
+ * what their own terminal shows, and the server checks it. A page that
+ * displayed it could be agreed with by somebody who was sent the link and has
+ * no terminal at all.
+ */
+import { hq } from '../../../app/Hq/service'
+
+useSeoMeta({
+  title: 'Connect an app - CommsHQ',
+  // Auth-walled and single-use: nothing here is worth an index entry.
+  robots: 'noindex, nofollow',
+})
+// The connect code is in the address, so it must not travel in a Referer.
+useHead({ meta: [{ name: 'referrer', content: 'no-referrer' }] })
+
+// stx types `query` as `any`; annotated so the code read from it is not.
+const queryParams: Record<string, string | undefined> = typeof query !== 'undefined' ? query : {}
+const code = String(queryParams.code || '')
+
+// Who is reading this page, if anyone. Same cookie path the dashboard uses.
+let signedIn = false
+const authToken = (typeof cookies !== 'undefined' ? cookies['auth-token'] : '') || ''
+if (authToken) {
+  try {
+    const { Auth } = await import('@stacksjs/auth')
+    signedIn = !!(await Auth.getUserFromToken(authToken))
+  }
+  catch { signedIn = false }
+}
+
+// Looked up only for a signed-in viewer. A pending code answers the app's
+// name. An unknown, expired or already approved one answers nothing, and the
+// page says the same thing for all three so it cannot be used to test codes.
+let appName = ''
+let pending = false
+if (signedIn && code) {
+  try {
+    const described = await hq.describeConnect(code)
+    if (described) {
+      appName = described.app
+      pending = true
+    }
+  }
+  catch { pending = false }
+}
+</script>
+
+<script client>
+// The connect code is read from the URL rather than handed over from the
+// server script, so no server value crosses into client code.
+const error: StxSignal<string> = state('')
+const loading: StxSignal<boolean> = state(false)
+const connected: StxSignal<string> = state('')
+const confirm: StxSignal<string> = state('')
+
+async function approve(e: Event): Promise<void> {
+  e.preventDefault()
+  if (loading())
+    return
+  const typed = confirm().trim()
+  if (!typed) {
+    error.set('Enter the confirmation code your terminal is showing.')
+    return
+  }
+  const code = useSearchParams().get('code') || ''
+  loading.set(true)
+  error.set('')
+  try {
+    const res = await fetch(`/api/cli/connect/${encodeURIComponent(code)}/approve`, {
+      method: 'POST',
+      credentials: 'same-origin',
+      headers: { 'content-type': 'application/json', 'accept': 'application/json' },
+      body: JSON.stringify({ confirm: typed }),
+    })
+    const data = await res.json().catch(() => ({}))
+    if (res.status === 401) {
+      navigate('/login', { replace: true, reload: true })
+      return
+    }
+    if (!res.ok) {
+      error.set(data.error || 'Could not approve the connection.')
+      loading.set(false)
+      return
+    }
+    connected.set(data.project?.name || 'your app')
+  }
+  catch {
+    error.set('Something went wrong. Please try again.')
+    loading.set(false)
+  }
+}
+</script>
+
+@extends('auth')
+
+@section('title', 'Connect an app - CommsHQ')
+
+@section('content')
+<div class="max-w-sm w-full">
+  <div class="mb-8 text-center">
+    <StxLink to="/" class="inline-flex flex-col gap-3 items-center no-underline" aria-label="CommsHQ home">
+      <span class="auth-mark" aria-hidden="true">C</span>
+      <span class="font-bold text-2xl ink">CommsHQ</span>
+    </StxLink>
+  </div>
+
+  <div class="px-6 py-7 border border-tone rounded-2xl panel">
+    @if (!signedIn)
+      <div class="text-center">
+        <h1 class="font-semibold text-xl tracking-tight ink">Sign in to connect your app</h1>
+        <p class="mt-2 text-sm muted">Your terminal is waiting for you to approve this connection. Sign in, then come back to this tab and reload it.</p>
+        <div class="flex flex-col gap-2.5 mt-6">
+          <a href="/login" target="_blank" rel="noopener" class="block px-4 py-2.5 w-full font-semibold no-underline text-[var(--coral-ink)] text-center text-sm bg-coral rounded-xl">Sign in</a>
+          <a href="/register" target="_blank" rel="noopener" class="block px-4 py-2.5 w-full font-medium no-underline text-center text-sm border border-tone rounded-xl ink">Create an account</a>
+        </div>
+      </div>
+    @endif
+
+    @if (signedIn && !pending)
+      <div class="text-center">
+        <h1 class="font-semibold text-xl tracking-tight ink">This link is no longer valid</h1>
+        <p class="mt-2 text-sm muted">A connection request lasts ten minutes and can be approved once. Run the connect command again to get a new one.</p>
+      </div>
+    @endif
+
+    @if (signedIn && pending)
+      <div :show="!!connected()" style="display:none" class="text-center" role="status">
+        <h1 class="font-semibold text-xl tracking-tight ink">Connected</h1>
+        <p class="mt-2 text-sm muted"><span :text="connected()"></span> is connected to CommsHQ. You can close this tab and return to your terminal, which sets up the sending domain next.</p>
+      </div>
+      <form :show="!connected()" action="/api/cli/connect" method="POST" @submit="approve" class="flex flex-col gap-4">
+        <div class="text-center">
+          <h1 class="font-semibold text-xl tracking-tight ink">Connect {{ appName }} to CommsHQ?</h1>
+          <p class="mt-2 text-sm muted">This adds an app called {{ appName }} to your workspace, or reuses the one you already have, and sends a new send key and read key to the terminal that asked. Whoever holds the send key can send email as this workspace and add contacts to it, and that mail counts against your plan.</p>
+        </div>
+        <div>
+          <label for="connect-confirm" class="block mb-1.5 font-medium text-xs ink">Confirmation code from your terminal</label>
+          <input id="connect-confirm" name="confirm" type="text" required autocomplete="off" autocapitalize="characters" spellcheck="false" maxlength="12" placeholder="ABC-DEF" :model="confirm" class="font-mono text-center tracking-[0.2em] uppercase field" :aria-invalid="error() ? 'true' : 'false'" aria-describedby="connect-confirm-help">
+        </div>
+        {{-- Static label. A reactive mustache as an element's own text makes stx
+            cloak it, and the primary control on this page must not be
+            display:none before the bundle runs. --}}
+        <button type="submit" :disabled="loading()" :aria-busy="loading()" class="px-4 py-2.5 w-full font-semibold text-[var(--coral-ink)] text-sm bg-coral border-0 rounded-xl cursor-pointer">Approve connection</button>
+        <p id="connect-confirm-help" class="text-center text-xs muted">The command you ran printed this code. If you did not just run a connect command yourself, or you were sent this link, close this page.</p>
+      </form>
+      <p id="connect-error" role="alert" class="mt-4 px-3 py-2 text-center text-sm rounded-lg coral" :show="!!error()" style="display:none" :text="error()"></p>
+    @endif
+  </div>
+</div>
+@endsection

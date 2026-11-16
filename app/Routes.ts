@@ -22,4 +22,7 @@ export default {
   // than a file nobody loaded.
   auth: { path: 'auth', prefix: '' },
   public: { path: 'public', prefix: '' },
+  // The HQ connect contract and the endpoints a connected app's key opens.
+  // Its paths are written in full (`/api/...`), so it takes no prefix.
+  hq: { path: 'hq', prefix: '' },
 } satisfies RouteRegistry
