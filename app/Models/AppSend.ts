@@ -18,6 +18,8 @@ export default defineModel({
     status: { required: true, fillable: false, validation: { rule: schema.enum(['sent', 'failed']) }, factory: () => 'sent' },
     recipients: { required: true, fillable: false, validation: { rule: schema.json() }, factory: () => JSON.stringify([]) },
     suppressed: { required: true, fillable: false, validation: { rule: schema.json() }, factory: () => JSON.stringify([]) },
+    // How many addresses the message went to: what volume limits count.
+    recipientCount: { required: false, fillable: false, validation: { rule: schema.number().min(0) }, factory: () => 1 },
     subject: { required: true, fillable: false, validation: { rule: schema.string().max(255) }, factory: () => 'Hello' },
   },
 } as const)

@@ -23684,6 +23684,14 @@
             "isUnique": true,
             "isNullable": true,
             "hasDefault": false
+          },
+          {
+            "name": "recipient_count",
+            "type": "integer",
+            "isPrimaryKey": false,
+            "isUnique": false,
+            "isNullable": true,
+            "hasDefault": false
           }
         ],
         "indexes": [
@@ -23797,6 +23805,23 @@
             "isUnique": true,
             "isNullable": true,
             "hasDefault": false
+          },
+          {
+            "name": "sending_paused_at",
+            "type": "datetime",
+            "isPrimaryKey": false,
+            "isUnique": false,
+            "isNullable": true,
+            "hasDefault": false
+          },
+          {
+            "name": "sending_paused_reason",
+            "type": "string",
+            "isPrimaryKey": false,
+            "isUnique": false,
+            "isNullable": true,
+            "hasDefault": false,
+            "maxLength": 500
           }
         ],
         "indexes": [
@@ -24048,7 +24073,7 @@
       }
     ]
   },
-  "hash": "56d23c40b96fbf9db4b692e1c60ef1eb6434dc5b28602a52add3671d571cee2c",
+  "hash": "eb78311ddef6d8857a0e7f45f5615d50d2850db0d7fa3145dd0f2f350187d5ba",
   "dialect": "postgres",
-  "updatedAt": "2026-11-16T03:27:03.874Z"
+  "updatedAt": "2026-11-16T20:41:11.923Z"
 }

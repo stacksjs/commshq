@@ -25,6 +25,7 @@ import { route } from '@stacksjs/router'
 import { authenticateSendKey, ConnectRefusedError, registerSendingDomain, sendForApp, signupFormForApp, upsertContactForApp, verifySendingDomain } from '../app/Hq/apps'
 import { bearerKey } from '../app/Hq/keys'
 import { rateLimit } from '../app/Hq/limits'
+import { MAX_PER_RECIPIENT_PER_HOUR } from '../app/Hq/standing'
 import { appOrigin, canSignOutbound, fallbackAddress, hq, lookupTxt, sqlAppStore, transport } from '../app/Hq/service'
 
 function json(data: unknown, status = 200, extraHeaders: Record<string, string> = {}): Response {
@@ -161,11 +162,17 @@ async function appFor(request: RouterRequest, scope: string, limit: number): Pro
   return app
 }
 
+// One address, one app, one hour: a signup or reset that loops must not
+// become a flood in somebody's inbox.
+function recipientAllowed(appId: string, address: string, now: Date): boolean {
+  return rateLimit(`send:${appId}:${address}`, MAX_PER_RECIPIENT_PER_HOUR, 3_600_000, now.getTime()).ok
+}
+
 route.post('/api/v1/send', async (request: RouterRequest) => {
   const app = await appFor(request, 'send', SEND_LIMIT)
   if (app instanceof Response)
     return app
-  const result = await sendForApp(app, request.jsonBody, { store: sqlAppStore, transport, fallbackAddress, canSign: canSignOutbound })
+  const result = await sendForApp(app, request.jsonBody, { store: sqlAppStore, transport, fallbackAddress, canSign: canSignOutbound, recipientAllowed })
   return result.ok ? json(result.data, result.status) : json({ error: result.error }, result.status)
 }).skipCsrf().rateLimit(600, 'minute')
 

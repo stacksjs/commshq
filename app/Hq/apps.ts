@@ -1,3 +1,5 @@
+import type { SendingCounts } from './standing'
+import { dailyCap, healthProblem, messageProblem } from './standing'
 import type { ConnectCodeStore, ConnectGrant, HqServiceAdapter, MeterReading, ReadPrincipal } from '@stacksjs/hq/service'
 import type { DomainChecks, DomainRecord, TxtLookup } from './sendingDomain'
 import { domainOfAddress, newVerificationToken, normalizeDomain } from '../Support/senderDomains'
@@ -87,6 +89,10 @@ export interface AppStore {
   suppressed: (teamId: number, recipients: string[]) => Promise<string[]>
 
   /** A send already made under this key, if there was one. */
+  /** What the app and its workspace have sent lately, and whether the app is paused. */
+  sendingCounts: (appId: string, teamId: number, now: Date) => Promise<SendingCounts>
+  /** Stop the app's sending until a person lifts it. */
+  pauseSending: (appId: string, reason: string, now: Date) => Promise<void>
   findSend: (appId: string, idempotencyKey: string) => Promise<SendRecord | null>
   recordSend: (appId: string, teamId: number, record: SendRecord & { idempotencyKey: string | null, recipients: string[], subject: string }) => Promise<void>
 
@@ -335,6 +341,9 @@ export interface SendDeps {
   /** False when the installed mail driver cannot sign on the way out: then nothing is sent from an app's domain. */
   canSign: () => boolean
   newId?: () => string
+  now?: () => Date
+  /** Counts one message to one address; false once the address has had its hour's worth. */
+  recipientAllowed?: (appId: string, address: string, now: Date) => boolean
 }
 
 export type SendResult
@@ -454,6 +463,35 @@ export async function sendForApp(app: ConnectedApp, body: unknown, deps: SendDep
   const ownDomain = privateKey && domainRow ? domainRow.domain : null
   const askedDomain = askedAddress ? domainOfAddress(askedAddress) : undefined
   const fromOwn = !!ownDomain && (!askedAddress || askedDomain === ownDomain || askedDomain?.endsWith(`.${ownDomain}`) === true)
+
+  // Whether this app's mail should go out at all. CommsHQ's addresses are
+  // shared by every app that sends through it, so what one app sends decides
+  // where everybody's mail lands (see ./standing).
+  const now = deps.now?.() ?? new Date()
+  const counts = await store.sendingCounts(app.id, app.teamId, now)
+  if (counts.pausedReason)
+    return { ok: false, status: 403, error: `Sending for ${app.name} is paused: ${counts.pausedReason}. Nothing was sent. Contact CommsHQ support to have it reviewed.` }
+  const unhealthy = healthProblem(counts)
+  if (unhealthy) {
+    await store.pauseSending(app.id, unhealthy, now)
+    return { ok: false, status: 403, error: `Sending for ${app.name} has been paused: ${unhealthy}. Nothing was sent. Contact CommsHQ support to have it reviewed.` }
+  }
+  const shape = messageProblem({ fromName: safeName(asked.name, app.name), ownDomain: fromOwn ? ownDomain : null, html, text })
+  if (shape)
+    return { ok: false, status: 422, error: shape }
+  const cap = dailyCap({ ownDomain: fromOwn, firstSentAt: counts.firstSentAt, now })
+  if (counts.sentLastDay + acceptedAll.length > cap) {
+    const why = fromOwn
+      ? 'A new sending domain earns volume over its first month, the way mailbox providers expect it to grow'
+      : 'Mail from CommsHQ\'s shared address is limited; verify your own sending domain to send more'
+    return { ok: false, status: 429, error: `This workspace may reach ${cap} recipients in 24 hours for now, and has reached ${counts.sentLastDay}. ${why}.` }
+  }
+  const allowed = deps.recipientAllowed
+  if (allowed) {
+    const flooded = acceptedAll.filter(address => !allowed(app.id, address, now))
+    if (flooded.length > 0)
+      return { ok: false, status: 429, error: `Too many messages to ${flooded[0]} in the last hour` }
+  }
 
   const ownFrom = { name: safeName(asked.name, app.name), address: askedAddress ?? `noreply@${ownDomain}` }
   const sharedFrom = { name: `${safeName(asked.name, app.name)} via CommsHQ`, address: deps.fallbackAddress() }

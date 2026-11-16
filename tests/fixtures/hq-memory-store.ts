@@ -1,3 +1,4 @@
+import type { SendingCounts } from '../../app/Hq/standing'
 import type { AppStore, ConnectedApp, SenderDomainRow, SendRecord, SignupFormRow } from '../../app/Hq/apps'
 
 /**
@@ -10,6 +11,8 @@ export function memoryAppStore(options: {
   meters?: Record<number, { emails?: { used: number, limit: number | null }, contacts?: { used: number, limit: number | null } }>
   suppressed?: Record<number, string[]>
   audiences?: Record<number, string[]>
+  /** What the workspace is taken to have sent already, on top of what a test sends. */
+  counts?: Partial<SendingCounts>
 } = {}) {
   const teams = options.teams ?? { 1: { teamId: 10, role: 'owner' } }
   const meters = options.meters ?? { 10: { emails: { used: 0, limit: 100 }, contacts: { used: 0, limit: 1000 } } }
@@ -17,6 +20,7 @@ export function memoryAppStore(options: {
   const keys: Array<{ appId: string, kind: 'send' | 'read', hash: string, revoked: boolean, touched: number }> = []
   const domains: Array<SenderDomainRow & { privateKey: string | null }> = []
   const sends: Array<SendRecord & { appId: string, idempotencyKey: string | null }> = []
+  const paused = new Map<string, string>()
   const contacts: Array<{ id: string, teamId: number, email: string, input: any }> = []
   const memberships: string[] = []
   const workspaces: Array<{ teamId: number, userId: number }> = []
@@ -114,6 +118,21 @@ export function memoryAppStore(options: {
       const found = sends.find(s => s.appId === appId && s.idempotencyKey === idempotencyKey)
       return found ? { id: found.id, from: found.from, authenticated: found.authenticated, status: found.status, accepted: found.accepted, suppressed: found.suppressed } : null
     },
+    async sendingCounts(appId) {
+      const sentHere = sends.filter(s => s.status === 'sent').reduce((sum, s) => sum + s.accepted.length, 0)
+      return {
+        pausedReason: paused.get(appId) ?? options.counts?.pausedReason ?? null,
+        sentLastDay: (options.counts?.sentLastDay ?? 0) + sentHere,
+        sentLastWeek: (options.counts?.sentLastWeek ?? 0) + sentHere,
+        bouncesLastWeek: options.counts?.bouncesLastWeek ?? 0,
+        complaintsLastWeek: options.counts?.complaintsLastWeek ?? 0,
+        firstSentAt: options.counts?.firstSentAt ?? null,
+      }
+    },
+    async pauseSending(appId, reason) {
+      if (!paused.has(appId))
+        paused.set(appId, reason)
+    },
     async recordSend(appId, _teamId, record) {
       const existing = sends.findIndex(s => s.appId === appId && record.idempotencyKey !== null && s.idempotencyKey === record.idempotencyKey)
       const row = { appId, idempotencyKey: record.idempotencyKey, id: record.id, from: record.from, authenticated: record.authenticated, status: record.status, accepted: record.accepted, suppressed: record.suppressed }
@@ -161,6 +180,7 @@ export function memoryAppStore(options: {
     keys,
     domains,
     sends,
+    paused,
     contacts,
     memberships,
     meters,

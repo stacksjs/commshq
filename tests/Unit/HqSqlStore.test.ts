@@ -47,6 +47,11 @@ function database() {
     for (const statement of statements(migration(table)))
       db.run(statement)
   }
+  // And the columns added to them since, in the order they were added.
+  for (const file of readdirSync(MIGRATIONS).sort().filter(name => /-alter-(?:connected_apps|app_sends)-columns\.sql$/.test(name))) {
+    for (const statement of statements(file))
+      db.run(statement)
+  }
 
   const period = { start: '2026-11-01T00:00:00.000Z', end: '2099-12-01T00:00:00.000Z' }
   db.run('INSERT INTO teams (id, name) VALUES (10, \'Votescape\'), (20, \'Other\')')
@@ -176,6 +181,29 @@ describe('the SQL store', () => {
     // Under another application key the stored key is unreadable, and the mail falls back.
     const stranger = createSqlAppStore({ run: async (sql, params = []) => w.db.query(sql).all(...(params as any[])) as any, appKey: () => 'another-key', joinAudience: async () => {} })
     expect(await stranger.domainPrivateKey(ready.senderDomainId!)).toBeNull()
+  })
+
+  test('what was sent, bounced and complained about is counted by the week, and a pause holds until lifted', async () => {
+    const w = world()
+    const { app } = await w.connect()
+    const now = new Date()
+    const before = await w.store.sendingCounts(app.id, app.teamId, now)
+    expect(before).toMatchObject({ pausedReason: null, sentLastDay: 0, sentLastWeek: 0, firstSentAt: null })
+
+    expect(await sendForApp(app, { to: ['a@example.com', 'b@example.com'], subject: 'Hi', text: 'x' }, w.sendDeps)).toMatchObject({ ok: true })
+    const recent = now.toISOString()
+    const old = new Date(now.getTime() - 30 * 86_400_000).toISOString()
+    w.db.run('INSERT INTO communication_suppressions (team_id, channel, recipient, reason, source, suppressed_at) VALUES (10, \'email\', \'x@example.com\', \'bounce\', \'test\', ?), (10, \'email\', \'y@example.com\', \'complaint\', \'test\', ?), (10, \'email\', \'z@example.com\', \'bounce\', \'test\', ?), (20, \'email\', \'q@example.com\', \'bounce\', \'test\', ?)', [recent, recent, old, recent])
+
+    const after = await w.store.sendingCounts(app.id, app.teamId, new Date(Date.now() + 1000))
+    expect(after).toMatchObject({ sentLastDay: 2, sentLastWeek: 2, bouncesLastWeek: 1, complaintsLastWeek: 1 })
+    expect(after.firstSentAt).toMatch(/^\d{4}-\d\d-\d\dT/)
+    expect((w.db.query('SELECT recipient_count FROM app_sends').get() as { recipient_count: number }).recipient_count).toBe(2)
+
+    await w.store.pauseSending(app.id, 'too many bounces', now)
+    await w.store.pauseSending(app.id, 'a later reason does not replace the first', now)
+    expect((await w.store.sendingCounts(app.id, app.teamId, now)).pausedReason).toBe('too many bounces')
+    expect(await sendForApp(app, { to: 'c@example.com', subject: 'Hi', text: 'x' }, w.sendDeps)).toMatchObject({ ok: false, status: 403 })
   })
 
   test('another workspace cannot take a registered domain', async () => {

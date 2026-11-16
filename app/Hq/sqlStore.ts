@@ -274,23 +274,57 @@ export function createSqlAppStore(options: SqlStoreOptions): AppStore {
       } satisfies SendRecord
     },
 
+    async sendingCounts(appId, teamId, at) {
+      const day = new Date(at.getTime() - 86_400_000).toISOString()
+      const week = new Date(at.getTime() - 7 * 86_400_000).toISOString()
+      const app = (await query('SELECT sending_paused_reason FROM connected_apps WHERE uuid = ? LIMIT 1', [appId]))[0]
+      // A row from before recipient_count was kept counts as its one message.
+      const sent = (await query(
+        `SELECT COALESCE(SUM(CASE WHEN created_at >= ? THEN COALESCE(recipient_count, 1) ELSE 0 END), 0) AS last_day,
+                COALESCE(SUM(CASE WHEN created_at >= ? THEN COALESCE(recipient_count, 1) ELSE 0 END), 0) AS last_week,
+                MIN(created_at) AS first_sent
+           FROM app_sends WHERE team_id = ? AND status = ?`,
+        [day, week, teamId, 'sent'],
+      ))[0] ?? {}
+      const bad = (await query(
+        `SELECT COALESCE(SUM(CASE WHEN reason = ? THEN 1 ELSE 0 END), 0) AS bounces,
+                COALESCE(SUM(CASE WHEN reason = ? THEN 1 ELSE 0 END), 0) AS complaints
+           FROM communication_suppressions WHERE team_id = ? AND channel = ? AND suppressed_at >= ?`,
+        ['bounce', 'complaint', teamId, 'email', week],
+      ))[0] ?? {}
+      const first = sent.first_sent
+      return {
+        pausedReason: app?.sending_paused_reason ? String(app.sending_paused_reason) : null,
+        sentLastDay: Number(sent.last_day ?? 0),
+        sentLastWeek: Number(sent.last_week ?? 0),
+        bouncesLastWeek: Number(bad.bounces ?? 0),
+        complaintsLastWeek: Number(bad.complaints ?? 0),
+        firstSentAt: first ? new Date(first as string | Date).toISOString() : null,
+      }
+    },
+
+    async pauseSending(appId, reason, at) {
+      const stamp = at.toISOString()
+      await query('UPDATE connected_apps SET sending_paused_at = ?, sending_paused_reason = ?, updated_at = ? WHERE uuid = ? AND sending_paused_at IS NULL', [stamp, reason.slice(0, 500), stamp, appId])
+    },
+
     async recordSend(appId, teamId, record) {
       const id = await appRowId(appId)
       if (id === null)
         return
       const at = now()
-      const values = [record.id, record.from, record.authenticated, record.status, JSON.stringify(record.recipients), JSON.stringify(record.suppressed), record.subject.slice(0, 255), at]
+      const values = [record.id, record.from, record.authenticated, record.status, JSON.stringify(record.recipients), JSON.stringify(record.suppressed), record.subject.slice(0, 255), record.recipients.length, at]
       // A key that failed before is the same row, sent this time.
       if (record.idempotencyKey) {
         const updated = await query(
-          'UPDATE app_sends SET uuid = ?, from_address = ?, authenticated = ?, status = ?, recipients = ?, suppressed = ?, subject = ?, updated_at = ? WHERE connected_app_id = ? AND idempotency_key = ? RETURNING id',
+          'UPDATE app_sends SET uuid = ?, from_address = ?, authenticated = ?, status = ?, recipients = ?, suppressed = ?, subject = ?, recipient_count = ?, updated_at = ? WHERE connected_app_id = ? AND idempotency_key = ? RETURNING id',
           [...values, id, record.idempotencyKey],
         )
         if (updated.length > 0)
           return
       }
       await query(
-        'INSERT INTO app_sends (uuid, from_address, authenticated, status, recipients, suppressed, subject, updated_at, connected_app_id, team_id, idempotency_key, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+        'INSERT INTO app_sends (uuid, from_address, authenticated, status, recipients, suppressed, subject, recipient_count, updated_at, connected_app_id, team_id, idempotency_key, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
         [...values, id, teamId, record.idempotencyKey, at],
       )
     },

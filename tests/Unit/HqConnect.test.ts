@@ -308,6 +308,66 @@ describe('sending', () => {
     expect(result).toMatchObject({ ok: true, status: 202, data: { authenticated: 'fallback', from: `Votescape via CommsHQ <${FALLBACK}>` } })
   })
 
+  test('an app that is paused sends nothing, and is told why', async () => {
+    const s = setup({ counts: { pausedReason: 'too many bounces' } })
+    const { app } = await s.readyApp()
+    const result = await sendForApp(app, MESSAGE, s.sendDeps)
+    expect(result).toMatchObject({ ok: false, status: 403 })
+    expect((result as { error: string }).error).toContain('too many bounces')
+    expect(s.sent).toHaveLength(0)
+  })
+
+  test('mail that bounces past what a shared address can carry pauses the app, and it stays paused', async () => {
+    const s = setup({ counts: { sentLastWeek: 1_000, bouncesLastWeek: 90 } })
+    const { app } = await s.readyApp()
+    const first = await sendForApp(app, MESSAGE, s.sendDeps)
+    expect(first).toMatchObject({ ok: false, status: 403 })
+    expect(s.paused.get(app.id)).toContain('90 of the last')
+    expect(s.sent).toHaveLength(0)
+    expect(await sendForApp(app, MESSAGE, s.sendDeps)).toMatchObject({ ok: false, status: 403 })
+  })
+
+  test('a message shaped like phishing is refused before anything is counted', async () => {
+    const s = setup()
+    const { app } = await s.readyApp()
+    const result = await sendForApp(app, { ...MESSAGE, html: '<a href="https://evil.example">https://paypal.com/login</a>' }, s.sendDeps)
+    expect(result).toMatchObject({ ok: false, status: 422 })
+    expect(s.sent).toHaveLength(0)
+    expect((await s.store.meters(app.teamId)).find(m => m.meter === 'emails')?.used ?? 0).toBe(0)
+  })
+
+  test('a new sender has a daily cap, lower still from the shared address', async () => {
+    const shared = setup({ counts: { sentLastDay: 200 } })
+    const unverified = await shared.connect()
+    const refused = await sendForApp(unverified.app, MESSAGE, shared.sendDeps)
+    expect(refused).toMatchObject({ ok: false, status: 429 })
+    expect((refused as { error: string }).error).toContain('verify your own sending domain')
+
+    // The same volume from a verified domain on its first day still fits.
+    const own = setup({ counts: { sentLastDay: 200 } })
+    const ready = await own.readyApp()
+    expect(await sendForApp(ready.app, MESSAGE, own.sendDeps)).toMatchObject({ ok: true })
+    const full = setup({ counts: { sentLastDay: 500 } })
+    const young = await full.readyApp()
+    expect(await sendForApp(young.app, MESSAGE, full.sendDeps)).toMatchObject({ ok: false, status: 429 })
+    // And after a month only the plan's allowance is left.
+    const old = setup({ counts: { sentLastDay: 60_000, firstSentAt: '2026-01-01T00:00:00.000Z' }, meters: { 10: { emails: { used: 0, limit: 1_000_000 }, contacts: { used: 0, limit: 1000 } } } })
+    const grown = await old.readyApp()
+    expect(await sendForApp(grown.app, MESSAGE, old.sendDeps)).toMatchObject({ ok: true })
+  })
+
+  test('one address cannot be flooded', async () => {
+    const s = setup()
+    const { app } = await s.readyApp()
+    let seen = 0
+    const deps = { ...s.sendDeps, recipientAllowed: () => ++seen <= 2 }
+    expect(await sendForApp(app, MESSAGE, deps)).toMatchObject({ ok: true })
+    expect(await sendForApp(app, MESSAGE, deps)).toMatchObject({ ok: true })
+    const third = await sendForApp(app, MESSAGE, deps)
+    expect(third).toMatchObject({ ok: false, status: 429 })
+    expect((third as { error: string }).error).toContain('reader@example.com')
+  })
+
   test('an address on another domain is never used, verified domain or not', async () => {
     const s = setup()
     const { app } = await s.readyApp()
