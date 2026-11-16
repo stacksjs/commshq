@@ -16,6 +16,11 @@ export default function () {
     .setTimeZone('UTC')
 
   schedule
+    .job('ResumeAutomationRuns')
+    .everyMinute()
+    .setTimeZone('UTC')
+
+  schedule
     .job('RetryFailedWebhooks')
     .everyFiveMinutes()
     .setTimeZone('UTC')
