@@ -30,6 +30,7 @@ import {
   MIN_DELAY_SECONDS,
   moveStep,
   newEmailStep,
+  newSmsStep,
   newStepId,
   newWaitStep,
   publishErrorMessage,
@@ -111,6 +112,11 @@ describe('the page and the server agree', () => {
       { senderId: 2, steps: [email('Welcome', '   ')] },
       { senderId: 2, steps: [email('x'.repeat(201), 'Hello.')] },
       { senderId: 2, steps: [newWaitStep([], 31, 'days'), email('a', 'b')] },
+      // Texts and waits need no sender; a text needs words, at most 640.
+      { senderId: 0, steps: [newSmsStep([], 'Thanks!'), newWaitStep([], 1, 'days'), withFields(newSmsStep([]), { id: 'text-2', body: 'Again.' })] },
+      { senderId: 0, steps: [newSmsStep([], 'Hi'), email('Welcome', 'Hello.')] },
+      { senderId: 2, steps: [newSmsStep([], '   ')] },
+      { senderId: 2, steps: [newSmsStep([], 'x'.repeat(641))] },
       { senderId: 2, steps: Array.from({ length: 21 }, (_, i) => withFields(newEmailStep([]), { id: `email-${i + 1}`, subject: 's', body: 'b' })) },
     ]
     for (const [index, { senderId, steps }] of cases.entries()) {

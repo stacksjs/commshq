@@ -16,13 +16,18 @@
  *   sends an order from an email address that is already a contact. Each
  *   active automation starts once per contact, ever. A contact added on the
  *   Contacts page starts nothing.
- * - **Steps.** Send an email, from the automation's sender, or wait between
- *   1 hour and 30 days. Nothing else can run yet; a saved step of any other
- *   kind blocks turning the automation on until it is removed.
+ * - **Steps.** Send an email from the automation's sender, send a text
+ *   through the deployment's SMS provider, or wait between 1 hour and 30
+ *   days. A text goes only to a contact with a phone number and SMS
+ *   consent, and is held through quiet hours; without them that one text
+ *   is skipped. A saved step of any other kind blocks turning on until it
+ *   is removed.
  * - **Turning on.** `POST /api/v1/automations/{id}/publish`, an admin or
- *   owner only, checks the steps and the sender and freezes them as a
- *   version. A run keeps the version it started on. Saving steps changes
- *   the draft; the live version changes when it is turned on again.
+ *   owner only, checks the steps and the sender and freezes them, with the
+ *   trigger, as a version. A run keeps the version it started on. Saving
+ *   steps or the trigger changes the draft; the live version changes when
+ *   it is turned on again. The page can also ask it to include the people
+ *   who already meet the trigger, after saying how many there are.
  * - **Sending.** Each email checks consent and the sender's verified
  *   domain first, carries an unsubscribe link, and is retried with backoff
  *   if it fails. Someone who unsubscribes gets nothing more.
@@ -34,9 +39,9 @@
  *
  * ## What the page does not do
  *
- * No branches, no conditions, no SMS steps and no approvals. The trigger
- * cannot be changed after drafting. Nothing that happened before an
- * automation was turned on starts it.
+ * No branches, no conditions and no approvals. Nothing that happened before
+ * an automation was turned on starts it, unless whoever turns it on
+ * chooses to include the people who already qualify.
  */
 import { formatSeen } from './contacts-query'
 import { formatCount } from './workspace-summary'
@@ -57,6 +62,7 @@ export const AUTOMATION_NAME_MAX = 255
 export const MAX_STEPS = 20
 export const SUBJECT_MAX = 200
 export const BODY_MAX = 20_000
+export const SMS_MAX = 640
 export const MIN_DELAY_SECONDS = 60 * 60
 export const MAX_DELAY_SECONDS = 30 * 24 * 60 * 60
 /** The shape of a step id the server accepts. */
@@ -87,7 +93,7 @@ export const WAIT_UNITS = [
   { value: 'days', label: 'Days', seconds: 24 * 60 * 60 },
 ] as const
 
-export const HOW_IT_RUNS = 'An automation that is on starts when its trigger happens, once per person: a confirmed signup, or an order from someone who is already a contact. Nothing that happened before it was turned on starts it. Each email checks that the person still consents and carries an unsubscribe link.'
+export const HOW_IT_RUNS = 'An automation that is on starts when its trigger happens, once per person: a confirmed signup, or an order from someone who is already a contact. Each email checks that the person still consents and carries an unsubscribe link. A text goes only to someone who agreed to texts, and waits out quiet hours.'
 
 function titleCase(value: string): string {
   const spaced = value.replace(/[_-]+/g, ' ').trim()
@@ -158,6 +164,34 @@ export function publishUrl(id: number): string {
   return `/api/v1/automations/${Math.trunc(Number(id))}/publish`
 }
 
+export function qualifyingUrl(id: number): string {
+  return `/api/v1/automations/${Math.trunc(Number(id))}/qualifying`
+}
+
+/** The trigger document to save, or null for a trigger nothing fires. */
+export function triggerPayload(type: string): string | null {
+  return TRIGGERS.some(item => item.value === type) ? JSON.stringify({ type }) : null
+}
+
+/** What turning on with `enroll_existing` will do, in words, before it is pressed. */
+export function enrollLabel(count: unknown, limit: unknown): string {
+  const people = Math.max(0, Math.floor(Number(count) || 0))
+  const cap = Math.max(0, Math.floor(Number(limit) || 0))
+  if (people === 0)
+    return ''
+  if (cap > 0 && people > cap)
+    return `Start, and include the first ${formatCount(cap)} of the ${formatCount(people)} who already qualify`
+  return `Start, and include the ${plural(people, 'person', 'people')} who already ${people === 1 ? 'qualifies' : 'qualify'}`
+}
+
+/** What happened, after turning on. */
+export function turnedOnNotice(enrolled: unknown): string {
+  const people = Math.max(0, Math.floor(Number(enrolled) || 0))
+  if (people === 0)
+    return 'It is on. It starts for each person its trigger catches from now on.'
+  return `It is on. ${plural(people, 'person', 'people')} who already qualified ${people === 1 ? 'was' : 'were'} added, and start over the next few minutes.`
+}
+
 // ---------------------------------------------------------------------------
 // Steps
 // ---------------------------------------------------------------------------
@@ -165,7 +199,7 @@ export function publishUrl(id: number): string {
 export interface EditorStep {
   /** The node id, kept across edits so a saved step keeps its identity. */
   id: string
-  kind: 'email' | 'wait' | 'other'
+  kind: 'email' | 'sms' | 'wait' | 'other'
   subject: string
   body: string
   /** For a wait: the amount in `unit`. */
@@ -195,9 +229,13 @@ function plural(count: number, one: string, many: string): string {
   return `${formatCount(count)} ${count === 1 ? one : many}`
 }
 
-export function stepSummary(step: Pick<EditorStep, 'kind' | 'subject' | 'amount' | 'unit' | 'otherType'>): string {
+export function stepSummary(step: Pick<EditorStep, 'kind' | 'subject' | 'body' | 'amount' | 'unit' | 'otherType'>): string {
   if (step.kind === 'email')
     return step.subject.trim() ? `Send an email: ${step.subject.trim()}` : 'Send an email, with no subject yet'
+  if (step.kind === 'sms') {
+    const text = step.body.replace(/\s+/g, ' ').trim()
+    return text ? `Send a text: ${text.length > 48 ? `${text.slice(0, 47)}...` : text}` : 'Send a text, with nothing in it yet'
+  }
   if (step.kind === 'wait')
     return `Wait ${step.unit === 'days' ? plural(step.amount, 'day', 'days') : plural(step.amount, 'hour', 'hours')}`
   return `${titleCase(step.otherType || 'unknown')}: this kind of step cannot run yet`
@@ -221,6 +259,8 @@ export function toEditorSteps(graph: unknown): { senderId: number, steps: Editor
     const config = node?.config && typeof node.config === 'object' ? node.config : {}
     if (node?.type === 'send_email')
       steps.push(makeStep(id, 'email', { subject: String(config.subject ?? ''), body: String(config.body ?? '') }))
+    else if (node?.type === 'send_sms')
+      steps.push(makeStep(id, 'sms', { body: String(config.body ?? '') }))
     else if (node?.type === 'delay')
       steps.push(makeStep(id, 'wait', waitParts(Number(config.seconds) || 3600)))
     else
@@ -230,8 +270,8 @@ export function toEditorSteps(graph: unknown): { senderId: number, steps: Editor
 }
 
 /** An id no other step uses: the shape the server accepts, `[a-z0-9-]`. */
-export function newStepId(kind: 'email' | 'wait', steps: Array<{ id: string }>): string {
-  const prefix = kind === 'email' ? 'email' : 'wait'
+export function newStepId(kind: 'email' | 'sms' | 'wait', steps: Array<{ id: string }>): string {
+  const prefix = kind === 'email' ? 'email' : (kind === 'sms' ? 'text' : 'wait')
   const used = new Set(steps.map(step => step.id))
   let number = 1
   while (used.has(`${prefix}-${number}`))
@@ -241,6 +281,10 @@ export function newStepId(kind: 'email' | 'wait', steps: Array<{ id: string }>):
 
 export function newEmailStep(steps: Array<{ id: string }>, subject = '', body = ''): EditorStep {
   return makeStep(newStepId('email', steps), 'email', { subject, body })
+}
+
+export function newSmsStep(steps: Array<{ id: string }>, body = ''): EditorStep {
+  return makeStep(newStepId('sms', steps), 'sms', { body })
 }
 
 export function newWaitStep(steps: Array<{ id: string }>, amount = 1, unit: 'hours' | 'days' = 'days'): EditorStep {
@@ -280,6 +324,14 @@ export function stepError(step: Pick<EditorStep, 'kind' | 'subject' | 'body' | '
       return `A message can be at most ${BODY_MAX.toLocaleString('en-US')} characters.`
     return ''
   }
+  if (step.kind === 'sms') {
+    const body = step.body.trim()
+    if (!body)
+      return 'A text needs something to say.'
+    if (body.length > SMS_MAX)
+      return `A text can be at most ${SMS_MAX} characters.`
+    return ''
+  }
   if (step.kind === 'wait') {
     const amount = Number(step.amount)
     if (!Number.isInteger(amount) || amount < 1)
@@ -298,7 +350,7 @@ export function stepError(step: Pick<EditorStep, 'kind' | 'subject' | 'body' | '
  * the server would.
  */
 export function readinessError(senderId: number, steps: EditorStep[]): string {
-  if (!senderId)
+  if (steps.some(step => step.kind === 'email') && !senderId)
     return 'Choose the sender its emails come from.'
   if (steps.length === 0)
     return 'This automation has no steps.'
@@ -315,8 +367,8 @@ export function readinessError(senderId: number, steps: EditorStep[]): string {
     if (problem)
       return `Step ${index + 1}: ${problem}`
   }
-  if (!steps.some(step => step.kind === 'email'))
-    return 'An automation needs at least one email step.'
+  if (!steps.some(step => step.kind === 'email' || step.kind === 'sms'))
+    return 'An automation needs at least one message step.'
   if (steps[steps.length - 1]!.kind === 'wait')
     return 'The last step cannot be a wait: nothing would follow it.'
   return ''
@@ -336,6 +388,8 @@ export function graphPayload(senderId: number, steps: EditorStep[], original: un
   const nodes = steps.map((step) => {
     if (step.kind === 'email')
       return { id: step.id, type: 'send_email', config: { subject: step.subject.replace(/\s+/g, ' ').trim(), body: step.body.trim() } }
+    if (step.kind === 'sms')
+      return { id: step.id, type: 'send_sms', config: { body: step.body.trim() } }
     if (step.kind === 'wait')
       return { id: step.id, type: 'delay', config: { seconds: waitSeconds(step.amount, step.unit) } }
     return originals.get(step.id) ?? { id: step.id, type: step.otherType || 'unknown', config: {} }
@@ -367,6 +421,7 @@ export interface ActivityRow {
   unpublished_changes?: boolean | null
   runs?: Record<string, unknown> | null
   emails_sent?: number | null
+  texts_sent?: number | null
 }
 
 export interface Activity {
@@ -404,7 +459,9 @@ export function activityLabel(activity: ActivityRow | undefined): string {
     return 'Nobody has started it yet.'
   const parts = RUN_STATUS_ORDER.filter(([key]) => count(runs[key]) > 0).map(([key, label]) => `${formatCount(count(runs[key]))} ${label}`)
   const sent = count(activity?.emails_sent)
-  return `${plural(total, 'person', 'people')}: ${parts.join(', ')}. ${plural(sent, 'email', 'emails')} sent.`
+  const texts = count(activity?.texts_sent)
+  const messages = texts > 0 ? `${plural(sent, 'email', 'emails')} and ${plural(texts, 'text', 'texts')}` : plural(sent, 'email', 'emails')
+  return `${plural(total, 'person', 'people')}: ${parts.join(', ')}. ${messages} sent.`
 }
 
 export interface AutomationView {
@@ -413,6 +470,8 @@ export interface AutomationView {
   status: string
   statusLabel: string
   triggerLabel: string
+  /** The saved trigger's type, for the editor. */
+  triggerType: string
   stepsLabel: string
   graph: string
   publishedLabel: string
@@ -449,6 +508,11 @@ export function toAutomationView(row: AutomationRow, activity?: ActivityRow, can
     status,
     statusLabel: statusLabel(status),
     triggerLabel: triggerLabel(row.trigger),
+    triggerType: (() => {
+      const doc = parseDocument(row.trigger) as { type?: unknown } | null
+      const type = doc && typeof doc === 'object' && typeof doc.type === 'string' ? doc.type : ''
+      return TRIGGERS.some(item => item.value === type) ? type : DEFAULT_TRIGGER_TYPE
+    })(),
     stepsLabel: steps === 0 ? 'No steps yet' : `${formatCount(steps, locale)} ${steps === 1 ? 'step' : 'steps'}`,
     graph: typeof row.graph === 'string' ? row.graph : JSON.stringify(row.graph ?? { nodes: [], edges: [] }),
     publishedLabel: version > 0 ? `Version ${formatCount(version)}, turned on ${formatSeen(row.published_at, locale)}` : 'Never turned on',

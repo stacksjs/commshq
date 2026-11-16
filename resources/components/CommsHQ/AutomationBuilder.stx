@@ -40,10 +40,13 @@ import {
   HOW_IT_RUNS,
   listErrorMessage,
   moveStep,
+  enrollLabel,
   newEmailStep,
+  newSmsStep,
   newWaitStep,
   publishErrorMessage,
   publishUrl,
+  qualifyingUrl,
   readinessError,
   saveErrorMessage,
   statusPayload,
@@ -52,6 +55,8 @@ import {
   toAutomationViews,
   toEditorSteps,
   TRIGGERS,
+  triggerPayload,
+  turnedOnNotice,
   WAIT_UNITS,
   withFields,
 } from '../../data/automations-query'
@@ -73,8 +78,12 @@ const actionError = state('')
 const busySource = state('refresh')
 /* The automation a change is in flight for, so only its buttons are busy. */
 const busyId = state(0)
-/* The automation whose Turn on is waiting for its second press. */
+/* The automation whose Turn on is waiting for its second press, and how
+ * many people already qualify for it, so the second press can offer them. */
 const confirmId = state(0)
+const confirmCount = state(0)
+const confirmLimit = state(0)
+const actionNotice = state('')
 
 const addOpen = state(false)
 const addName = state('')
@@ -88,6 +97,7 @@ const editName = state('')
 const editGraph = state('')
 const editSteps = state([])
 const editSenderId = state(0)
+const editTrigger = state('subscriber_joined')
 const editSaving = state(false)
 const editError = state('')
 const editSaved = state('')
@@ -115,7 +125,9 @@ const showList = derived(() => !loading() && !errorText() && automations().lengt
 const readiness = derived(() => readinessError(editSenderId(), editSteps()))
 const readinessText = derived(() => (readiness() ? `Not ready to turn on. ${readiness()}` : 'Ready to turn on once saved.'))
 const triggerDetail = derived(() => triggers.find(item => item.value === addTrigger())?.detail ?? '')
-const stepTitle = derived(() => `${stepId() ? 'Edit' : 'Add'} ${stepKind() === 'email' ? 'an email' : 'a wait'}`)
+const stepTitle = derived(() => `${stepId() ? 'Edit' : 'Add'} ${stepKind() === 'email' ? 'an email' : (stepKind() === 'sms' ? 'a text' : 'a wait')}`)
+const smsCount = derived(() => `${stepBody().trim().length} of 640 characters. A long text is sent as several, each counted against the SMS allowance.`)
+const enrollText = derived(() => enrollLabel(confirmCount(), confirmLimit()))
 
 async function load(source = 'refresh') {
   busySource.set(source)
@@ -205,24 +217,44 @@ async function setStatus(id, next) {
   }
 }
 
-/* Two presses: once on, it sends to everyone who confirms a signup. */
-async function turnOn(id) {
+/* Two presses: once on, it sends to everyone its trigger catches. The first
+ * press also asks how many people already qualify, so the second can offer
+ * to include them, saying how many, rather than doing it unasked. */
+async function turnOn(id, enrollExisting = false) {
   if (busyId())
     return
   if (confirmId() !== id) {
     confirmId.set(id)
+    confirmCount.set(0)
+    confirmLimit.set(0)
     actionError.set('')
+    actionNotice.set('')
+    try {
+      const response = await fetch(qualifyingUrl(id), { credentials: 'same-origin', headers: { Accept: 'application/json' } })
+      if (response.ok) {
+        const body = await response.json()
+        if (confirmId() === id) {
+          confirmCount.set(Number(body?.data?.count) || 0)
+          confirmLimit.set(Number(body?.data?.limit) || 0)
+        }
+      }
+    }
+    catch {
+      // Without the count, the page offers only to start from now on.
+    }
     return
   }
   confirmId.set(0)
   busyId.set(id)
   actionError.set('')
+  actionNotice.set('')
   try {
-    const response = await fetch(publishUrl(id), { method: 'POST', credentials: 'same-origin', headers: writeHeaders() })
-    if (!response.ok) {
-      const body = await response.json().catch(() => ({}))
+    const response = await fetch(publishUrl(id), { method: 'POST', credentials: 'same-origin', headers: writeHeaders(), body: JSON.stringify({ enroll_existing: enrollExisting === true }) })
+    const body = await response.json().catch(() => ({}))
+    if (!response.ok)
       actionError.set(publishErrorMessage(response.status, body?.error))
-    }
+    else
+      actionNotice.set(turnedOnNotice(body?.data?.enrolled))
     await load()
   }
   catch {
@@ -303,7 +335,7 @@ async function loadSenders() {
   }
 }
 
-function openEditor(id, name, graph) {
+function openEditor(id, name, graph, trigger) {
   if (editId() === id) {
     closeEditor()
     return
@@ -314,6 +346,7 @@ function openEditor(id, name, graph) {
   editGraph.set(graph)
   editSteps.set(read.steps)
   editSenderId.set(read.senderId)
+  editTrigger.set(trigger || 'subscriber_joined')
   editError.set('')
   editSaved.set('')
   stepOpen.set(false)
@@ -324,6 +357,11 @@ function closeEditor() {
   editId.set(0)
   stepOpen.set(false)
   editError.set('')
+  editSaved.set('')
+}
+
+function chooseEditTrigger(value) {
+  editTrigger.set(value)
   editSaved.set('')
 }
 
@@ -373,7 +411,8 @@ function keepStep() {
     editSteps.set(steps.map(step => (step.id === stepId() ? withFields(step, fields) : step)))
   }
   else {
-    const fresh = stepKind() === 'email' ? newEmailStep(steps, fields.subject, fields.body) : newWaitStep(steps, fields.amount, fields.unit)
+    const kind = stepKind()
+    const fresh = kind === 'email' ? newEmailStep(steps, fields.subject, fields.body) : (kind === 'sms' ? newSmsStep(steps, fields.body) : newWaitStep(steps, fields.amount, fields.unit))
     editSteps.set([...steps, withFields(fresh, fields)])
   }
   stepOpen.set(false)
@@ -411,11 +450,12 @@ async function saveSteps() {
   editSaved.set('')
   try {
     const payload = graphPayload(editSenderId(), editSteps(), editGraph())
+    const trigger = triggerPayload(editTrigger())
     const response = await fetch(automationUrl(id), {
       method: 'PATCH',
       credentials: 'same-origin',
       headers: writeHeaders(),
-      body: JSON.stringify(payload),
+      body: JSON.stringify(trigger ? { ...payload, trigger } : payload),
     })
     if (!response.ok) {
       editError.set(saveErrorMessage(response.status))
@@ -479,6 +519,7 @@ onMount(() => {
     </section>
 
     <p :if="actionError()" class="mb-5 p-4 font-bold text-danger text-sm bg-panel border border-line rounded-panel" role="alert">{{ actionError() }}</p>
+    <p :if="actionNotice()" class="mb-5 p-4 font-bold text-sm bg-panel border border-line rounded-panel" role="status">{{ actionNotice() }}</p>
 
     <section :if="editId() !== 0" class="mb-5 p-5 bg-panel border border-line rounded-panel" aria-labelledby="edit-steps-title">
       <div class="flex flex-wrap gap-3 items-start justify-between">
@@ -489,7 +530,14 @@ onMount(() => {
         <button type="button" @click="closeEditor()" class="px-4 min-h-11 font-bold text-fg text-sm bg-panel hover:bg-surface-hover border border-line rounded-pill focus-visible:outline focus-visible:outline-[var(--coral)] focus-visible:outline-2">Close</button>
       </div>
 
-      <h3 class="mt-5 font-bold text-xs">Sent from</h3>
+      <h3 class="mt-5 font-bold text-xs">Starts</h3>
+      <div class="flex flex-wrap gap-2 mt-2" role="group" aria-label="Trigger">
+        <template :for="trigger in triggers">
+          <button type="button" @click="chooseEditTrigger(trigger.value)" :aria-pressed="editTrigger() === trigger.value" class="px-4 min-h-11 font-bold text-sm border border-line rounded-pill focus-visible:outline focus-visible:outline-[var(--coral)] focus-visible:outline-2" :class="editTrigger() === trigger.value ? 'bg-accent text-[var(--coral-ink)]' : 'bg-panel text-fg hover:bg-surface-hover'">{{ trigger.label }}</button>
+        </template>
+      </div>
+
+      <h3 class="mt-5 font-bold text-xs">Emails sent from</h3>
       <p :if="sendersLoading()" class="mt-2 text-fg-muted text-xs" role="status">Loading senders</p>
       <p :if="sendersError()" class="mt-2 font-bold text-danger text-xs" role="alert">{{ sendersError() }}</p>
       <p :if="!sendersLoading() && !sendersError() && senders().length === 0" class="mt-2 text-xs">No verified sender yet. Add one on the <a href="/dashboard/commshq/senders" class="font-bold text-accent">Senders page</a> at a verified domain.</p>
@@ -517,6 +565,7 @@ onMount(() => {
 
       <div :if="!stepOpen()" class="flex flex-wrap gap-2 mt-3">
         <button type="button" @click="startStep('email')" class="px-4 min-h-11 font-bold text-fg text-sm bg-panel hover:bg-surface-hover border border-line rounded-pill focus-visible:outline focus-visible:outline-[var(--coral)] focus-visible:outline-2">Add an email</button>
+        <button type="button" @click="startStep('sms')" class="px-4 min-h-11 font-bold text-fg text-sm bg-panel hover:bg-surface-hover border border-line rounded-pill focus-visible:outline focus-visible:outline-[var(--coral)] focus-visible:outline-2">Add a text</button>
         <button type="button" @click="startStep('wait')" class="px-4 min-h-11 font-bold text-fg text-sm bg-panel hover:bg-surface-hover border border-line rounded-pill focus-visible:outline focus-visible:outline-[var(--coral)] focus-visible:outline-2">Add a wait</button>
       </div>
 
@@ -531,6 +580,13 @@ onMount(() => {
             Message
             <textarea x-model="stepBody" rows="7" class="mt-1 field" placeholder="Write it as plain text. A blank line starts a new paragraph."></textarea>
             <span class="block mt-1 font-normal text-fg-muted">An unsubscribe link is added at the end.</span>
+          </label>
+        </div>
+        <div :if="stepKind() === 'sms'" class="grid gap-3 mt-3">
+          <label class="block font-bold text-xs">
+            Text
+            <textarea x-model="stepBody" rows="4" maxlength="640" class="mt-1 field" placeholder="Thanks for joining. Reply STOP to opt out."></textarea>
+            <span class="block mt-1 font-normal text-fg-muted">{{ smsCount() }} Only people who agreed to texts get it.</span>
           </label>
         </div>
         <div :if="stepKind() === 'wait'" class="flex flex-wrap gap-3 items-end mt-3">
@@ -604,14 +660,15 @@ onMount(() => {
               </div>
               <div class="flex flex-wrap gap-2 shrink-0">
                 <button :if="automation.turnOnLabel" type="button" @click="turnOn(automation.id)" :disabled="busyId() !== 0" :aria-busy="busyId() === automation.id" class="px-4 min-h-11 font-bold text-[var(--coral-ink)] text-sm bg-accent rounded-pill focus-visible:outline focus-visible:outline-[var(--coral)] focus-visible:outline-2 disabled:opacity-50">{{ confirmId() === automation.id ? 'Yes, start sending' : automation.turnOnLabel }}</button>
+                <button :if="confirmId() === automation.id && enrollText()" type="button" @click="turnOn(automation.id, true)" :disabled="busyId() !== 0" :aria-busy="busyId() === automation.id" class="px-4 min-h-11 font-bold text-fg text-sm bg-panel hover:bg-surface-hover border border-line rounded-pill focus-visible:outline focus-visible:outline-[var(--coral)] focus-visible:outline-2 disabled:opacity-50">{{ enrollText() }}</button>
                 <button :if="confirmId() === automation.id" type="button" @click="cancelConfirm()" class="px-4 min-h-11 font-bold text-fg text-sm bg-panel hover:bg-surface-hover border border-line rounded-pill focus-visible:outline focus-visible:outline-[var(--coral)] focus-visible:outline-2">Not yet</button>
-                <button :if="automation.canEdit" type="button" @click="openEditor(automation.id, automation.name, automation.graph)" :aria-expanded="editId() === automation.id" class="px-4 min-h-11 font-bold text-fg text-sm bg-panel hover:bg-surface-hover border border-line rounded-pill focus-visible:outline focus-visible:outline-[var(--coral)] focus-visible:outline-2">Edit steps</button>
+                <button :if="automation.canEdit" type="button" @click="openEditor(automation.id, automation.name, automation.graph, automation.triggerType)" :aria-expanded="editId() === automation.id" class="px-4 min-h-11 font-bold text-fg text-sm bg-panel hover:bg-surface-hover border border-line rounded-pill focus-visible:outline focus-visible:outline-[var(--coral)] focus-visible:outline-2">Edit steps</button>
                 <button :if="automation.canPause" type="button" @click="setStatus(automation.id, 'paused')" :disabled="busyId() !== 0" :aria-busy="busyId() === automation.id" class="px-4 min-h-11 font-bold text-fg text-sm bg-panel hover:bg-surface-hover border border-line rounded-pill focus-visible:outline focus-visible:outline-[var(--coral)] focus-visible:outline-2 disabled:opacity-50">Pause</button>
                 <button :if="automation.canArchive" type="button" @click="setStatus(automation.id, 'archived')" :disabled="busyId() !== 0" :aria-busy="busyId() === automation.id" class="px-4 min-h-11 font-bold text-fg text-sm bg-panel hover:bg-surface-hover border border-line rounded-pill focus-visible:outline focus-visible:outline-[var(--coral)] focus-visible:outline-2 disabled:opacity-50">Archive</button>
                 <button :if="automation.canRestore" type="button" @click="setStatus(automation.id, 'draft')" :disabled="busyId() !== 0" :aria-busy="busyId() === automation.id" class="px-4 min-h-11 font-bold text-fg text-sm bg-panel hover:bg-surface-hover border border-line rounded-pill focus-visible:outline focus-visible:outline-[var(--coral)] focus-visible:outline-2 disabled:opacity-50">Restore as draft</button>
               </div>
             </div>
-            <p :if="confirmId() === automation.id" class="mt-3 text-xs" role="status">From now on, everyone who confirms a signup through one of your forms gets these emails. People who joined earlier are not enrolled.</p>
+            <p :if="confirmId() === automation.id" class="mt-3 text-xs" role="status">From now on, everyone its trigger catches gets these messages. "Yes, start sending" leaves out the people who already qualify; the other choice includes them.</p>
           </article>
         </template>
       </div>
