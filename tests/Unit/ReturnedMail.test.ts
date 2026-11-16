@@ -1,5 +1,6 @@
 import { describe, expect, test } from 'bun:test'
 import { parseReturnedMail, readMailbox } from '../../app/Support/bounceMailbox'
+import { noSuchRecipient } from '../../app/Jobs/SendAppMail'
 
 const lines = (...parts: string[]): string => parts.join('\r\n')
 
@@ -140,5 +141,16 @@ describe('reading the return mailbox', () => {
 
     const locked = fakeServer({}, { refuseLogin: true })
     await expect(readMailbox({ ...options, connect: () => locked.socket }, async () => true)).rejects.toThrow('refused LOGIN')
+  })
+})
+
+describe('a refusal that no retry can change', () => {
+  test('is one about the address itself, and nothing else', () => {
+    expect(noSuchRecipient('Email sending failed: SMTP Error: 550 5.1.1 Recipient address rejected: user unknown')).toBe(true)
+    expect(noSuchRecipient('SMTP Error: 550-5.1.1 no such user')).toBe(true)
+    expect(noSuchRecipient('SMTP Error: 550 5.7.1 Message author is not authorized for this account')).toBe(false)
+    expect(noSuchRecipient('SMTP Error: 451 4.3.0 try again later')).toBe(false)
+    expect(noSuchRecipient('connect ECONNREFUSED')).toBe(false)
+    expect(noSuchRecipient(undefined)).toBe(false)
   })
 })

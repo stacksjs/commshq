@@ -8,6 +8,11 @@ interface Payload {
   appId: string
 }
 
+/** Whether a mail server's refusal says the recipient's address itself is no good (5.1.x). */
+export function noSuchRecipient(error: string | undefined): boolean {
+  return /\b55\d[ -]5\.1\.\d/.test(error ?? '')
+}
+
 /**
  * Mail CommsHQ writes for a connected app: a signup form's confirmation.
  *
@@ -40,8 +45,13 @@ export default new Job({
     // replies to the app's address where it has one.
     const from = message.from ?? { name: 'CommsHQ', address: 'hello@commshq.org' }
     const shared = await transport({ ...base, from, replyTo: message.replyTo ? [message.replyTo] : (sender ? [sender.from.address] : []) })
-    if (!shared.ok)
+    if (!shared.ok) {
+      // The address does not exist. Trying again cannot change that, and
+      // each try is one more message to nowhere from CommsHQ's addresses.
+      if (noSuchRecipient(shared.error))
+        return { undeliverable: true }
       throw new Error(shared.error || 'The mail server did not accept the message')
+    }
     return { from: from.address }
   },
 })
