@@ -1,5 +1,6 @@
 import type { MeterReading } from '@stacksjs/hq/service'
-import type { AppStore, ConnectedApp, SenderDomainRow, SendRecord } from './apps'
+import type { AppStore, ConnectedApp, SenderDomainRow, SendRecord, SignupFormRow } from './apps'
+import { ensureOpenMeters } from '../Support/usagePeriods'
 import { seal, unseal } from './sealed'
 import { DKIM_SELECTOR } from './sendingDomain'
 
@@ -50,6 +51,25 @@ function toDomain(row: Row | undefined): SenderDomainRow | null {
   }
 }
 
+/** What a new workspace is called: after the person, else the name in their address. */
+export function workspaceName(name: unknown, email: unknown): string {
+  // eslint-disable-next-line no-control-regex
+  const clean = (value: unknown): string => String(value ?? '').replace(/[\u0000-\u001F\u007F<>]/g, '').trim()
+  const person = clean(name) || clean(String(email ?? '').split('@')[0])
+  // teams.name holds a hundred characters, and a number may be added to tell two apart.
+  return person ? `${person.slice(0, 80)}'s workspace` : 'My workspace'
+}
+
+function toDocument(value: unknown): Record<string, unknown> {
+  try {
+    const parsed = typeof value === 'string' ? JSON.parse(value) : value
+    return parsed && typeof parsed === 'object' && !Array.isArray(parsed) ? parsed as Record<string, unknown> : {}
+  }
+  catch {
+    return {}
+  }
+}
+
 export function createSqlAppStore(options: SqlStoreOptions): AppStore {
   const query = options.run
 
@@ -66,6 +86,36 @@ export function createSqlAppStore(options: SqlStoreOptions): AppStore {
       // The earliest active membership: stable across requests, as activeTeam() has it.
       const row = (await query('SELECT team_id, role FROM team_members WHERE user_id = ? AND status = ? ORDER BY id ASC LIMIT 1', [userId, 'active']))[0]
       return row ? { teamId: Number(row.team_id), role: String(row.role) } : null
+    },
+
+    async createWorkspace(userId) {
+      const user = (await query('SELECT name, email FROM users WHERE id = ? LIMIT 1', [userId]))[0]
+      const base = workspaceName(user?.name, user?.email)
+      const at = now()
+
+      // A workspace's name is unique, and two people can share one. The second
+      // "Chris's workspace" is told apart by a number, and the insert that
+      // loses a race for a name simply tries the next.
+      let teamId: number | null = null
+      for (let attempt = 1; teamId === null && attempt <= 50; attempt++) {
+        const created = (await query(
+          'INSERT INTO teams (uuid, name, description, status, member_count, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?) ON CONFLICT (name) DO NOTHING RETURNING id',
+          [crypto.randomUUID(), attempt === 1 ? base : `${base} ${attempt}`, 'Made when its owner connected their first app.', 'active', 1, at, at],
+        ))[0]
+        if (created)
+          teamId = Number(created.id)
+      }
+      if (teamId === null)
+        throw new Error('A workspace could not be named')
+
+      await query(
+        'INSERT INTO team_members (uuid, team_id, user_id, role, status, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?)',
+        [crypto.randomUUID(), teamId, userId, 'owner', 'active', at, at],
+      )
+      // The free plan's allowance, from this month.
+      await ensureOpenMeters(query, teamId)
+      // Read back, so two approvals at once agree on which workspace is theirs.
+      return (await this.teamOf(userId)) ?? { teamId, role: 'owner' }
     },
 
     async findApp(teamId, name) {
@@ -160,6 +210,7 @@ export function createSqlAppStore(options: SqlStoreOptions): AppStore {
     },
 
     async meters(teamId) {
+      await ensureOpenMeters(query, teamId)
       const at = now()
       const rows = await query('SELECT key, quantity, included_quantity FROM usage_meters WHERE team_id = ? AND period_start <= ? AND period_end > ? ORDER BY key ASC', [teamId, at, at])
       const meters: MeterReading[] = rows.map(row => ({
@@ -172,6 +223,8 @@ export function createSqlAppStore(options: SqlStoreOptions): AppStore {
     },
 
     async reserve(teamId, meter, quantity) {
+      // A month nobody has sent in yet is opened by the first send in it.
+      await ensureOpenMeters(query, teamId)
       const at = now()
       const rows = await query(
         `UPDATE usage_meters SET quantity = quantity + ?, updated_at = ? WHERE ${OPEN_METER} AND (included_quantity IS NULL OR quantity + ? <= included_quantity) RETURNING id`,
@@ -280,6 +333,52 @@ export function createSqlAppStore(options: SqlStoreOptions): AppStore {
         return false
       await options.joinAudience(teamId, Number(list.id), Number(contact.id))
       return true
+    },
+
+    async findSignupForm(teamId, slug) {
+      const row = (await query(
+        'SELECT f.id, f.uuid, f.status, f.schema_document, f.audience_id, a.uuid AS audience_uuid FROM form_definitions f LEFT JOIN audiences a ON a.id = f.audience_id WHERE f.team_id = ? AND f.slug = ? LIMIT 1',
+        [teamId, slug],
+      ))[0]
+      if (!row)
+        return null
+
+      // Rows made before public ids were kept have none. They are given one,
+      // since the id is the only way a page can address the form.
+      let id = text(row.uuid)
+      if (!id) {
+        id = crypto.randomUUID()
+        await query('UPDATE form_definitions SET uuid = ? WHERE id = ?', [id, row.id])
+      }
+      let audienceId = text(row.audience_uuid)
+      if (!audienceId && row.audience_id != null) {
+        audienceId = crypto.randomUUID()
+        await query('UPDATE audiences SET uuid = ? WHERE id = ?', [audienceId, row.audience_id])
+      }
+      return { id, status: String(row.status) as SignupFormRow['status'], document: toDocument(row.schema_document), audienceId }
+    },
+
+    async createSignupForm(input) {
+      const at = now()
+      // The audience of that name is the app's, whether this made it or an
+      // earlier call did: a team's audience names are unique.
+      await query(
+        'INSERT INTO audiences (uuid, team_id, name, description, channel, member_count, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT (team_id, name) DO NOTHING',
+        [crypto.randomUUID(), input.teamId, input.audienceName, 'People who signed up through the app\'s own form.', 'email', 0, at, at],
+      )
+      const audience = (await query('SELECT id FROM audiences WHERE team_id = ? AND name = ? LIMIT 1', [input.teamId, input.audienceName]))[0]
+
+      // `double_opt_in` is left to its default, which is on. A second caller
+      // loses to the unique slug and reads the first one's form back.
+      await query(
+        'INSERT INTO form_definitions (uuid, team_id, name, slug, kind, schema_document, status, audience_id, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT (team_id, slug) DO NOTHING',
+        [crypto.randomUUID(), input.teamId, input.name, input.slug, 'inline', JSON.stringify(input.document), 'active', audience?.id ?? null, at, at],
+      )
+      return (await this.findSignupForm(input.teamId, input.slug))!
+    },
+
+    async setSignupFormDocument(teamId, slug, document) {
+      await query('UPDATE form_definitions SET schema_document = ?, updated_at = ? WHERE team_id = ? AND slug = ?', [JSON.stringify(document), now(), teamId, slug])
     },
   }
 

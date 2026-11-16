@@ -11,6 +11,7 @@ import MessageTemplate from '../../../Models/MessageTemplate'
 import Publication from '../../../Models/Publication'
 import Segment from '../../../Models/Segment'
 import UsageMeter from '../../../Models/UsageMeter'
+import { ensureOpenMetersNow } from '../../../Support/usagePeriods'
 import { activeTeamId } from '../../../Support/activeTeam'
 
 export default new Action({
@@ -20,6 +21,9 @@ export default new Action({
   async handle(request: RequestInstance) {
     const teamId = await activeTeamId(request)
     if (!teamId) return response.json({ error: 'Active team required' }, 403)
+
+    // The page shows what is left of this month, so this month has to be there.
+    await ensureOpenMetersNow(teamId)
 
     const [workspace, contacts, campaigns, publications, activeRuns, recentEarnings, usage, audiences, segments, templates] = await Promise.all([
       /*

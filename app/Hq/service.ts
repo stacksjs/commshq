@@ -6,6 +6,7 @@ import { config } from '@stacksjs/config'
 import { db } from '@stacksjs/database'
 import * as emailPackage from '@stacksjs/email'
 import { createHqService, sqlConnectCodeStore } from '@stacksjs/hq/service'
+import { IS_POSTGRES, sqlRun } from '../Support/sqlRun'
 import { createCommshqAdapter } from './apps'
 import { createSqlAppStore } from './sqlStore'
 import { DKIM_SELECTOR } from './sendingDomain'
@@ -18,17 +19,8 @@ import { DKIM_SELECTOR } from './sendingDomain'
  * from them.
  */
 
-const IS_PG = (process.env.DB_CONNECTION ?? String((config as any).database?.default ?? 'sqlite')) === 'postgres'
-type Row = Record<string, unknown>
-
-/** Written with `?` and bound as `$n` on Postgres. */
-function query(sql: string, params: unknown[] = []): Promise<Row[]> {
-  let i = 0
-  return db.unsafe(IS_PG ? sql.replace(/\?/g, () => `$${++i}`) : sql, params) as unknown as Promise<Row[]>
-}
-
 export const sqlAppStore: AppStore = createSqlAppStore({
-  run: query,
+  run: sqlRun,
   appKey: () => String(config.app?.key || process.env.APP_KEY || ''),
   joinAudience: async (teamId, audienceId, contactId) => {
     const { joinAudience } = await import('../Support/audienceMembership')
@@ -97,7 +89,7 @@ export async function transport(message: OutgoingMessage): Promise<{ ok: boolean
 
 export const commshqAdapter = createCommshqAdapter({
   store: sqlAppStore,
-  codes: sqlConnectCodeStore(db as any, { dialect: IS_PG ? 'postgres' : 'sqlite' }),
+  codes: sqlConnectCodeStore(db as any, { dialect: IS_POSTGRES ? 'postgres' : 'sqlite' }),
   origin: appOrigin,
 })
 

@@ -1,6 +1,6 @@
 /**
  * commshq: the HQ connect and usage endpoints (`@stacksjs/hq/service`), and
- * the three things a connected app may do with its send key.
+ * the things a connected app may do with its send key.
  *
  *   POST /api/cli/connect                 -> { code, approveUrl, confirmCode }
  *   GET  /api/cli/connect/{code}          -> pending | approved + send key and read key (once) | expired
@@ -9,6 +9,7 @@
  *
  *   POST /api/v1/send                  (send key) -> one transactional email
  *   POST /api/v1/app/contacts          (send key) -> add or update a contact
+ *   POST /api/v1/app/signup-form       (send key) -> the app's own signup form, made on first asking
  *   POST /api/v1/sending-domain        (send key) -> register the app's domain, answer its DNS records
  *   POST /api/v1/sending-domain/verify (send key) -> look the records up and say what was found
  *
@@ -21,10 +22,10 @@ import type { HqRequest } from '@stacksjs/hq/service'
 import type { ConnectedApp } from '../app/Hq/apps'
 import { config } from '@stacksjs/config'
 import { route } from '@stacksjs/router'
-import { authenticateSendKey, ConnectRefusedError, registerSendingDomain, sendForApp, upsertContactForApp, verifySendingDomain } from '../app/Hq/apps'
+import { authenticateSendKey, ConnectRefusedError, registerSendingDomain, sendForApp, signupFormForApp, upsertContactForApp, verifySendingDomain } from '../app/Hq/apps'
 import { bearerKey } from '../app/Hq/keys'
 import { rateLimit } from '../app/Hq/limits'
-import { canSignOutbound, fallbackAddress, hq, lookupTxt, sqlAppStore, transport } from '../app/Hq/service'
+import { appOrigin, canSignOutbound, fallbackAddress, hq, lookupTxt, sqlAppStore, transport } from '../app/Hq/service'
 
 function json(data: unknown, status = 200, extraHeaders: Record<string, string> = {}): Response {
   return new Response(JSON.stringify(data), {
@@ -188,6 +189,17 @@ route.post('/api/v1/sending-domain', async (request: RouterRequest) => {
   if (app instanceof Response)
     return app
   const result = await registerSendingDomain(app, request.jsonBody?.domain, domainDeps)
+  return result.ok ? json({ data: result.data }) : json({ error: result.error }, result.status)
+}).skipCsrf().rateLimit(60, 'minute')
+
+// The form an app's own page posts email addresses to. Asked for by key, so
+// the app never has to be given a form id by hand: the first call makes the
+// form and its audience, and every later call answers the same one.
+route.post('/api/v1/app/signup-form', async (request: RouterRequest) => {
+  const app = await appFor(request, 'form', 30)
+  if (app instanceof Response)
+    return app
+  const result = await signupFormForApp(app, request.jsonBody, { store: sqlAppStore, origin: appOrigin })
   return result.ok ? json({ data: result.data }) : json({ error: result.error }, result.status)
 }).skipCsrf().rateLimit(60, 'minute')
 

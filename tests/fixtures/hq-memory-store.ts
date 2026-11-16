@@ -1,4 +1,4 @@
-import type { AppStore, ConnectedApp, SenderDomainRow, SendRecord } from '../../app/Hq/apps'
+import type { AppStore, ConnectedApp, SenderDomainRow, SendRecord, SignupFormRow } from '../../app/Hq/apps'
 
 /**
  * An `AppStore` held in memory, for the tests of app/Hq. It keeps what the
@@ -19,10 +19,20 @@ export function memoryAppStore(options: {
   const sends: Array<SendRecord & { appId: string, idempotencyKey: string | null }> = []
   const contacts: Array<{ id: string, teamId: number, email: string, input: any }> = []
   const memberships: string[] = []
+  const workspaces: Array<{ teamId: number, userId: number }> = []
+  const forms: Array<SignupFormRow & { teamId: number, slug: string, name: string, audienceName: string }> = []
 
   const store: AppStore = {
     async teamOf(userId) {
       return teams[userId] ?? null
+    },
+    async createWorkspace(userId) {
+      // A team of their own, on the free plan's allowance.
+      const teamId = 1000 + workspaces.length + 1
+      workspaces.push({ teamId, userId })
+      teams[userId] = { teamId, role: 'owner' }
+      meters[teamId] = { emails: { used: 0, limit: 10000 }, contacts: { used: 0, limit: 1000 } }
+      return { ...teams[userId]! }
     },
     async findApp(teamId, name) {
       return apps.find(app => app.teamId === teamId && app.name.toLowerCase() === name.toLowerCase()) ?? null
@@ -128,6 +138,21 @@ export function memoryAppStore(options: {
       memberships.push(`${audience}:${contactId}`)
       return true
     },
+    async findSignupForm(teamId, slug) {
+      const form = forms.find(f => f.teamId === teamId && f.slug === slug)
+      return form ? { id: form.id, status: form.status, document: { ...form.document }, audienceId: form.audienceId } : null
+    },
+    async createSignupForm(input) {
+      const sameList = forms.find(f => f.teamId === input.teamId && f.audienceName === input.audienceName)
+      const form = { id: `form-${forms.length + 1}`, status: 'active' as const, document: { ...input.document }, audienceId: sameList?.audienceId ?? `audience-${forms.length + 1}`, teamId: input.teamId, slug: input.slug, name: input.name, audienceName: input.audienceName }
+      forms.push(form)
+      return { id: form.id, status: form.status, document: { ...form.document }, audienceId: form.audienceId }
+    },
+    async setSignupFormDocument(teamId, slug, document) {
+      const form = forms.find(f => f.teamId === teamId && f.slug === slug)
+      if (form)
+        form.document = { ...document }
+    },
   }
 
   return {
@@ -139,6 +164,8 @@ export function memoryAppStore(options: {
     contacts,
     memberships,
     meters,
+    workspaces,
+    forms,
     /** Stop a key working, as the dashboard's revoke does. */
     revoke(hash: string): void {
       const key = keys.find(k => k.hash === hash)

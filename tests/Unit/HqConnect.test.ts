@@ -11,7 +11,7 @@ import type { OutgoingMessage } from '../../app/Hq/apps'
 import { describe, expect, test } from 'bun:test'
 import { createHqService, createMemoryConnectCodeStore } from '@stacksjs/hq/service'
 import { hqServiceContract } from '@stacksjs/hq/testing'
-import { addressOf, allowedHeaders, authenticateSendKey, ConnectRefusedError, createCommshqAdapter, registerSendingDomain, sendForApp, upsertContactForApp, verifySendingDomain } from '../../app/Hq/apps'
+import { addressOf, allowedHeaders, authenticateSendKey, ConnectRefusedError, createCommshqAdapter, registerSendingDomain, sendForApp, signupFormForApp, signupFormSlug, siteOrigin, upsertContactForApp, verifySendingDomain } from '../../app/Hq/apps'
 import { signDkim, verifyDkim } from '@stacksjs/email'
 import { bearerKey, hashAppKey, looksLikeAppKey, newAppKey } from '../../app/Hq/keys'
 import { dkimAnswerMatches, recordsForApi, sendingDomainRecords } from '../../app/Hq/sendingDomain'
@@ -136,9 +136,24 @@ describe('the keys', () => {
   test('only an admin or owner of a workspace may connect an app', async () => {
     const member = setup({ teams: { 1: { teamId: 10, role: 'member' } } })
     expect(member.adapter.provision(ALICE, { app: 'Votescape' })).rejects.toBeInstanceOf(ConnectRefusedError)
-    const nobody = setup({ teams: {} })
-    expect(nobody.adapter.provision(ALICE, { app: 'Votescape' })).rejects.toThrow('not a member of a workspace')
     expect(member.apps).toHaveLength(0)
+    // A plain member is refused and is not given a workspace of their own to get round it.
+    expect(member.workspaces).toHaveLength(0)
+  })
+
+  test('somebody with no workspace is given one, as its owner, and the connect carries on', async () => {
+    const nobody = setup({ teams: {} })
+    const { grant, app } = await nobody.connect()
+    expect(nobody.workspaces).toEqual([{ teamId: app.teamId, userId: ALICE.id }])
+    expect(await nobody.store.teamOf(ALICE.id)).toEqual({ teamId: app.teamId, role: 'owner' })
+    expect(grant.project.name).toBe('Votescape')
+    // It starts on an allowance, so its first send is not refused for having none.
+    expect((await sendForApp(app, { to: 'a@example.com', subject: 'Hi', text: 'x' }, nobody.sendDeps)).ok).toBe(true)
+
+    // Connecting again is the same workspace, not a second one.
+    const again = await nobody.connect('Another app')
+    expect(again.app.teamId).toBe(app.teamId)
+    expect(nobody.workspaces).toHaveLength(1)
   })
 
   test('usage is the workspace\'s meters, read with the read key', async () => {
@@ -404,5 +419,83 @@ describe('contacts', () => {
     expect(await upsertContactForApp(app, { email: 'a@example.com', audience: 'aud-other' }, { store: s.store })).toMatchObject({ ok: true, data: { audience: false } })
     expect(s.memberships).toHaveLength(0)
     expect(await upsertContactForApp(app, { email: 'nope' }, { store: s.store })).toMatchObject({ ok: false, status: 422 })
+  })
+})
+
+describe('an app\'s signup form', () => {
+  const formDeps = (store: ReturnType<typeof setup>['store']) => ({ store, origin: () => 'https://commshq.test' })
+
+  test('is made on first asking, with its audience, and is the same form every time after', async () => {
+    const s = setup()
+    const { app } = await s.connect()
+    const first = await signupFormForApp(app, { origin: 'https://votescape.org' }, formDeps(s.store))
+    if (!first.ok)
+      throw new Error(first.error)
+    expect(first.data.submitUrl).toBe(`https://commshq.test/forms/${first.data.id}/submit`)
+    expect(first.data.audienceId).toBeTruthy()
+    expect(s.forms).toHaveLength(1)
+    expect(s.forms[0]).toMatchObject({ teamId: app.teamId, slug: signupFormSlug(app), name: 'Votescape signup', audienceName: 'Votescape subscribers', status: 'active' })
+    expect(s.forms[0]!.document).toEqual({
+      fields: [{ name: 'email', type: 'email', required: true }],
+      listName: 'Votescape',
+      successUrl: 'https://votescape.org/?subscribed=1',
+      allowedOrigins: ['https://votescape.org'],
+    })
+
+    const again = await signupFormForApp(app, { origin: 'https://votescape.org/' }, formDeps(s.store))
+    expect(again).toEqual(first)
+    expect(s.forms).toHaveLength(1)
+  })
+
+  test('follows the app to a new origin, and keeps what the dashboard set', async () => {
+    const s = setup()
+    const { app } = await s.connect()
+    await signupFormForApp(app, { origin: 'https://votescape.org', listName: 'Votescape news' }, formDeps(s.store))
+    // Chosen in the dashboard since.
+    s.forms[0]!.document.senderIdentityId = 7
+
+    const moved = await signupFormForApp(app, { origin: 'https://www.votescape.org' }, formDeps(s.store))
+    expect(moved.ok).toBe(true)
+    expect(s.forms[0]!.document).toMatchObject({
+      listName: 'Votescape news',
+      senderIdentityId: 7,
+      successUrl: 'https://www.votescape.org/?subscribed=1',
+      allowedOrigins: ['https://www.votescape.org'],
+    })
+  })
+
+  test('takes an https origin and nothing else', async () => {
+    expect(siteOrigin('https://votescape.org')).toBe('https://votescape.org')
+    expect(siteOrigin('https://Votescape.org/')).toBe('https://votescape.org')
+    for (const bad of [undefined, '', 'votescape.org', 'http://votescape.org', 'https://votescape.org/about', 'https://votescape.org/?x=1', 'https://user:pw@votescape.org', 'https://localhost', 'javascript:alert(1)', 'ftp://votescape.org', ['https://votescape.org']])
+      expect(siteOrigin(bad)).toBeUndefined()
+
+    const s = setup()
+    const { app } = await s.connect()
+    expect(await signupFormForApp(app, { origin: 'http://votescape.org' }, formDeps(s.store))).toMatchObject({ ok: false, status: 422 })
+    expect(await signupFormForApp(app, {}, formDeps(s.store))).toMatchObject({ ok: false, status: 422 })
+    expect(s.forms).toHaveLength(0)
+  })
+
+  test('is one app\'s: another app, or another workspace, has a form of its own', async () => {
+    const s = setup({ teams: { 1: { teamId: 10, role: 'owner' }, 2: { teamId: 20, role: 'owner' } } })
+    const mine = await s.connect('Votescape')
+    const sibling = await s.connect('Other app')
+    const theirs = await s.connect('Votescape', { id: 2 })
+    const forms = await Promise.all([mine, sibling, theirs].map(c => signupFormForApp(c.app, { origin: 'https://votescape.org' }, formDeps(s.store))))
+    const ids = forms.map(f => (f.ok ? f.data.id : ''))
+    expect(new Set(ids).size).toBe(3)
+    expect(s.forms.map(f => f.teamId)).toEqual([10, 10, 20])
+    // The key is what names the app: a read key is no app at all here.
+    expect(await authenticateSendKey(s.store, mine.grant.readKey)).toBeNull()
+  })
+
+  test('does not bring back a form the dashboard archived', async () => {
+    const s = setup()
+    const { app } = await s.connect()
+    await signupFormForApp(app, { origin: 'https://votescape.org' }, formDeps(s.store))
+    s.forms[0]!.status = 'archived'
+    expect(await signupFormForApp(app, { origin: 'https://votescape.org' }, formDeps(s.store))).toMatchObject({ ok: false, status: 409 })
+    expect(s.forms[0]!.status).toBe('archived')
   })
 })

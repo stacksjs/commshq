@@ -39,9 +39,25 @@ export interface SenderDomainRow {
   dkimVerifiedAt: string | null
 }
 
+/** The form a connected app collects email addresses with, as its row has it. */
+export interface SignupFormRow {
+  /** The form's public id, a UUID: what `/forms/{id}/submit` is addressed by. */
+  id: string
+  status: 'draft' | 'active' | 'archived'
+  /** The form's settings document: its fields, list name, allowed origins and where it sends people after. */
+  document: Record<string, unknown>
+  /** The public id of the audience a signup joins. */
+  audienceId: string | null
+}
+
 export interface AppStore {
   /** The team a signed-in person acts for, with their role. Null when they have none. */
   teamOf: (userId: number) => Promise<{ teamId: number, role: string } | null>
+  /**
+   * Make a workspace for a person who has none, with them as its owner and
+   * the free plan's allowance. Answers the team they act for afterwards.
+   */
+  createWorkspace: (userId: number) => Promise<{ teamId: number, role: string }>
   findApp: (teamId: number, name: string) => Promise<ConnectedApp | null>
   createApp: (teamId: number, name: string, userId: number) => Promise<ConnectedApp>
   addKey: (appId: string, kind: 'send' | 'read', keyHash: string, hint: string, userId: number | null) => Promise<void>
@@ -77,6 +93,12 @@ export interface AppStore {
   upsertContact: (teamId: number, input: ContactInput) => Promise<{ id: string, created: boolean }>
   /** The team's audience of this id. */
   joinAudience: (teamId: number, audience: string, contactId: string) => Promise<boolean>
+
+  /** The team's form of this slug, if it has one. */
+  findSignupForm: (teamId: number, slug: string) => Promise<SignupFormRow | null>
+  /** Add an active, double opt-in form, and the audience it fills where the team has none of that name. */
+  createSignupForm: (input: { teamId: number, slug: string, name: string, audienceName: string, document: Record<string, unknown> }) => Promise<SignupFormRow>
+  setSignupFormDocument: (teamId: number, slug: string, document: Record<string, unknown>) => Promise<void>
 }
 
 export interface HqUser {
@@ -84,7 +106,7 @@ export interface HqUser {
 }
 
 export class ConnectRefusedError extends Error {
-  constructor(message: string, public reason: 'no_team' | 'role') {
+  constructor(message: string, public reason: 'role') {
     super(message)
     this.name = 'ConnectRefusedError'
   }
@@ -105,9 +127,10 @@ export function createCommshqAdapter(deps: CommshqAdapterDeps): HqServiceAdapter
     if (!Number.isFinite(userId))
       throw new TypeError('A connect can only be approved by a signed-in user.')
 
-    const membership = await store.teamOf(userId)
-    if (!membership)
-      throw new ConnectRefusedError('You are not a member of a workspace yet. Create one, then run the connect command again.', 'no_team')
+    // Somebody with no workspace is given one, as its owner. They used to be
+    // told to create one and run the command again, and there is nowhere in
+    // the app to create one: the connect was a dead end for every new account.
+    const membership = await store.teamOf(userId) ?? await store.createWorkspace(userId)
     // A send key puts mail out under the workspace's name and spends its
     // allowance, which is the same trust as setting up sending.
     if (!['owner', 'admin'].includes(membership.role.toLowerCase()))
@@ -470,6 +493,90 @@ export async function sendForApp(app: ConnectedApp, body: unknown, deps: SendDep
     return { ok: false, status: 502, error: 'The mail server did not accept the message. Nothing was sent, and it can be sent again.' }
   }
   return { ok: true, status: 202, data: record }
+}
+
+// --- The signup form ---
+
+export interface SignupFormAnswer {
+  /** The form's public id. */
+  id: string
+  /** Where a page posts an email address to. */
+  submitUrl: string
+  /** The audience a confirmed signup joins. */
+  audienceId: string | null
+}
+
+export type SignupFormResult
+  = | { ok: true, data: SignupFormAnswer }
+    | { ok: false, status: number, error: string }
+
+/** A site's origin, when it is one a signup may come from: https, a host, nothing else. */
+export function siteOrigin(value: unknown): string | undefined {
+  if (typeof value !== 'string' || !value.trim() || value.length > 300)
+    return undefined
+  try {
+    const url = new URL(value.trim())
+    if (url.protocol !== 'https:' || url.username || url.password || !url.hostname.includes('.'))
+      return undefined
+    // An origin, and not a page on one: a path or a query here is a mistake to say, not to drop.
+    if ((url.pathname !== '/' && url.pathname !== '') || url.search || url.hash)
+      return undefined
+    return url.origin
+  }
+  catch {
+    return undefined
+  }
+}
+
+/** The slug of an app's own form. From the app's id, so a second call finds the first one's form. */
+export function signupFormSlug(app: ConnectedApp): string {
+  return `app-${app.id}`.toLowerCase().slice(0, 120)
+}
+
+/**
+ * The form an app collects email addresses with: made the first time it is
+ * asked for, and the same one every time after.
+ *
+ * An app's key may add a contact, and may not say the person agreed to be
+ * written to. This is how an app gets that agreement properly: its page posts
+ * the address to CommsHQ's own public form endpoint, which records the
+ * consent, sends the confirmation and adds the person once they confirm. The
+ * form takes signups from the app's site and from nowhere else.
+ */
+export async function signupFormForApp(app: ConnectedApp, body: unknown, deps: { store: AppStore, origin: () => string }): Promise<SignupFormResult> {
+  const input = (body && typeof body === 'object' ? body : {}) as Record<string, unknown>
+  const site = siteOrigin(input.origin)
+  if (!site)
+    return { ok: false, status: 422, error: 'origin must be the https origin of the site the form is on, such as https://example.com' }
+  const asked = typeof input.listName === 'string' && input.listName.trim() ? input.listName.trim().slice(0, 120) : undefined
+
+  const slug = signupFormSlug(app)
+  const settings = { successUrl: `${site}/?subscribed=1`, allowedOrigins: [site] }
+  let form = await deps.store.findSignupForm(app.teamId, slug)
+
+  if (!form) {
+    form = await deps.store.createSignupForm({
+      teamId: app.teamId,
+      slug,
+      name: `${app.name} signup`.slice(0, 160),
+      audienceName: `${app.name} subscribers`.slice(0, 120),
+      document: { fields: [{ name: 'email', type: 'email', required: true }], listName: asked ?? app.name, ...settings },
+    })
+  }
+  else {
+    // Archived or set back to a draft in the dashboard is a decision made
+    // there. A key does not undo it.
+    if (form.status !== 'active')
+      return { ok: false, status: 409, error: 'This app\'s signup form is not active. Activate it in the dashboard to take signups again.' }
+    const current = form.document
+    const origins = Array.isArray(current.allowedOrigins) ? current.allowedOrigins : []
+    const changed = current.successUrl !== settings.successUrl || origins.length !== 1 || origins[0] !== site || (asked !== undefined && current.listName !== asked)
+    // Everything else in the document is kept: its fields, and a sender chosen in the dashboard.
+    if (changed)
+      await deps.store.setSignupFormDocument(app.teamId, slug, { ...current, ...(asked !== undefined ? { listName: asked } : {}), ...settings })
+  }
+
+  return { ok: true, data: { id: form.id, submitUrl: `${deps.origin()}/forms/${encodeURIComponent(form.id)}/submit`, audienceId: form.audienceId } }
 }
 
 // --- Contacts ---

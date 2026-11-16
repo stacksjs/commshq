@@ -13,6 +13,7 @@ import AiGeneration from '../../../Models/AiGeneration'
 import UsageMeter from '../../../Models/UsageMeter'
 import { canGenerateAi, estimateTokens, parseAiPurpose, validAiPrompt, validIdempotencyKey } from '../../../Support/aiGenerationPolicy'
 import { updatedRows, usageMeterStore } from '../../../Support/usageMeterStore'
+import { ensureOpenMetersNow } from '../../../Support/usagePeriods'
 import { activeTeam } from '../../../Support/activeTeam'
 
 const MODEL_ID = 'amazon.titan-text-express-v1'
@@ -109,6 +110,7 @@ export default new Action({
       return response.json({ error: 'AI generation could not be claimed' }, 500)
     }
 
+    await ensureOpenMetersNow(teamId)
     const now = new Date().toISOString()
     const meter = await UsageMeter.where('team_id', teamId)
       .where('key', 'ai_generations')
