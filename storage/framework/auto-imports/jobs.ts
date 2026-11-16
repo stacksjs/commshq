@@ -5,6 +5,7 @@ export { default as EvaluateReputationAlerts } from '../../../app/Jobs/EvaluateR
 export { default as PollMonitoredProfiles } from '../../../app/Jobs/PollMonitoredProfiles'
 export { default as ProcessAutomationRun } from '../../../app/Jobs/ProcessAutomationRun'
 export { default as ProcessWebhookEvent } from '../../../app/Jobs/ProcessWebhookEvent'
+export { default as ResumeAutomationRuns } from '../../../app/Jobs/ResumeAutomationRuns'
 export { default as RetryFailedWebhooks } from '../../../app/Jobs/RetryFailedWebhooks'
 export { default as SyncMonitoredProfile } from '../../../app/Jobs/SyncMonitoredProfile'
 export { default as ExampleJob } from '@stacksjs/defaults/app/Jobs/ExampleJob.ts'
