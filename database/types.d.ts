@@ -739,6 +739,26 @@ declare module '@stacksjs/database' {
       post_id: number
       user_id: number
     }
+    commerce_carts: {
+      // columns
+      id: number
+      uuid: string
+      created_at: string
+      updated_at: string | null
+      external_id: string
+      status: string
+      email: string
+      recovery_url: string
+      amount: number
+      currency: string
+      item_count: number
+      last_activity_at: string
+      abandoned_at: string
+      closed_at: string
+      team_id: number
+      commerce_connection_id: number
+      contact_id: number
+    }
     commerce_connections: {
       // columns
       id: number
