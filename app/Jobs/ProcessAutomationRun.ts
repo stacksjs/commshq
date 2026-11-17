@@ -6,10 +6,11 @@ import { log } from '@stacksjs/logging'
 import { Job } from '@stacksjs/queue'
 import { estimateSmsSegments, isWithinSmsQuietHours, sendSms } from '@stacksjs/sms'
 import { withUnsubscribe } from '../Mail/unsubscribe'
-import { messageHtml, readRunnableGraph } from '../Support/automationGraph'
+import { messageHtml, readRunnableGraph, withCartLink } from '../Support/automationGraph'
 import type { RunnableStep } from '../Support/automationGraph'
 import { automationStepKey } from '../Support/automationFlow'
 import { verifiedSender } from '../Support/automationRunner'
+import { runCart } from '../Support/commerceCarts'
 import { assertQuota, consentAllows } from '../Support/emailDelivery'
 import { createPublicToken } from '../Support/signedToken'
 
@@ -35,6 +36,10 @@ import { createPublicToken } from '../Support/signedToken'
  * ends. A text step needs a phone number and SMS consent, and without them
  * only that text is skipped. A text due inside quiet hours is held and
  * looked at again every `QUIET_HOURS_RECHECK_MINUTES`.
+ *
+ * A run started for an abandoned cart reads the cart before each message:
+ * once the cart is bought the run ends, and each email ends with a link
+ * back to the cart.
  *
  * It replaced a job that marked every email step "accepted" without sending
  * it, and whose wait step, once due, waited again forever.
@@ -107,14 +112,30 @@ async function finish(runId: number, teamId: number, status: 'completed' | 'canc
   await setRun(runId, teamId, { status, error, finished_at: nowIso(), current_node_id: null })
 }
 
-async function sendEmail(teamId: number, contact: { id: number, email: string }, senderIdentityId: number, step: Extract<RunnableStep, { type: 'send_email' }>): Promise<string | undefined> {
+/** The cart a run was started for, from its stored context, or 0. */
+export function contextCartId(context: unknown): number {
+  let doc: unknown = context
+  if (typeof context === 'string') {
+    try {
+      doc = JSON.parse(context)
+    }
+    catch {
+      return 0
+    }
+  }
+  const id = doc && typeof doc === 'object' ? Number((doc as { cartId?: unknown }).cartId) : 0
+  return Number.isInteger(id) && id > 0 ? id : 0
+}
+
+async function sendEmail(teamId: number, contact: { id: number, email: string }, senderIdentityId: number, step: Extract<RunnableStep, { type: 'send_email' }>, cartUrl: string | null): Promise<string | undefined> {
   const sender = await verifiedSender(teamId, senderIdentityId)
   if (!sender)
     throw new Error('The sender is no longer verified, or its domain is not')
   await assertQuota(teamId, 'email', 1)
 
   const token = createPublicToken({ teamId, contactId: contact.id, channel: 'email', purpose: 'unsubscribe', expiresAt: Date.now() + UNSUBSCRIBE_LINK_TTL_MS }, String(config.app.key))
-  const body = withUnsubscribe(messageHtml(step.config.body), step.config.body, `${String(config.app.url).replace(/\/$/, '')}/unsubscribe/${token}`)
+  const message = withCartLink(messageHtml(step.config.body), step.config.body, cartUrl)
+  const body = withUnsubscribe(message.html, message.text, `${String(config.app.url).replace(/\/$/, '')}/unsubscribe/${token}`)
   const result = await mail.send({
     to: [contact.email],
     from: { name: sender.name || sender.address, address: sender.address },
@@ -181,6 +202,8 @@ export default new Job({
     if (!run.started_at)
       await setRun(runId, teamId, { status: 'running', started_at: nowIso() })
 
+    const cartId = contextCartId(run.context)
+
     for (const step of graph.steps) {
       const existing = await db.selectFrom('automation_step_runs' as any).selectAll()
         .where('automation_run_id' as any, '=', runId).where('team_id' as any, '=', teamId)
@@ -240,6 +263,18 @@ export default new Job({
         return { paused: true }
       }
 
+      // A cart reminder stops once the cart is bought, or gone.
+      let cartUrl: string | null = null
+      if (cartId) {
+        const cart = await runCart(teamId, cartId)
+        if (!cart || cart.status === 'completed' || cart.status === 'recovered') {
+          await setStep(stepId, teamId, { status: 'cancelled', output: JSON.stringify({ skipped: 'cart bought' }) })
+          await finish(runId, teamId, 'cancelled', cart ? 'The cart was bought' : 'The cart no longer exists')
+          return { cancelled: 'cart' }
+        }
+        cartUrl = cart.recoveryUrl
+      }
+
       const address = String(contact.email ?? '').trim().toLowerCase()
       const phone = String(contact.phone ?? '').trim()
 
@@ -278,7 +313,7 @@ export default new Job({
           await setStep(stepId, teamId, { status: 'completed', completed_at: nowIso(), output: JSON.stringify({ sent: true, messageId: result.messageId ?? null, segments }) })
         }
         else {
-          const messageId = await sendEmail(teamId, { id: Number(contact.id), email: address }, graph.senderIdentityId, step)
+          const messageId = await sendEmail(teamId, { id: Number(contact.id), email: address }, graph.senderIdentityId, step, cartUrl)
           await setStep(stepId, teamId, { status: 'completed', completed_at: nowIso(), output: JSON.stringify({ sent: true, messageId: messageId ?? null }) })
         }
       }

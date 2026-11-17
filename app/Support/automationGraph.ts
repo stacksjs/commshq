@@ -9,16 +9,18 @@ import { createHash } from 'node:crypto'
  * also knew `approval`, which nothing ever asked anyone to give, so a graph
  * holding one is refused rather than published to stall.
  *
- * Two triggers, fired through `startAutomations`: `subscriber_joined`, when
- * someone confirms an email subscription through a signup form, and
+ * Three triggers, fired through `startAutomations`: `subscriber_joined`,
+ * when someone confirms an email subscription through a signup form;
  * `purchase_made`, when a connected store records an order from an email
- * address the workspace already has as a contact (`commerceAttribution`).
+ * address the workspace already has as a contact (`commerceAttribution`);
+ * and `cart_abandoned`, when a contact's cart has gone quiet without an
+ * order (`commerceCarts`).
  *
  * The page applies the same rules before it saves; a test holds the two
  * sets of limits together.
  */
 export const RUNNABLE_STEP_TYPES = ['send_email', 'send_sms', 'delay'] as const
-export const TRIGGER_TYPES = ['subscriber_joined', 'purchase_made'] as const
+export const TRIGGER_TYPES = ['subscriber_joined', 'purchase_made', 'cart_abandoned'] as const
 
 export const MAX_STEPS = 20
 export const SUBJECT_MAX = 200
@@ -156,13 +158,35 @@ export function graphChecksum(canonical: string): string {
   return createHash('sha256').update(canonical).digest('hex')
 }
 
-/** A run is started once per automation per contact, ever. */
-export function runIdempotencyKey(automationId: number, trigger: string, contactId: number): string {
-  return `automation:${automationId}:${trigger}:contact:${contactId}`
+/**
+ * One run per contact per automation, or with an `occasion`, one per
+ * occasion: a cart automation runs once for each abandoned cart, not once
+ * for each shopper ever.
+ */
+export function runIdempotencyKey(automationId: number, trigger: string, contactId: number, occasion?: string): string {
+  const key = `automation:${automationId}:${trigger}:contact:${contactId}`
+  return occasion ? `${key}:${occasion}` : key
 }
 
 function escapeHtml(value: string): string {
   return value.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;')
+}
+
+/**
+ * The link back to an abandoned cart, added to the end of every email a cart
+ * automation sends, before the unsubscribe footer. Added rather than placed
+ * by the author, so a reminder can never go out without the one thing it
+ * is for.
+ */
+export const CART_LINK_LABEL = 'Return to your cart'
+
+export function withCartLink(html: string, text: string, url: string | null): { html: string, text: string } {
+  if (!url)
+    return { html, text }
+  return {
+    html: `${html}\n<p><a href="${escapeHtml(url)}">${CART_LINK_LABEL}</a></p>`,
+    text: `${text.trim()}\n\n${CART_LINK_LABEL}: ${url}`,
+  }
 }
 
 /**

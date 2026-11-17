@@ -82,7 +82,8 @@ describe('the email', () => {
     expect(job).toContain("if (step.type === 'send_email' && (contact.status !== 'active' || !address || !await consentAllows(teamId, 'email', address))) {")
     expect(job).toContain('const sender = await verifiedSender(teamId, senderIdentityId)')
     expect(job).toContain("await assertQuota(teamId, 'email', 1)")
-    expect(job).toContain('withUnsubscribe(messageHtml(step.config.body), step.config.body,')
+    expect(job).toContain('const message = withCartLink(messageHtml(step.config.body), step.config.body, cartUrl)')
+    expect(job).toContain('withUnsubscribe(message.html, message.text,')
     // The same consent and quota rules campaigns use, from one place.
     expect(await source('app/Jobs/DispatchCampaign.ts')).toContain("import { assertQuota, consentAllows } from '../Support/emailDelivery'")
   })

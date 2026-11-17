@@ -10,13 +10,14 @@ import { runIdempotencyKey, triggerType, versionTrigger } from './automationGrap
  *
  * `startAutomations` is called where something happens that an automation
  * can wait for: someone confirming an email subscription through a signup
- * form (`subscriber_joined`), and a connected store recording an order from
- * a known contact (`purchase_made`, from `commerceAttribution`). A contact
+ * form (`subscriber_joined`), a connected store recording an order from a
+ * known contact (`purchase_made`, from `commerceAttribution`), and a known
+ * contact's cart going quiet (`cart_abandoned`, from `commerceCarts`). A contact
  * added on the Contacts page starts nothing. Every email a run sends still
  * checks the contact's consent first, whatever started it.
  *
  * Each active automation with a published version gets one run per contact,
- * ever: the run's idempotency key is unique, so a second confirmation, or a
+ * ever, or for a cart, one per cart: the run's idempotency key is unique, so a second confirmation, or a
  * contact who leaves and comes back, does not get the welcome again.
  *
  * Starting a run never fails the request that caused it. A signup that
@@ -33,7 +34,17 @@ export async function latestVersion(teamId: number, automationId: number): Promi
     .executeTakeFirst() as any
 }
 
-export async function startAutomations(teamId: number, trigger: string, contactId: number): Promise<StartedRun[]> {
+/**
+ * What a run is started for, when it is more than the contact: an abandoned
+ * cart. The key makes the run once per occasion rather than once per
+ * contact, and the context is stored on the run for the runner to read.
+ */
+export interface RunOccasion { key: string, context: Record<string, unknown> }
+
+/** Run statuses that mean the run still has something to do. */
+const UNFINISHED = ['queued', 'running', 'waiting']
+
+export async function startAutomations(teamId: number, trigger: string, contactId: number, occasion?: RunOccasion): Promise<StartedRun[]> {
   const started: StartedRun[] = []
   try {
     const automations = await db.selectFrom('automations' as any)
@@ -52,6 +63,19 @@ export async function startAutomations(teamId: number, trigger: string, contactI
       if ((versionTrigger(version.graph) || triggerType(automation.trigger)) !== trigger)
         continue
 
+      // One journey at a time: a shopper who leaves a second cart while the
+      // first one's reminders are still going is not sent two sets.
+      if (occasion) {
+        const busy = await db.selectFrom('automation_runs' as any).select(['id'] as any)
+          .where('team_id' as any, '=', teamId).where('automation_id' as any, '=', Number(automation.id))
+          .where('subject_type' as any, '=', 'contact').where('subject_id' as any, '=', String(contactId))
+          .where('status' as any, 'in', UNFINISHED)
+          .executeTakeFirst()
+        if (busy)
+          continue
+      }
+
+      const key = runIdempotencyKey(Number(automation.id), trigger, contactId, occasion?.key)
       const now = new Date().toISOString()
       try {
         await db.insertInto('automation_runs' as any).values({
@@ -62,8 +86,8 @@ export async function startAutomations(teamId: number, trigger: string, contactI
           version: Number(version.version),
           subject_type: 'contact',
           subject_id: String(contactId),
-          context: JSON.stringify({ trigger }),
-          idempotency_key: runIdempotencyKey(Number(automation.id), trigger, contactId),
+          context: JSON.stringify({ ...occasion?.context, trigger }),
+          idempotency_key: key,
           created_at: now,
           updated_at: now,
         } as any).execute()
@@ -76,7 +100,7 @@ export async function startAutomations(teamId: number, trigger: string, contactI
       }
 
       const row = await db.selectFrom('automation_runs' as any).select(['id'] as any)
-        .where('idempotency_key' as any, '=', runIdempotencyKey(Number(automation.id), trigger, contactId))
+        .where('idempotency_key' as any, '=', key)
         .executeTakeFirst() as { id: number } | undefined
       if (row)
         started.push({ runId: Number(row.id), automationId: Number(automation.id) })
@@ -132,7 +156,8 @@ export const ENROLL_LIMIT = 5000
  * The contacts who already meet an automation's trigger and have never been
  * through it: for `subscriber_joined`, active contacts whose latest email
  * consent is a confirmation or grant and who are not suppressed; for
- * `purchase_made`, contacts a connected store has recorded an order from.
+ * `purchase_made`, contacts a connected store has recorded an order from;
+ * for `cart_abandoned`, nobody, since past carts are too old to remind.
  *
  * Read and filtered here rather than in SQL: "latest consent per address"
  * is spelled differently in every database, and a workspace's contacts fit
@@ -162,6 +187,11 @@ export async function qualifyingContacts(teamId: number, automationId: number, t
         return email !== '' && !suppressed.has(email) && ['confirmed', 'granted'].includes(latest.get(email) ?? '')
       })
       .map(contact => Number(contact.id))
+  }
+  else if (trigger === 'cart_abandoned') {
+    // None: a cart abandoned before the automation existed is days old,
+    // and a reminder for it would read as a mistake.
+    return []
   }
   else if (trigger === 'purchase_made') {
     const rows = await db.selectFrom('commerce_events' as any).select(['contact_id'] as any)
