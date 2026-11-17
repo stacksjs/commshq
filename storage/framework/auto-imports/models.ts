@@ -18,6 +18,7 @@ export { default as AutomationStepRun } from '../../../app/Models/AutomationStep
 export { default as AutomationVersion } from '../../../app/Models/AutomationVersion'
 export { default as CampaignExperiment } from '../../../app/Models/CampaignExperiment'
 export { default as CampaignRecipient } from '../../../app/Models/CampaignRecipient'
+export { default as CommerceCart } from '../../../app/Models/CommerceCart'
 export { default as CommerceConnection } from '../../../app/Models/CommerceConnection'
 export { default as CommerceEvent } from '../../../app/Models/CommerceEvent'
 export { default as Commission } from '../../../app/Models/Commission'

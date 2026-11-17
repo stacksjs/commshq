@@ -1,5 +1,6 @@
 {
   "globals": {
+    "AbandonQuietCarts": true,
     "Action": true,
     "Activity": true,
     "AdInventory": true,
@@ -43,6 +44,7 @@
     "Category": true,
     "ComingSoonController": true,
     "Comment": true,
+    "CommerceCart": true,
     "CommerceConnection": true,
     "CommerceEvent": true,
     "Commission": true,
