@@ -1,9 +1,10 @@
 <script server>
 /* Fixed lists from the module, rendered here rather than looped in the
  * browser, so the select is usable in the first paint. */
-import { EVENT_TYPES } from '../../data/commerce-query'
+import { CART_STATES, EVENT_TYPES } from '../../data/commerce-query'
 
 export const eventTypeOptions = EVENT_TYPES
+export const cartStateOptions = CART_STATES
 </script>
 
 <script client>
@@ -18,7 +19,8 @@ export const eventTypeOptions = EVENT_TYPES
  * It connects a store through `/api/v1/commerce/stores`, shows the address
  * to give that store, pauses and resumes it and replaces its signing
  * secret, and lists the order events that arrived from
- * `/api/v1/commerce-events`. The secret is sent once and never comes back.
+ * `/api/v1/commerce-events` and the latest carts from
+ * `/api/v1/commerce-carts`. The secret is sent once and never comes back.
  * Pausing and replacing a secret are two presses: both stop a store's
  * events arriving until something else is done.
  *
@@ -29,6 +31,7 @@ export const eventTypeOptions = EVENT_TYPES
  * composable, since a client script may not reach for the DOM itself.
  */
 import {
+  cartsUrl,
   connectError,
   connectPayload,
   EVENTS_PER_PAGE,
@@ -40,6 +43,7 @@ import {
   secretError,
   STORES_ENDPOINT,
   storeUrl,
+  toCartViews,
   toEventViews,
   toStoresView,
 } from '../../data/commerce-query'
@@ -62,6 +66,11 @@ const eventsMore = state(false)
 const eventsPage = state(1)
 const eventType = state('')
 const eventsBusy = state('refresh')
+
+const carts = state([])
+const cartsLoading = state(true)
+const cartsError = state('')
+const cartState = state('')
 
 const addOpen = state(false)
 const addProvider = state('')
@@ -89,6 +98,8 @@ const eventsPrevBusy = derived(() => eventsLoading() && eventsBusy() === 'prev')
 const eventsNextBusy = derived(() => eventsLoading() && eventsBusy() === 'next')
 const showEventsEmpty = derived(() => !eventsLoading() && !eventsError() && events().length === 0)
 const showEvents = derived(() => !eventsLoading() && !eventsError() && events().length > 0)
+const showCartsEmpty = derived(() => !cartsLoading() && !cartsError() && carts().length === 0)
+const showCarts = derived(() => !cartsLoading() && !cartsError() && carts().length > 0)
 
 async function loadStores() {
   loading.set(true)
@@ -137,9 +148,31 @@ async function loadEvents(source = 'refresh') {
   }
 }
 
+async function loadCarts() {
+  cartsLoading.set(true)
+  cartsError.set('')
+  try {
+    const response = await fetch(cartsUrl(cartState()), { credentials: 'same-origin', headers: { Accept: 'application/json' } })
+    if (!response.ok) {
+      cartsError.set(listErrorMessage(response.status, 'carts'))
+      carts.set([])
+      return
+    }
+    carts.set(toCartViews(await response.json()))
+  }
+  catch {
+    cartsError.set('Carts could not be loaded. Check your connection and try again.')
+    carts.set([])
+  }
+  finally {
+    cartsLoading.set(false)
+  }
+}
+
 function refresh() {
   void loadStores()
   void loadEvents()
+  void loadCarts()
 }
 
 function onTypeChange() {
@@ -380,6 +413,7 @@ onMount(() => {
               <div class="min-w-0">
                 <h3 class="font-bold text-sm">{{ store.name }}</h3>
                 <p class="mt-0.5 text-fg-muted text-xs">{{ store.providerLabel }}. {{ store.statusLabel }}. {{ store.standing }}</p>
+                <p class="mt-0.5 text-fg-muted text-xs">{{ store.cartsNote }}</p>
                 <p :if="store.failedNote" class="mt-0.5 font-bold text-danger text-xs">{{ store.failedNote }}</p>
                 <p :if="store.webhookUrl" class="mt-2 text-fg-muted text-xs">Webhook address</p>
                 <p :if="store.webhookUrl" class="mt-1 p-2 break-all font-mono text-xs bg-surface-sunken rounded-control">{{ store.webhookUrl }}</p>
@@ -407,6 +441,54 @@ onMount(() => {
           </article>
         </template>
       </div>
+    </section>
+
+    <section class="overflow-hidden bg-panel border border-line rounded-panel" aria-labelledby="carts-title">
+      <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between p-5 border-b border-line">
+        <div>
+          <h2 id="carts-title" class="font-bold">Carts</h2>
+          <p class="mt-1 text-fg-muted text-xs">The 10 most recently active. A cart left for an hour without an order is abandoned; one bought after that is recovered.</p>
+        </div>
+        <label class="block shrink-0">
+          <span class="sr-only">Filter carts by state</span>
+          <select x-model="cartState" @change="loadCarts()" class="field">
+            <option value="">Every state</option>
+            @foreach(cartStateOptions as option)
+              <option value="{{ option.value }}">{{ option.label }}</option>
+            @endforeach
+          </select>
+        </label>
+      </div>
+
+      <div :if="cartsLoading()" class="p-5 space-y-3" aria-hidden="true">
+        <div class="h-10 bg-surface-sunken rounded-control"></div>
+        <div class="h-10 bg-surface-sunken rounded-control"></div>
+      </div>
+      <p :if="cartsLoading()" class="sr-only" role="status">Loading carts</p>
+
+      <div :if="cartsError()" class="p-8 text-center" role="alert">
+        <span aria-hidden="true" class="inline-block h-6 w-6 text-danger i-hugeicons-alert-02"></span>
+        <p class="mt-3 font-bold text-sm">{{ cartsError() }}</p>
+        <button type="button" @click="loadCarts()" :disabled="cartsLoading()" :aria-busy="cartsLoading()" class="mt-4 px-5 min-h-11 font-bold text-fg text-sm bg-panel hover:bg-surface-hover border border-line rounded-pill focus-visible:outline focus-visible:outline-[var(--coral)] focus-visible:outline-2 disabled:opacity-60">Try again</button>
+      </div>
+
+      <div :if="showCartsEmpty()" class="p-10 text-center">
+        <span aria-hidden="true" class="inline-block h-7 w-7 text-fg-muted i-hugeicons-shopping-cart-01"></span>
+        <p class="mt-3 font-bold">No carts match this view.</p>
+        <p class="mt-1 text-fg-muted text-sm">Carts appear here when a connected Shopify store sends its checkout webhooks.</p>
+      </div>
+
+      <ul :if="showCarts()" class="m-0 p-0 list-none divide-line divide-y">
+        <template :for="cart in carts()">
+          <li class="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between px-5 py-3">
+            <div class="min-w-0">
+              <p class="font-bold text-sm">{{ cart.stateLabel }} <span :if="cart.amountLabel" class="font-normal">{{ cart.amountLabel }}</span></p>
+              <p class="text-fg-muted text-xs">{{ cart.itemsLabel }}. {{ cart.shopperLabel }}.</p>
+            </div>
+            <p class="shrink-0 text-fg-muted text-xs">{{ cart.activityLabel }}</p>
+          </li>
+        </template>
+      </ul>
     </section>
 
     <section class="overflow-hidden bg-panel border border-line rounded-panel" aria-labelledby="events-title">

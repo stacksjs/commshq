@@ -1,8 +1,9 @@
 import type { RequestInstance } from '@stacksjs/types'
 import { Action } from '@stacksjs/actions'
-import { db } from '@stacksjs/database'
+import { db, sql } from '@stacksjs/database'
 import { response } from '@stacksjs/router'
 import { activeTeam } from '../../../../Support/activeTeam'
+import { CART_STATUSES } from '../../../../Support/commerceCarts'
 import { canManageCommerce, STORE_PROVIDERS, storeEndpoint, webhookPath, webhookUrl } from '../../../../Support/commerceStores'
 
 /**
@@ -11,8 +12,8 @@ import { canManageCommerce, STORE_PROVIDERS, storeEndpoint, webhookPath, webhook
  *
  * The generated list of connections cannot say where a store should post,
  * since that address belongs to a different row. This joins the two, and
- * counts the events recorded and the deliveries that failed, so the page
- * can tell a quiet store from a broken one.
+ * counts the events recorded, the deliveries that failed and the carts in
+ * each state, so the page can tell a quiet store from a broken one.
  *
  * Every member may read it. The address is not a secret: a webhook is only
  * accepted with a valid signature, and the secret never leaves the server.
@@ -35,11 +36,12 @@ export default new Action({
       .execute() as Array<{ id: number, provider: string, name: string, status: string, created_at: string | null }>
 
     const data = await Promise.all(stores.map(async (store) => {
-      const [endpoint, events, latest, failed] = await Promise.all([
+      const [endpoint, events, latest, failed, carts] = await Promise.all([
         storeEndpoint(teamId, store.provider),
         (db as any).selectFrom('commerce_events').where('team_id', '=', teamId).where('commerce_connection_id', '=', store.id).count(),
         db.selectFrom('commerce_events' as any).select(['occurred_at'] as any).where('team_id' as any, '=', teamId).where('commerce_connection_id' as any, '=', store.id).orderBy('occurred_at' as any, 'desc').executeTakeFirst() as { occurred_at: string } | undefined,
         (db as any).selectFrom('webhook_events').where('team_id', '=', teamId).where('provider', '=', store.provider).where('status', 'in', ['failed', 'dead_lettered']).count(),
+        (db as any).selectFrom('commerce_carts').select(['status']).selectRaw(sql`count(*) as n`).where('team_id', '=', teamId).where('commerce_connection_id', '=', store.id).groupBy('status').execute() as Promise<Array<{ status: string, n: unknown }>>,
       ])
       return {
         id: Number(store.id),
@@ -54,6 +56,8 @@ export default new Action({
         events: Number(events) || 0,
         last_event_at: latest?.occurred_at ?? null,
         failed_deliveries: Number(failed) || 0,
+        // Counts by state; Postgres returns them as strings.
+        carts: Object.fromEntries(CART_STATUSES.map(status => [status, Number(carts.find(row => row.status === status)?.n) || 0])),
       }
     }))
 

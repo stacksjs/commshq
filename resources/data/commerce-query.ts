@@ -20,8 +20,13 @@
  * is matched to a contact by the buyer's email, credited to the last email
  * that contact was sent, and can start a purchase automation
  * (`app/Support/commerceAttribution.ts`). This page only says whether the
- * buyer is a contact. No recovered carts and no return on spend: carts are
- * not read, and nothing records what an email cost. `NOT_USED_YET` says so.
+ * buyer is a contact. No return on spend: nothing records what an email
+ * cost. `NOT_USED_YET` says so.
+ *
+ * Carts come from Shopify's checkout webhooks only, since WooCommerce has
+ * none (`app/Support/commerceCarts.ts`). The page lists the latest few with
+ * their state and whether the shopper is a contact, never who they are or
+ * the link back to their cart, which the API does not return.
  * No revenue total either: events arrive in whatever currency the store
  * uses, and adding them up across currencies would mean nothing.
  *
@@ -54,13 +59,15 @@ export const STORE_PROVIDERS = [
     provider: 'shopify',
     label: 'Shopify',
     secretHint: 'In your Shopify admin, open Settings, Notifications, Webhooks. Shopify shows the secret it signs every webhook with on that page. Paste it here.',
-    setup: 'In Shopify, open Settings, Notifications, Webhooks and create webhooks for order creation, fulfilment and refund, in JSON format, with this address.',
+    setup: 'In Shopify, open Settings, Notifications, Webhooks and create webhooks for order creation, order fulfilment, refund creation, checkout creation and checkout update, in JSON format, with this address.',
+    carts: true,
   },
   {
     provider: 'woocommerce',
     label: 'WooCommerce',
     secretHint: 'Choose a secret of your own, at least 8 characters with no spaces. You will enter the same one in WooCommerce.',
     setup: 'In WooCommerce, open Settings, Advanced, Webhooks and add webhooks for order created and order updated, with this delivery URL and the same secret.',
+    carts: false,
   },
 ] as const
 
@@ -71,7 +78,51 @@ export const EVENT_TYPES = [
   { value: 'order_refunded', label: 'Refund' },
 ] as const
 
-export const NOT_USED_YET = 'Orders, fulfilments and refunds your store sends are recorded here. An order from someone who is already a contact is credited to the last email they were sent, which the Analytics page shows, and can start a purchase automation. Carts and products are not read.'
+export const NOT_USED_YET = 'Orders, fulfilments and refunds your store sends are recorded here. An order from someone who is already a contact is credited to the last email they were sent, which the Analytics page shows, and can start a purchase automation. A Shopify cart left for an hour without an order counts as abandoned and can start a cart automation. Products are not read.'
+
+export const CARTS_ENDPOINT = '/api/v1/commerce-carts'
+export const CARTS_SHOWN = 10
+
+/** The states `app/Support/commerceCarts.ts` moves a cart through; a test holds the two together. */
+export const CART_STATES = [
+  { value: 'open', label: 'Open' },
+  { value: 'abandoned', label: 'Abandoned' },
+  { value: 'recovered', label: 'Recovered' },
+  { value: 'completed', label: 'Bought' },
+] as const
+
+export function cartStateLabel(status?: string | null): string {
+  return CART_STATES.find(item => item.value === status)?.label ?? (status ? titleCase(String(status)) : 'Cart')
+}
+
+/** The latest carts, most recently active first, optionally in one state. */
+export function cartsUrl(status?: string): string {
+  const params = new URLSearchParams()
+  params.set('per_page', String(CARTS_SHOWN))
+  if (status && CART_STATES.some(item => item.value === status))
+    params.set('status', status)
+  params.set('sort', '-last_activity_at,-id')
+  return `${CARTS_ENDPOINT}?${params.toString()}`
+}
+
+export interface CartRow {
+  id: number
+  status?: string | null
+  amount?: number | string | null
+  currency?: string | null
+  item_count?: number | string | null
+  last_activity_at?: string | null
+  contact_id?: number | null
+}
+
+export interface CartView {
+  id: number
+  stateLabel: string
+  amountLabel: string
+  itemsLabel: string
+  shopperLabel: string
+  activityLabel: string
+}
 
 function titleCase(value: string): string {
   const spaced = value.replace(/[_-]+/g, ' ').trim()
@@ -118,6 +169,7 @@ export interface StoreRow {
   events?: number | null
   last_event_at?: string | null
   failed_deliveries?: number | null
+  carts?: Record<string, number | string> | null
 }
 
 export interface StoreView {
@@ -133,6 +185,8 @@ export interface StoreView {
   standing: string
   /** Deliveries that arrived and could not be recorded; '' when there are none. */
   failedNote: string
+  /** The store's carts by state, or why it has none. */
+  cartsNote: string
   nextStatus: string
   nextLabel: string
 }
@@ -147,6 +201,16 @@ const STORE_STATUS_LABELS: Record<string, string> = {
 function count(value: unknown): number {
   const number = Number(value)
   return Number.isFinite(number) && number > 0 ? Math.floor(number) : 0
+}
+
+/** What a store's carts come to, or why it sends none. */
+export function cartsNote(row: StoreRow): string {
+  if (providerOf(row.provider)?.carts !== true)
+    return `${providerLabel(row.provider)} does not send carts, so only its orders are read.`
+  const counts = CART_STATES.map(item => ({ label: item.label.toLowerCase(), n: count(row.carts?.[item.value]) })).filter(item => item.n > 0)
+  if (counts.length === 0)
+    return 'No carts yet. They arrive with the checkout webhooks.'
+  return `Carts: ${counts.map(item => `${item.n.toLocaleString('en-US')} ${item.label}`).join(', ')}.`
 }
 
 /** Normalize one store into the shape the list renders. */
@@ -177,6 +241,7 @@ export function toStoreView(row: StoreRow, locale?: string): StoreView {
     webhookUrl,
     setup: providerOf(row.provider)?.setup ?? '',
     standing,
+    cartsNote: cartsNote(row),
     failedNote: failed > 0 ? `${failed.toLocaleString('en-US')} ${failed === 1 ? 'delivery' : 'deliveries'} arrived and could not be recorded.` : '',
     nextStatus: canChange ? (status === 'active' ? 'disabled' : 'active') : '',
     nextLabel: canChange ? (status === 'active' ? 'Pause' : 'Resume') : '',
@@ -250,6 +315,23 @@ export function toEventView(row: EventRow, locale?: string): EventView {
   }
 }
 
+/** Normalize one cart. Who the shopper is and the link back are not sent. */
+export function toCartView(row: CartRow, locale?: string): CartView {
+  const items = count(row.item_count)
+  return {
+    id: row.id,
+    stateLabel: cartStateLabel(row.status),
+    amountLabel: formatAmount(row.amount, row.currency, locale),
+    itemsLabel: items > 0 ? `${items.toLocaleString('en-US')} ${items === 1 ? 'item' : 'items'}` : 'No items',
+    shopperLabel: count(row.contact_id) > 0 ? 'Shopper is a contact' : 'Shopper is not a contact',
+    activityLabel: formatSeen(row.last_activity_at, locale),
+  }
+}
+
+export function toCartViews(body: { data?: CartRow[] } | null | undefined, locale?: string): CartView[] {
+  return (body?.data ?? []).map(row => toCartView(row, locale))
+}
+
 export function toEventViews(body: { data?: EventRow[] } | null | undefined, locale?: string): EventView[] {
   return (body?.data ?? []).map(row => toEventView(row, locale))
 }
@@ -294,8 +376,8 @@ export function connectPayload(draft: ConnectDraft): { provider: string, name: s
 }
 
 /** What to tell someone when a list failed. */
-export function listErrorMessage(status: number, what: 'stores' | 'events' = 'stores'): string {
-  const label = what === 'stores' ? 'Stores' : 'Events'
+export function listErrorMessage(status: number, what: 'stores' | 'events' | 'carts' = 'stores'): string {
+  const label = what.charAt(0).toUpperCase() + what.slice(1)
   if (status === 401)
     return `Your session has ended. Sign in again to see your ${what}.`
   if (status === 403)
