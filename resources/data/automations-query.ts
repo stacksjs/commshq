@@ -13,8 +13,10 @@
  * - **Trigger.** Chosen when the automation is drafted. `subscriber_joined`:
  *   someone confirms an email subscription through a signup form (or signs
  *   up on a form without double opt-in). `purchase_made`: a connected store
- *   sends an order from an email address that is already a contact. Each
- *   active automation starts once per contact, ever. A contact added on the
+ *   sends an order from an email address that is already a contact.
+ *   `cart_abandoned`: a contact's Shopify cart goes an hour without an
+ *   order. Each active automation starts once per contact, ever, or for a
+ *   cart once per cart, and a cart run stops when the cart is bought. A contact added on the
  *   Contacts page starts nothing.
  * - **Steps.** Send an email from the automation's sender, send a text
  *   through the deployment's SMS provider, or wait between 1 hour and 30
@@ -82,6 +84,7 @@ export const AUTOMATION_STATUSES = [
 export const TRIGGERS = [
   { value: 'subscriber_joined', label: 'When someone confirms a signup', detail: 'Starts for each person who confirms a signup through one of your forms.' },
   { value: 'purchase_made', label: 'When a contact places an order', detail: 'Starts when a connected store sends an order from someone who is already a contact.' },
+  { value: 'cart_abandoned', label: 'When a contact leaves a cart', detail: 'Starts when a contact leaves a cart in a connected Shopify store for an hour without ordering. Each email ends with a link back to the cart, and the messages stop once they buy.' },
 ] as const
 
 export const DEFAULT_TRIGGER_TYPE = 'subscriber_joined'
@@ -93,7 +96,7 @@ export const WAIT_UNITS = [
   { value: 'days', label: 'Days', seconds: 24 * 60 * 60 },
 ] as const
 
-export const HOW_IT_RUNS = 'An automation that is on starts when its trigger happens, once per person: a confirmed signup, or an order from someone who is already a contact. Each email checks that the person still consents and carries an unsubscribe link. A text goes only to someone who agreed to texts, and waits out quiet hours.'
+export const HOW_IT_RUNS = 'An automation that is on starts when its trigger happens: once per person for a confirmed signup or an order from someone who is already a contact, and once per cart for a cart they leave. Each email checks that the person still consents and carries an unsubscribe link. A text goes only to someone who agreed to texts, and waits out quiet hours.'
 
 function titleCase(value: string): string {
   const spaced = value.replace(/[_-]+/g, ' ').trim()
@@ -185,6 +188,13 @@ export function enrollLabel(count: unknown, limit: unknown): string {
 }
 
 /** What happened, after turning on. */
+/** What turning on means, said while the page asks for the second press. */
+export function turnOnNote(canEnroll: boolean): string {
+  return canEnroll
+    ? 'From now on, everyone its trigger catches gets these messages. "Yes, start sending" leaves out the people who already qualify; the other choice includes them.'
+    : 'From now on, everyone its trigger catches gets these messages.'
+}
+
 export function turnedOnNotice(enrolled: unknown): string {
   const people = Math.max(0, Math.floor(Number(enrolled) || 0))
   if (people === 0)

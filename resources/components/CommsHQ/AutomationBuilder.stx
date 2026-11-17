@@ -57,6 +57,7 @@ import {
   TRIGGERS,
   triggerPayload,
   turnedOnNotice,
+  turnOnNote,
   WAIT_UNITS,
   withFields,
 } from '../../data/automations-query'
@@ -128,6 +129,7 @@ const triggerDetail = derived(() => triggers.find(item => item.value === addTrig
 const stepTitle = derived(() => `${stepId() ? 'Edit' : 'Add'} ${stepKind() === 'email' ? 'an email' : (stepKind() === 'sms' ? 'a text' : 'a wait')}`)
 const smsCount = derived(() => `${stepBody().trim().length} of 640 characters. A long text is sent as several, each counted against the SMS allowance.`)
 const enrollText = derived(() => enrollLabel(confirmCount(), confirmLimit()))
+const confirmNote = derived(() => turnOnNote(enrollText() !== ''))
 
 async function load(source = 'refresh') {
   busySource.set(source)
@@ -668,7 +670,7 @@ onMount(() => {
                 <button :if="automation.canRestore" type="button" @click="setStatus(automation.id, 'draft')" :disabled="busyId() !== 0" :aria-busy="busyId() === automation.id" class="px-4 min-h-11 font-bold text-fg text-sm bg-panel hover:bg-surface-hover border border-line rounded-pill focus-visible:outline focus-visible:outline-[var(--coral)] focus-visible:outline-2 disabled:opacity-50">Restore as draft</button>
               </div>
             </div>
-            <p :if="confirmId() === automation.id" class="mt-3 text-xs" role="status">From now on, everyone its trigger catches gets these messages. "Yes, start sending" leaves out the people who already qualify; the other choice includes them.</p>
+            <p :if="confirmId() === automation.id" class="mt-3 text-xs" role="status">{{ confirmNote() }}</p>
           </article>
         </template>
       </div>
