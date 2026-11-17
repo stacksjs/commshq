@@ -5,6 +5,7 @@ import CommerceConnection from '../Models/CommerceConnection'
 import CommerceEvent from '../Models/CommerceEvent'
 import WebhookEvent from '../Models/WebhookEvent'
 import { minorUnits, recordPurchase } from '../Support/commerceAttribution'
+import { closeCartForOrder, recordCheckout } from '../Support/commerceCarts'
 import { appendConsentOnce, ensureSuppressed } from '../Support/consentLedger'
 import { twilioConsentIdempotencyKey } from '../Support/twilioCompliance'
 import { commerceEventType, objectPayload, webhookRecipient } from '../Support/webhookPayload'
@@ -58,20 +59,29 @@ export default new Job({
       if (['shopify', 'woocommerce'].includes(String(event.provider))) {
         const connection = await CommerceConnection.where('team_id', input.teamId).where('provider', event.provider).where('status', 'active').first()
         if (!connection) throw new Error(`No active ${event.provider} connection for team ${input.teamId}`)
-        const existing = await CommerceEvent.where('commerce_connection_id', connection.id).where('externalId', event.providerEventId).first()
-        const recorded = existing ?? await CommerceEvent.forceCreate({
-          team_id: input.teamId,
-          commerce_connection_id: connection.id,
-          externalId: event.providerEventId,
-          type: commerceEventType(event.type),
-          amount: minorUnits(payload.total_price ?? payload.total),
-          currency: String(payload.currency || 'USD').toUpperCase(),
-          payload: JSON.stringify(payload),
-          occurredAt: String(payload.created_at || new Date().toISOString()),
-        })
-        // On a retry too: matching and crediting are idempotent, and a pass
-        // that died between recording and crediting would otherwise skip it.
-        await recordPurchase(input.teamId, Number(recorded.id))
+        const type = commerceEventType(event.provider, event.type, payload)
+        if (type === 'cart') {
+          await recordCheckout(input.teamId, Number(connection.id), payload)
+        }
+        else if (type) {
+          const existing = await CommerceEvent.where('commerce_connection_id', connection.id).where('externalId', event.providerEventId).first()
+          const recorded = existing ?? await CommerceEvent.forceCreate({
+            team_id: input.teamId,
+            commerce_connection_id: connection.id,
+            externalId: event.providerEventId,
+            type,
+            amount: minorUnits(payload.total_price ?? payload.total),
+            currency: String(payload.currency || 'USD').toUpperCase(),
+            payload: JSON.stringify(payload),
+            occurredAt: String(payload.created_at || new Date().toISOString()),
+          })
+          // On a retry too: matching, crediting and closing the cart are
+          // idempotent, and a pass that died part way would otherwise skip them.
+          if (type === 'order_created')
+            await closeCartForOrder(input.teamId, Number(connection.id), payload)
+          await recordPurchase(input.teamId, Number(recorded.id))
+        }
+        // Any other topic is accepted and left alone: see `commerceEventType`.
       }
 
       await WebhookEvent.forceUpdate(event.id, { status: 'processed', processedAt: new Date().toISOString(), error: null })

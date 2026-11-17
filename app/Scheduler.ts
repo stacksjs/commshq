@@ -21,6 +21,11 @@ export default function () {
     .setTimeZone('UTC')
 
   schedule
+    .job('AbandonQuietCarts')
+    .everyFiveMinutes()
+    .setTimeZone('UTC')
+
+  schedule
     .job('RetryFailedWebhooks')
     .everyFiveMinutes()
     .setTimeZone('UTC')
