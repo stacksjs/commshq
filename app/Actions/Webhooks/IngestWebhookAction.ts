@@ -7,12 +7,13 @@ import WebhookEndpoint from '../../Models/WebhookEndpoint'
 import WebhookEvent from '../../Models/WebhookEvent'
 import { providerSignatureHeader, verifyHmac, verifyStripeSignature } from '../../Support/webhookSignatures'
 import { twilioComplianceXml } from '../../Support/twilioCompliance'
+import { woocommerceEventId } from '../../Support/webhookPayload'
 
 const SUPPORTED_PROVIDERS = new Set(['twilio', 'stripe', 'shopify', 'woocommerce', 'mail', 'generic'])
 
 function eventId(provider: string, headers: Headers, payload: Record<string, any>): string {
   if (provider === 'shopify') return headers.get('x-shopify-webhook-id') || String(payload.id || '')
-  if (provider === 'woocommerce') return headers.get('x-wc-webhook-id') || String(payload.id || '')
+  if (provider === 'woocommerce') return woocommerceEventId(headers.get('x-wc-webhook-source'), headers.get('x-wc-webhook-topic'), payload, headers.get('x-wc-webhook-delivery-id'))
   if (provider === 'mail') return headers.get('x-mail-event-id') || String(payload.id || payload.messageId || '')
   if (provider === 'twilio') return String(payload.MessageSid || payload.SmsSid || '')
   return String(payload.id || headers.get('x-commshq-event-id') || '')

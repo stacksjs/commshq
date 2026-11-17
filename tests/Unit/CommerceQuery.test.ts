@@ -164,7 +164,8 @@ describe('the page agrees with the server', () => {
     const job = await source('app/Jobs/ProcessWebhookEvent.ts')
     expect(job).toContain(`if ([${SERVER_PROVIDERS.map(provider => `'${provider}'`).join(', ')}].includes(String(event.provider)))`)
     const payload = await source('app/Support/webhookPayload.ts')
-    expect(payload).toContain(`export function commerceEventType(type: unknown): ${EVENT_TYPES.map(item => `'${item.value}'`).join(' | ')}`)
+    expect(payload).toContain(`export type CommerceEventType = ${EVENT_TYPES.map(item => `'${item.value}'`).join(' | ')}`)
+    expect(payload).toContain("export function commerceEventType(provider: unknown, topic: unknown, payload: Record<string, any> = {}): CommerceEventType | 'cart' | null {")
   })
 
   test('what reads a commerce event is known, and the notice says what each does', async () => {
@@ -181,7 +182,8 @@ describe('the page agrees with the server', () => {
     // automationRunner reads buyers to enroll in a purchase automation.
     expect(readers.sort()).toEqual(['app/Actions/Api/V1/Commerce/ListStoresAction.ts', 'app/Jobs/ProcessWebhookEvent.ts', 'app/Support/automationRunner.ts', 'app/Support/commerceAttribution.ts', 'app/Support/workspaceAnalytics.ts'])
     expect(NOT_USED_YET).toContain('credited to the last email they were sent')
-    expect(NOT_USED_YET).toContain('Carts and products are not read')
+    expect(NOT_USED_YET).toContain('A Shopify cart left for an hour without an order counts as abandoned')
+    expect(NOT_USED_YET).toContain('Products are not read')
     expect(await source('resources/components/CommsHQ/CommerceWorkspace.stx')).toContain('{{ notUsedYet }}')
   })
 })
