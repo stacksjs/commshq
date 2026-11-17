@@ -18,6 +18,8 @@ import { ATTRIBUTION_WINDOW_DAYS } from './commerceAttribution'
  * - `commerce_events`, the orders and refunds a connected store sends
  * - `attribution_events`, the orders credited to a campaign or automation
  *   email (`commerceAttribution`)
+ * - `commerce_carts`, the carts a Shopify store reported, with when each
+ *   was abandoned and when its order arrived (`commerceCarts`)
  *
  * Money is summed per currency, never across currencies: a store can sell
  * in more than one, and a total of dollars and euros means nothing.
@@ -170,14 +172,14 @@ function money(rows: Array<{ currency: unknown, total: unknown, n: unknown }>): 
     .sort((a, b) => b.amount - a.amount)
 }
 
-/** Orders, refunds and credited revenue since `since`, each per currency. */
+/** Orders, refunds, credited revenue and carts since `since`, money per currency. */
 async function commerceAnalytics(teamId: number, since: string) {
   const byType = (type: string) => (db as any).selectFrom('commerce_events')
     .select(['currency']).selectRaw(sql`sum(amount) as total, count(*) as n`)
     .where('team_id', '=', teamId).where('type', '=', type).where('occurred_at', '>=', since)
     .groupBy('currency').execute() as Promise<Array<{ currency: string, total: number, n: number }>>
 
-  const [orders, refunds, matched, credited] = await Promise.all([
+  const [orders, refunds, matched, credited, abandoned, recovered] = await Promise.all([
     byType('order_created'),
     byType('order_refunded'),
     (db as any).selectFrom('commerce_events').where('team_id', '=', teamId).where('type', '=', 'order_created')
@@ -186,6 +188,14 @@ async function commerceAnalytics(teamId: number, since: string) {
       .select(['source', 'campaign_key', 'currency']).selectRaw(sql`sum(revenue) as total, count(*) as n`)
       .where('team_id', '=', teamId).where('kind', '=', 'purchase').where('occurred_at', '>=', since)
       .groupBy('source').groupBy('campaign_key').groupBy('currency').execute() as Promise<Array<{ source: string, campaign_key: string, currency: string, total: number, n: number }>>,
+    // Carts abandoned in the period, whatever happened to them after.
+    (db as any).selectFrom('commerce_carts').where('team_id', '=', teamId).where('abandoned_at', '>=', since).count() as Promise<number>,
+    // Carts whose order came in the period after they had been abandoned,
+    // with what was in them, per currency.
+    (db as any).selectFrom('commerce_carts')
+      .select(['currency']).selectRaw(sql`sum(amount) as total, count(*) as n`)
+      .where('team_id', '=', teamId).where('status', '=', 'recovered').where('closed_at', '>=', since)
+      .groupBy('currency').execute() as Promise<Array<{ currency: string, total: number, n: number }>>,
   ])
 
   // Name each credited campaign or automation, scoped to this team.
@@ -218,5 +228,10 @@ async function commerceAnalytics(teamId: number, since: string) {
       bySource: [...sources.values()].sort((a, b) => b.orders - a.orders).slice(0, ANALYTICS_LIST_LIMIT),
     },
     windowDays: ATTRIBUTION_WINDOW_DAYS,
+    carts: {
+      abandoned: Number(abandoned) || 0,
+      recovered: recovered.reduce((sum, row) => sum + (Number(row.n) || 0), 0),
+      recoveredValue: money(recovered),
+    },
   }
 }

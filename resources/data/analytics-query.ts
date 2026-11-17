@@ -113,6 +113,8 @@ export interface RevenueView {
   refundsLine: string
   contactsLine: string
   creditedLine: string
+  /** Carts abandoned and recovered in the period; '' when no cart was abandoned or recovered. */
+  cartsLine: string
   windowNote: string
   sources: RevenueSourceView[]
 }
@@ -208,6 +210,7 @@ interface CommerceBody {
   refunds?: { count?: unknown, amount?: MoneyBody[] | null } | null
   credited?: { orders?: unknown, revenue?: MoneyBody[] | null, bySource?: Array<{ source?: unknown, id?: unknown, name?: unknown, orders?: unknown, revenue?: MoneyBody[] | null }> | null } | null
   windowDays?: unknown
+  carts?: { abandoned?: unknown, recovered?: unknown, recoveredValue?: MoneyBody[] | null } | null
 }
 
 /** Amounts in their own currencies, largest first, joined: "$1,240.00 and €80.00". */
@@ -222,6 +225,19 @@ export function moneyList(rows: MoneyBody[] | null | undefined, locale = 'en-US'
   return `${parts.slice(0, -1).join(', ')} and ${parts[parts.length - 1]}`
 }
 
+/**
+ * Carts, in one sentence. A recovered cart can have been abandoned before
+ * the period began, so the two counts are not a rate and are not shown as
+ * one.
+ */
+export function cartsLine(abandoned: number, recovered: number, recoveredMoney: string): string {
+  if (abandoned === 0 && recovered === 0)
+    return ''
+  const left = abandoned === 0 ? 'No cart was abandoned' : `${plural(abandoned, 'cart', 'carts')} abandoned`
+  const back = recovered === 0 ? 'none recovered' : `${formatCount(recovered)} recovered${recoveredMoney ? `, worth ${recoveredMoney}` : ''}`
+  return `${left}, ${back}.`
+}
+
 /** What the store sent in the period, and what of it an email is credited with. */
 export function toRevenueView(commerce: CommerceBody | null | undefined, periodLabel: string): RevenueView {
   const orders = toCount(commerce?.orders?.count)
@@ -234,6 +250,9 @@ export function toRevenueView(commerce: CommerceBody | null | undefined, periodL
   const ordersMoney = moneyList(commerce?.orders?.revenue)
   const refundsMoney = moneyList(commerce?.refunds?.amount)
   const creditedMoney = moneyList(commerce?.credited?.revenue)
+  const abandoned = toCount(commerce?.carts?.abandoned)
+  const recovered = toCount(commerce?.carts?.recovered)
+  const recoveredMoney = moneyList(commerce?.carts?.recoveredValue)
 
   const sources = (commerce?.credited?.bySource ?? []).map((row) => {
     const source = row.source === 'automation' ? 'automation' : 'campaign'
@@ -250,11 +269,12 @@ export function toRevenueView(commerce: CommerceBody | null | undefined, periodL
   })
 
   return {
-    hasOrders: orders > 0 || refunds > 0,
+    hasOrders: orders > 0 || refunds > 0 || abandoned > 0 || recovered > 0,
     ordersLine: orders === 0 ? `No orders came in during the ${period}.` : `${plural(orders, 'order', 'orders')}${ordersMoney ? ` worth ${ordersMoney}` : ''}.`,
     refundsLine: refunds === 0 ? '' : `${plural(refunds, 'refund', 'refunds')}${refundsMoney ? ` of ${refundsMoney}` : ''}.`,
     contactsLine: orders === 0 ? '' : `${formatCount(fromContacts)} of them from people who are already contacts.`,
     creditedLine: creditedOrders === 0 ? 'No order was credited to an email.' : `${plural(creditedOrders, 'order', 'orders')}${creditedMoney ? ` worth ${creditedMoney}` : ''} credited to an email.`,
+    cartsLine: cartsLine(abandoned, recovered, recoveredMoney),
     windowNote: `An order is credited to the last campaign or automation email its buyer was sent in the ${days > 0 ? plural(days, 'day', 'days') : 'days'} before it. Orders from people who are not contacts, or who were sent nothing, are not credited.`,
     sources,
   }

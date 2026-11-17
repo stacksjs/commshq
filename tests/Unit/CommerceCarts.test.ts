@@ -12,6 +12,7 @@ import { describe, expect, test } from 'bun:test'
 import { contextCartId } from '../../app/Jobs/ProcessAutomationRun'
 import { CART_LINK_LABEL, runIdempotencyKey, TRIGGER_TYPES, withCartLink } from '../../app/Support/automationGraph'
 import { CART_ABANDON_MINUTES, CART_STATUSES, CART_TRIGGER_MAX_HOURS, cartFromCheckout, closedStatus, laterTime, recoveryLink, remindable } from '../../app/Support/commerceCarts'
+import { cartsLine, toRevenueView } from '../../resources/data/analytics-query'
 import { triggerLabel, turnOnNote } from '../../resources/data/automations-query'
 import { CART_STATES, cartsNote, cartsUrl, toCartView } from '../../resources/data/commerce-query'
 
@@ -171,5 +172,28 @@ describe('the pages', () => {
     expect(cartsNote({ id: 1, provider: 'shopify', carts: { open: 2, abandoned: '5', recovered: 1, completed: 0 } })).toBe('Carts: 2 open, 5 abandoned, 1 recovered.')
     expect(cartsNote({ id: 1, provider: 'shopify' })).toBe('No carts yet. They arrive with the checkout webhooks.')
     expect(cartsNote({ id: 2, provider: 'woocommerce' })).toBe('WooCommerce does not send carts, so only its orders are read.')
+  })
+})
+
+describe('the analytics page', () => {
+  test('carts in one sentence, never as a rate', () => {
+    expect(cartsLine(0, 0, '')).toBe('')
+    expect(cartsLine(12, 0, '')).toBe('12 carts abandoned, none recovered.')
+    expect(cartsLine(1, 3, '$120.00')).toBe('1 cart abandoned, 3 recovered, worth $120.00.')
+    expect(cartsLine(0, 2, '')).toBe('No cart was abandoned, 2 recovered.')
+    expect(cartsLine(12, 3, '$1.00')).not.toMatch(/%/)
+  })
+
+  test('the revenue section reads the server\'s cart counts, per currency', () => {
+    const view = toRevenueView({ carts: { abandoned: '4', recovered: '2', recoveredValue: [{ currency: 'USD', amount: '5000', count: '1' }, { currency: 'EUR', amount: 2000, count: 1 }] } }, 'Last 30 days')
+    expect(view.hasOrders).toBe(true)
+    expect(view.cartsLine).toBe('4 carts abandoned, 2 recovered, worth $50.00 and €20.00.')
+    expect(toRevenueView({}, 'Last 30 days')).toMatchObject({ hasOrders: false, cartsLine: '' })
+  })
+
+  test('the server counts carts abandoned and recovered in the period', async () => {
+    const code = await source('app/Support/workspaceAnalytics.ts')
+    expect(code).toContain("(db as any).selectFrom('commerce_carts').where('team_id', '=', teamId).where('abandoned_at', '>=', since).count()")
+    expect(code).toContain(".where('team_id', '=', teamId).where('status', '=', 'recovered').where('closed_at', '>=', since)")
   })
 })

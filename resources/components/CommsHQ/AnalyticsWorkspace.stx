@@ -185,12 +185,13 @@ onMount(() => {
 
       <section class="mt-5 p-5 bg-panel border border-line rounded-panel" aria-labelledby="revenue-title">
         <h2 id="revenue-title" class="font-bold">Store revenue</h2>
-        <p class="mt-1 text-fg-muted text-xs">Orders and refunds your connected stores sent in the period, in the currencies they were paid in.</p>
+        <p class="mt-1 text-fg-muted text-xs">Orders, refunds and carts your connected stores sent in the period, in the currencies they were paid in.</p>
         <p :if="!view().revenue.hasOrders" class="mt-5 text-fg-muted text-sm">{{ view().revenue.ordersLine }} Connect a store on the <a href="/dashboard/commshq/commerce" class="font-bold text-accent">Commerce page</a>.</p>
         <div :if="view().revenue.hasOrders" class="mt-4 space-y-1 text-sm">
           <p class="font-bold">{{ view().revenue.ordersLine }}</p>
           <p :if="view().revenue.contactsLine">{{ view().revenue.contactsLine }}</p>
           <p :if="view().revenue.refundsLine">{{ view().revenue.refundsLine }}</p>
+          <p :if="view().revenue.cartsLine">{{ view().revenue.cartsLine }}</p>
           <p class="pt-2 font-bold">{{ view().revenue.creditedLine }}</p>
         </div>
         <ul :if="view().revenue.sources.length > 0" class="m-0 mt-3 p-0 list-none border-line border-t divide-line divide-y">
