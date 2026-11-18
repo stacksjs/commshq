@@ -1,4 +1,4 @@
-import type { UserModel } from '@stacksjs/orm'
+import type { GateUser } from '@stacksjs/auth'
 
 /**
  * Authorization Gates Configuration
@@ -27,29 +27,29 @@ export const gates = {
   /**
    * Check if user can access admin area
    */
-  'access-admin': (user: UserModel | null) => {
+  'access-admin': (user: GateUser | null) => {
     return user !== null && ['owner', 'admin'].includes(String((user as any).team_role || ''))
   },
 
   /**
    * Check if user can edit application settings
    */
-  'edit-settings': (user: UserModel | null) => {
+  'edit-settings': (user: GateUser | null) => {
     return user !== null && ['owner', 'admin'].includes(String((user as any).team_role || ''))
   },
 
   /**
    * Check if user can view dashboard
    */
-  'view-dashboard': (user: UserModel | null) => {
+  'view-dashboard': (user: GateUser | null) => {
     return user !== null
   },
 
-  'send-campaigns': (user: UserModel | null) => {
+  'send-campaigns': (user: GateUser | null) => {
     return user !== null && ['owner', 'admin', 'editor'].includes(String((user as any).team_role || ''))
   },
 
-  'manage-billing': (user: UserModel | null) => {
+  'manage-billing': (user: GateUser | null) => {
     return user !== null && String((user as any).team_role || '') === 'owner'
   },
 
@@ -89,7 +89,7 @@ export const policies: Record<string, string | { policy: string, model?: string 
  * // Super admins bypass all checks
  * (user) => user?.role === 'super-admin' ? true : null
  */
-export const before: Array<(user: UserModel | null, ability: string, args: any[]) => boolean | null | Promise<boolean | null>> = [
+export const before: Array<(user: GateUser | null, ability: string, args: any[]) => boolean | null | Promise<boolean | null>> = [
   // Example: Super admin bypass
   // (user, ability) => {
   //   if (user?.role === 'super-admin') {
@@ -104,7 +104,7 @@ export const before: Array<(user: UserModel | null, ability: string, args: any[]
  *
  * Run after gate/policy checks. Can override the result.
  */
-export const after: Array<(user: UserModel | null, ability: string, result: boolean, args: any[]) => boolean | void | Promise<boolean | void>> = [
+export const after: Array<(user: GateUser | null, ability: string, result: boolean, args: any[]) => boolean | void | Promise<boolean | void>> = [
   // Example: Log all authorization checks
   // (user, ability, result) => {
   //   console.log(`User ${user?.id} ${result ? 'allowed' : 'denied'} for ${ability}`)
