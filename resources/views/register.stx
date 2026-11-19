@@ -99,8 +99,13 @@ async function handleSubmit(e: SubmitEvent): Promise<void> {
         <p class="mt-1 text-xs muted">At least 8 characters.</p>
       </div>
 
-      <button type="submit" :disabled="loading()" :aria-busy="loading()" class="px-4 py-2.5 w-full font-semibold text-[var(--coral-ink)] text-sm bg-coral border-0 rounded-xl cursor-pointer">Create workspace</button>
-      <p role="status" class="text-center text-xs muted" :show="loading()" style="display:none">Creating your workspace...</p>
+      {{-- Both labels are static text toggled by :show, an attribute binding,
+          so the button reads "Create workspace" before the page hydrates
+          instead of being cloaked. --}}
+      <button type="submit" :disabled="loading()" :aria-busy="loading()" class="px-4 py-2.5 w-full font-semibold text-[var(--coral-ink)] text-sm bg-coral border-0 rounded-xl disabled:opacity-60 cursor-pointer disabled:cursor-not-allowed">
+        <span :show="!loading()">Create workspace</span>
+        <span :show="loading()" style="display:none">Creating workspace...</span>
+      </button>
       <p id="form-error" role="alert" class="px-3 py-2 text-center text-sm rounded-lg coral" :show="error()" style="display:none">{{ error() }}</p>
     </form>
   </div>

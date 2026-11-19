@@ -2,6 +2,7 @@ import { db } from '@stacksjs/database'
 import { authenticatedUser } from '@stacksjs/auth'
 import { HttpError } from '@stacksjs/error-handling'
 import { Middleware } from '@stacksjs/router'
+import { ensureSignupWorkspace } from '../Support/signupWorkspace'
 
 /**
  * Team Middleware
@@ -10,6 +11,9 @@ import { Middleware } from '@stacksjs/router'
  * `user.current_team_id ?? user.team_id`. This application keeps membership in
  * `team_members` and has neither column on `users`, so the default rejected
  * every request to a team-scoped route regardless of who was signed in.
+ *
+ * An account that has never belonged to a workspace gets its own here, on
+ * its first request: see `app/Support/signupWorkspace.ts`.
  *
  * Parameterized use (`middleware('team:owner')`) reads the role from the
  * membership row for the same reason: `user.team_role` is never populated here.
@@ -33,9 +37,17 @@ export default new Middleware({
       .where('user_id' as any, '=', userId)
       .where('status' as any, '=', 'active')
 
-    const membership = (Number.isInteger(selected) && selected > 0
+    const explicit = Number.isInteger(selected) && selected > 0
+    let membership = (explicit
       ? await query.where('team_id' as any, '=', selected).executeTakeFirst()
       : await query.orderBy('id' as any, 'asc').executeTakeFirst()) as { team_id: number, role: string } | undefined
+
+    // A new account has no workspace yet: make the one sign-up promised.
+    if (!membership && !explicit) {
+      const made = await ensureSignupWorkspace({ id: userId, name: (user as any).name, email: (user as any).email })
+      if (made.teamId)
+        membership = { team_id: made.teamId, role: 'owner' }
+    }
 
     if (!membership)
       throw new HttpError(403, 'You must belong to a team to access this resource.')
