@@ -24,6 +24,10 @@ route.get('/v1/workspace/setup', 'Actions/Api/V1/WorkspaceSetupAction').middlewa
 route.get('/v1/workspace/analytics', 'Actions/Api/V1/WorkspaceAnalyticsAction').middleware('auth').middleware('team')
 route.get('/v1/workspace/settings', 'Actions/Api/V1/ShowWorkspaceSettingsAction').middleware('auth').middleware('team')
 route.patch('/v1/workspace/settings', 'Actions/Api/V1/UpdateWorkspaceSettingsAction').middleware('auth').middleware('team').rateLimit(20, 'minute')
+// The workspaces the caller belongs to, and switching between them. Switching
+// is not behind `team`: it chooses the team, so it must not need one first.
+route.get('/v1/workspaces', 'Actions/Api/V1/ListWorkspacesAction').middleware('auth').middleware('team')
+route.post('/v1/workspaces/active', 'Actions/Api/V1/SwitchWorkspaceAction').middleware('auth').rateLimit(30, 'minute')
 // Turning an automation on freezes its steps as a version; the generated
 // update could mark one active with nothing published behind it.
 route.post('/v1/automations/{id}/publish', 'Actions/Api/V1/Automations/PublishAutomationAction').middleware('auth').middleware('team').rateLimit(20, 'minute')
