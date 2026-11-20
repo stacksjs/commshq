@@ -325,7 +325,7 @@ onMount(async () => {
         </label>
         <label class="block font-bold text-xs">
           Channel
-          <select x-model="addChannel" class="mt-1 field">
+          <select x-model="addChannel" class="mt-1 field field-select">
             @foreach(channelOptions as option)
               <option value="{{ option.value }}">{{ option.label }}</option>
             @endforeach
@@ -377,7 +377,7 @@ onMount(async () => {
         <h2 id="campaigns-title" class="font-bold">Campaigns</h2>
         <label class="block">
           <span class="sr-only">Filter by status</span>
-          <select x-model="status" @change="onStatusChange()" class="field">
+          <select x-model="status" @change="onStatusChange()" class="field field-select">
             <option value="">Every status</option>
             @foreach(statusOptions as option)
               <option value="{{ option.value }}">{{ option.label }}</option>

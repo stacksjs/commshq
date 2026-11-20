@@ -266,7 +266,7 @@ onMount(() => {
           </label>
           <label class="block">
             <span class="sr-only">Filter by status</span>
-            <select x-model="status" @change="onStatusChange()" class="field">
+            <select x-model="status" @change="onStatusChange()" class="field field-select">
               <option value="">Every status</option>
               @foreach(statusOptions as option)
                 <option value="{{ option.value }}">{{ option.label }}</option>

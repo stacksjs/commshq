@@ -467,7 +467,7 @@ onMount(() => {
         </div>
         <label class="block shrink-0">
           <span class="sr-only">Filter carts by state</span>
-          <select x-model="cartState" @change="loadCarts()" class="field">
+          <select x-model="cartState" @change="loadCarts()" class="field field-select">
             <option value="">Every state</option>
             @foreach(cartStateOptions as option)
               <option value="{{ option.value }}">{{ option.label }}</option>
@@ -518,7 +518,7 @@ onMount(() => {
         </div>
         <label class="block">
           <span class="sr-only">Filter events by kind</span>
-          <select x-model="eventType" @change="onTypeChange()" class="field">
+          <select x-model="eventType" @change="onTypeChange()" class="field field-select">
             <option value="">Every kind</option>
             @foreach(eventTypeOptions as option)
               <option value="{{ option.value }}">{{ option.label }}</option>

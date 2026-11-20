@@ -222,6 +222,23 @@ export default {
       + '[font-family:ui-sans-serif,-apple-system,sans-serif] '
       + 'focus:outline-2 focus:outline-solid focus:outline-accent focus:outline-offset-1',
 
+    /*
+     * A `.field` that is a <select>. The browser's own arrow sat against the
+     * right edge with the input's 0.8rem padding, so it is turned off and a
+     * chevron is drawn instead: two gradient triangles in currentColor, so it
+     * follows the text in light and dark, sitting 1rem in from the edge. The
+     * right padding leaves room for it so a long label never runs under it.
+     *
+     * Not ts-css's `form-select`: it draws its arrow as a data-URI SVG with a
+     * fixed grey, which cannot follow the text colour (stacksjs/ts-css#45).
+     * And `[background-size:...]` rather than `bg-[size:...]`, which ts-css
+     * emits as an invalid background-color.
+     */
+    'field-select': 'appearance-none [-webkit-appearance:none] cursor-pointer pr-[2.75rem] bg-no-repeat '
+      + '[background-image:linear-gradient(45deg,transparent_50%,currentColor_50%),linear-gradient(135deg,currentColor_50%,transparent_50%)] '
+      + '[background-position:calc(100%-1.3rem)_55%,calc(100%-1rem)_55%] '
+      + '[background-size:0.3rem_0.3rem,0.3rem_0.3rem]',
+
     // Preserve the existing consent pill while Badge owns its markup. Explicit
     // precedence is required: class attribute order does not decide CSS order.
     'audience-consent-badge': 'sm:!inline !px-2.5 !py-1 !font-bold !text-[#466833] !bg-[#edf5e8] '
