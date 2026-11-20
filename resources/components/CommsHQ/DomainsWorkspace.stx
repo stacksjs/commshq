@@ -37,6 +37,8 @@ const actionError = state('')
 const actionNotice = state('')
 /* The domain a check or removal is in flight for, so only its buttons are busy. */
 const busyId = state(0)
+/** Which action the busy row is running, so only that button reads busy. */
+const busyAction = state('')
 /* The domain whose Remove has been pressed once and is waiting for the second. */
 const confirmId = state(0)
 
@@ -85,6 +87,7 @@ async function check(id, name) {
   if (busyId())
     return
   busyId.set(id)
+  busyAction.set('check')
   actionError.set('')
   actionNotice.set('')
   try {
@@ -100,6 +103,7 @@ async function check(id, name) {
   }
   finally {
     busyId.set(0)
+    busyAction.set('')
   }
 }
 
@@ -117,6 +121,7 @@ async function remove(id) {
   if (busyId() || confirmId() !== id)
     return
   busyId.set(id)
+  busyAction.set('remove')
   actionError.set('')
   actionNotice.set('')
   try {
@@ -130,6 +135,7 @@ async function remove(id) {
   }
   finally {
     busyId.set(0)
+    busyAction.set('')
   }
 }
 
@@ -186,7 +192,10 @@ onMount(() => {
         <p class="mt-2 max-w-2xl text-fg-muted text-sm">The domains this workspace sends email from. A domain is verified by publishing one DNS record, which proves you control it. Email campaigns only go out from a verified domain.</p>
       </div>
       <div class="flex gap-2">
-        <button type="button" @click="load()" :disabled="loading()" :aria-busy="loading()" class="px-5 min-h-11 font-bold text-fg text-sm bg-panel hover:bg-surface-hover border border-line rounded-pill focus-visible:outline focus-visible:outline-[var(--coral)] focus-visible:outline-2 focus-visible:outline-offset-2 disabled:opacity-60">Refresh</button>
+        <button type="button" @click="load()" :disabled="loading()" :aria-busy="loading()" class="px-5 min-h-11 font-bold text-fg text-sm bg-panel hover:bg-surface-hover border border-line rounded-pill focus-visible:outline focus-visible:outline-[var(--coral)] focus-visible:outline-2 focus-visible:outline-offset-2 disabled:opacity-60">
+          <span :show="!loading()">Refresh</span>
+          <span :show="loading()" style="display:none">Refreshing...</span>
+        </button>
         <button type="button" @click="toggleAdd()" class="px-5 min-h-11 font-bold text-[var(--coral-ink)] text-sm bg-accent rounded-pill focus-visible:outline focus-visible:outline-[var(--coral)] focus-visible:outline-2 focus-visible:outline-offset-2">Add domain</button>
       </div>
     </header>
@@ -200,7 +209,10 @@ onMount(() => {
       </label>
       <p :if="addError()" class="mt-3 font-bold text-danger text-xs" role="alert">{{ addError() }}</p>
       <div class="flex gap-2 mt-4">
-        <button type="button" @click="addOne()" :disabled="saving()" :aria-busy="saving()" class="px-5 min-h-11 font-bold text-[var(--coral-ink)] text-sm bg-accent rounded-pill focus-visible:outline focus-visible:outline-[var(--coral)] focus-visible:outline-2 focus-visible:outline-offset-2 disabled:opacity-60">Add domain</button>
+        <button type="button" @click="addOne()" :disabled="saving()" :aria-busy="saving()" class="px-5 min-h-11 font-bold text-[var(--coral-ink)] text-sm bg-accent rounded-pill focus-visible:outline focus-visible:outline-[var(--coral)] focus-visible:outline-2 focus-visible:outline-offset-2 disabled:opacity-60">
+          <span :show="!saving()">Add domain</span>
+          <span :show="saving()" style="display:none">Adding...</span>
+        </button>
         <button type="button" @click="toggleAdd()" class="px-5 min-h-11 font-bold text-fg text-sm bg-panel hover:bg-surface-hover border border-line rounded-pill focus-visible:outline focus-visible:outline-[var(--coral)] focus-visible:outline-2 focus-visible:outline-offset-2">Cancel</button>
       </div>
     </section>
@@ -224,7 +236,10 @@ onMount(() => {
       <div :if="errorText()" class="p-8 text-center" role="alert">
         <span aria-hidden="true" class="inline-block h-6 w-6 text-danger i-hugeicons-alert-02"></span>
         <p class="mt-3 font-bold text-sm">{{ errorText() }}</p>
-        <button type="button" @click="load()" :disabled="loading()" :aria-busy="loading()" class="mt-4 px-5 min-h-11 font-bold text-fg text-sm bg-panel hover:bg-surface-hover border border-line rounded-pill focus-visible:outline focus-visible:outline-[var(--coral)] focus-visible:outline-2 focus-visible:outline-offset-2 disabled:opacity-60">Try again</button>
+        <button type="button" @click="load()" :disabled="loading()" :aria-busy="loading()" class="mt-4 px-5 min-h-11 font-bold text-fg text-sm bg-panel hover:bg-surface-hover border border-line rounded-pill focus-visible:outline focus-visible:outline-[var(--coral)] focus-visible:outline-2 focus-visible:outline-offset-2 disabled:opacity-60">
+          <span :show="!loading()">Try again</span>
+          <span :show="loading()" style="display:none">Loading...</span>
+        </button>
       </div>
 
       <div :if="showEmpty()" class="p-10 text-center">
@@ -250,13 +265,22 @@ onMount(() => {
               <p :if="domain.recordHost" class="mt-2 text-fg-muted text-xs">Publish this record where the domain's DNS is managed, then check it.</p>
             </div>
             <div :if="confirmId() !== domain.id" class="flex flex-wrap gap-2 shrink-0">
-              <button :if="!domain.verified" type="button" @click="check(domain.id, domain.domain)" :disabled="busyId() !== 0" :aria-busy="busyId() === domain.id" class="px-4 min-h-11 font-bold text-fg text-sm bg-panel hover:bg-surface-hover border border-line rounded-pill focus-visible:outline focus-visible:outline-[var(--coral)] focus-visible:outline-2 disabled:opacity-50">Check DNS</button>
-              <button type="button" @click="askRemove(domain.id)" :disabled="busyId() !== 0" :aria-busy="busyId() === domain.id" class="px-4 min-h-11 font-bold text-fg text-sm bg-panel hover:bg-surface-hover border border-line rounded-pill focus-visible:outline focus-visible:outline-[var(--coral)] focus-visible:outline-2 disabled:opacity-50">Remove</button>
+              <button :if="!domain.verified" type="button" @click="check(domain.id, domain.domain)" :disabled="busyId() !== 0" :aria-busy="busyId() === domain.id" class="px-4 min-h-11 font-bold text-fg text-sm bg-panel hover:bg-surface-hover border border-line rounded-pill focus-visible:outline focus-visible:outline-[var(--coral)] focus-visible:outline-2 disabled:opacity-50">
+                <span :show="!(busyId() === domain.id && busyAction() === 'check')">Check DNS</span>
+                <span :show="busyId() === domain.id && busyAction() === 'check'" style="display:none">Checking...</span>
+              </button>
+              <button type="button" @click="askRemove(domain.id)" :disabled="busyId() !== 0" :aria-busy="busyId() === domain.id" class="px-4 min-h-11 font-bold text-fg text-sm bg-panel hover:bg-surface-hover border border-line rounded-pill focus-visible:outline focus-visible:outline-[var(--coral)] focus-visible:outline-2 disabled:opacity-50">
+                <span :show="!(busyId() === domain.id && busyAction() === 'remove')">Remove</span>
+                <span :show="busyId() === domain.id && busyAction() === 'remove'" style="display:none">Removing...</span>
+              </button>
             </div>
             <div :if="confirmId() === domain.id" class="flex flex-col gap-2 shrink-0" role="group" aria-label="Confirm removal">
               <p class="m-0 font-bold text-xs">Remove {{ domain.domain }}? Its senders stop being verified.</p>
               <div class="flex gap-2">
-                <button type="button" @click="remove(domain.id)" :disabled="busyId() !== 0" :aria-busy="busyId() === domain.id" class="px-4 min-h-11 font-bold text-fg text-sm bg-panel hover:bg-surface-hover border border-line rounded-pill focus-visible:outline focus-visible:outline-[var(--coral)] focus-visible:outline-2 disabled:opacity-50">Yes, remove it</button>
+                <button type="button" @click="remove(domain.id)" :disabled="busyId() !== 0" :aria-busy="busyId() === domain.id" class="px-4 min-h-11 font-bold text-fg text-sm bg-panel hover:bg-surface-hover border border-line rounded-pill focus-visible:outline focus-visible:outline-[var(--coral)] focus-visible:outline-2 disabled:opacity-50">
+                  <span :show="!(busyId() === domain.id && busyAction() === 'remove')">Yes, remove it</span>
+                  <span :show="busyId() === domain.id && busyAction() === 'remove'" style="display:none">Removing...</span>
+                </button>
                 <button type="button" @click="cancelRemove()" class="px-4 min-h-11 font-bold text-fg text-sm bg-panel hover:bg-surface-hover border border-line rounded-pill focus-visible:outline focus-visible:outline-[var(--coral)] focus-visible:outline-2 disabled:opacity-50">Keep it</button>
               </div>
             </div>

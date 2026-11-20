@@ -56,6 +56,8 @@ const errorText = state('')
 const actionError = state('')
 /* The store a change is in flight for, so only its buttons are busy. */
 const busyId = state(0)
+/** Which action the busy row is running, so only that button reads busy. */
+const busyAction = state('')
 /* The store whose Pause is waiting for its second press. */
 const confirmId = state(0)
 
@@ -261,6 +263,7 @@ function dismissConnected() {
 
 async function patchStore(id, body) {
   busyId.set(id)
+  busyAction.set(body && 'secret' in body ? 'secret' : 'status')
   actionError.set('')
   try {
     const response = await fetch(storeUrl(id), {
@@ -281,6 +284,7 @@ async function patchStore(id, body) {
   }
   finally {
     busyId.set(0)
+    busyAction.set('')
   }
 }
 
@@ -335,7 +339,10 @@ onMount(() => {
         <p class="mt-2 max-w-2xl text-fg-muted text-sm">Connect a Shopify or WooCommerce store and its orders, fulfilments and refunds are recorded here as they happen, each one checked against the store's signing secret.</p>
       </div>
       <div class="flex gap-2">
-        <button type="button" @click="refresh()" :disabled="loading()" :aria-busy="loading()" class="px-5 min-h-11 font-bold text-fg text-sm bg-panel hover:bg-surface-hover border border-line rounded-pill focus-visible:outline focus-visible:outline-[var(--coral)] focus-visible:outline-2 focus-visible:outline-offset-2 disabled:opacity-60">Refresh</button>
+        <button type="button" @click="refresh()" :disabled="loading()" :aria-busy="loading()" class="px-5 min-h-11 font-bold text-fg text-sm bg-panel hover:bg-surface-hover border border-line rounded-pill focus-visible:outline focus-visible:outline-[var(--coral)] focus-visible:outline-2 focus-visible:outline-offset-2 disabled:opacity-60">
+          <span :show="!loading()">Refresh</span>
+          <span :show="loading()" style="display:none">Refreshing...</span>
+        </button>
         <button :if="canConnect()" type="button" @click="toggleAdd()" class="px-5 min-h-11 font-bold text-[var(--coral-ink)] text-sm bg-accent rounded-pill focus-visible:outline focus-visible:outline-[var(--coral)] focus-visible:outline-2 focus-visible:outline-offset-2">Connect store</button>
       </div>
     </header>
@@ -374,7 +381,10 @@ onMount(() => {
       <p class="mt-2 text-fg-muted text-xs">{{ secretHint() }}</p>
       <p :if="addError()" class="mt-3 font-bold text-danger text-xs" role="alert">{{ addError() }}</p>
       <div class="flex gap-2 mt-4">
-        <button type="button" @click="connectStore()" :disabled="saving()" :aria-busy="saving()" class="px-5 min-h-11 font-bold text-[var(--coral-ink)] text-sm bg-accent rounded-pill focus-visible:outline focus-visible:outline-[var(--coral)] focus-visible:outline-2 focus-visible:outline-offset-2 disabled:opacity-60">Connect</button>
+        <button type="button" @click="connectStore()" :disabled="saving()" :aria-busy="saving()" class="px-5 min-h-11 font-bold text-[var(--coral-ink)] text-sm bg-accent rounded-pill focus-visible:outline focus-visible:outline-[var(--coral)] focus-visible:outline-2 focus-visible:outline-offset-2 disabled:opacity-60">
+          <span :show="!saving()">Connect</span>
+          <span :show="saving()" style="display:none">Connecting...</span>
+        </button>
         <button type="button" @click="toggleAdd()" class="px-5 min-h-11 font-bold text-fg text-sm bg-panel hover:bg-surface-hover border border-line rounded-pill focus-visible:outline focus-visible:outline-[var(--coral)] focus-visible:outline-2 focus-visible:outline-offset-2">Cancel</button>
       </div>
     </section>
@@ -396,7 +406,10 @@ onMount(() => {
       <div :if="errorText()" class="p-8 text-center" role="alert">
         <span aria-hidden="true" class="inline-block h-6 w-6 text-danger i-hugeicons-alert-02"></span>
         <p class="mt-3 font-bold text-sm">{{ errorText() }}</p>
-        <button type="button" @click="loadStores()" :disabled="loading()" :aria-busy="loading()" class="mt-4 px-5 min-h-11 font-bold text-fg text-sm bg-panel hover:bg-surface-hover border border-line rounded-pill focus-visible:outline focus-visible:outline-[var(--coral)] focus-visible:outline-2 disabled:opacity-60">Try again</button>
+        <button type="button" @click="loadStores()" :disabled="loading()" :aria-busy="loading()" class="mt-4 px-5 min-h-11 font-bold text-fg text-sm bg-panel hover:bg-surface-hover border border-line rounded-pill focus-visible:outline focus-visible:outline-[var(--coral)] focus-visible:outline-2 disabled:opacity-60">
+          <span :show="!loading()">Try again</span>
+          <span :show="loading()" style="display:none">Loading...</span>
+        </button>
       </div>
 
       <div :if="showEmpty()" class="p-10 text-center">
@@ -420,7 +433,7 @@ onMount(() => {
                 <p :if="!store.webhookUrl" class="mt-2 font-bold text-danger text-xs">This store has no webhook address, so nothing can arrive from it.</p>
               </div>
               <div :if="view().canManage" class="flex flex-wrap gap-2 shrink-0">
-                <button :if="store.nextStatus" type="button" @click="changeStatus(store.id, store.nextStatus)" :disabled="busyId() !== 0" :aria-busy="busyId() === store.id" class="px-4 min-h-11 font-bold text-fg text-sm bg-panel hover:bg-surface-hover border border-line rounded-pill focus-visible:outline focus-visible:outline-[var(--coral)] focus-visible:outline-2 disabled:opacity-50">{{ confirmId() === store.id ? 'Yes, pause it' : store.nextLabel }}</button>
+                <button :if="store.nextStatus" type="button" @click="changeStatus(store.id, store.nextStatus)" :disabled="busyId() !== 0" :aria-busy="busyId() === store.id" class="px-4 min-h-11 font-bold text-fg text-sm bg-panel hover:bg-surface-hover border border-line rounded-pill focus-visible:outline focus-visible:outline-[var(--coral)] focus-visible:outline-2 disabled:opacity-50 disabled:cursor-not-allowed">{{ busyId() === store.id && busyAction() === 'status' ? 'Updating...' : confirmId() === store.id ? 'Yes, pause it' : store.nextLabel }}</button>
                 <button :if="confirmId() === store.id" type="button" @click="cancelConfirm()" class="px-4 min-h-11 font-bold text-fg text-sm bg-panel hover:bg-surface-hover border border-line rounded-pill focus-visible:outline focus-visible:outline-[var(--coral)] focus-visible:outline-2">Keep receiving</button>
                 <button :if="store.webhookUrl" type="button" @click="openSecret(store.id)" :aria-expanded="secretId() === store.id" class="px-4 min-h-11 font-bold text-fg text-sm bg-panel hover:bg-surface-hover border border-line rounded-pill focus-visible:outline focus-visible:outline-[var(--coral)] focus-visible:outline-2">Replace secret</button>
               </div>
@@ -434,7 +447,10 @@ onMount(() => {
               <p class="mt-2 text-fg-muted text-xs">The old secret stops working at once. Webhooks signed with it are refused until the store uses the new one.</p>
               <p :if="secretProblem()" class="mt-2 font-bold text-danger text-xs" role="alert">{{ secretProblem() }}</p>
               <div class="flex gap-2 mt-3">
-                <button type="button" @click="replaceSecret(store.id)" :disabled="busyId() !== 0" :aria-busy="busyId() === store.id" class="px-4 min-h-11 font-bold text-[var(--coral-ink)] text-sm bg-accent rounded-pill focus-visible:outline focus-visible:outline-[var(--coral)] focus-visible:outline-2 disabled:opacity-60">Replace it</button>
+                <button type="button" @click="replaceSecret(store.id)" :disabled="busyId() !== 0" :aria-busy="busyId() === store.id" class="px-4 min-h-11 font-bold text-[var(--coral-ink)] text-sm bg-accent rounded-pill focus-visible:outline focus-visible:outline-[var(--coral)] focus-visible:outline-2 disabled:opacity-60">
+                  <span :show="!(busyId() === store.id && busyAction() === 'secret')">Replace it</span>
+                  <span :show="busyId() === store.id && busyAction() === 'secret'" style="display:none">Replacing...</span>
+                </button>
                 <button type="button" @click="openSecret(store.id)" class="px-4 min-h-11 font-bold text-fg text-sm bg-panel hover:bg-surface-hover border border-line rounded-pill focus-visible:outline focus-visible:outline-[var(--coral)] focus-visible:outline-2">Cancel</button>
               </div>
             </div>
@@ -469,7 +485,10 @@ onMount(() => {
       <div :if="cartsError()" class="p-8 text-center" role="alert">
         <span aria-hidden="true" class="inline-block h-6 w-6 text-danger i-hugeicons-alert-02"></span>
         <p class="mt-3 font-bold text-sm">{{ cartsError() }}</p>
-        <button type="button" @click="loadCarts()" :disabled="cartsLoading()" :aria-busy="cartsLoading()" class="mt-4 px-5 min-h-11 font-bold text-fg text-sm bg-panel hover:bg-surface-hover border border-line rounded-pill focus-visible:outline focus-visible:outline-[var(--coral)] focus-visible:outline-2 disabled:opacity-60">Try again</button>
+        <button type="button" @click="loadCarts()" :disabled="cartsLoading()" :aria-busy="cartsLoading()" class="mt-4 px-5 min-h-11 font-bold text-fg text-sm bg-panel hover:bg-surface-hover border border-line rounded-pill focus-visible:outline focus-visible:outline-[var(--coral)] focus-visible:outline-2 disabled:opacity-60">
+          <span :show="!cartsLoading()">Try again</span>
+          <span :show="cartsLoading()" style="display:none">Loading...</span>
+        </button>
       </div>
 
       <div :if="showCartsEmpty()" class="p-10 text-center">
@@ -517,7 +536,10 @@ onMount(() => {
       <div :if="eventsError()" class="p-8 text-center" role="alert">
         <span aria-hidden="true" class="inline-block h-6 w-6 text-danger i-hugeicons-alert-02"></span>
         <p class="mt-3 font-bold text-sm">{{ eventsError() }}</p>
-        <button type="button" @click="loadEvents()" :disabled="eventsRefreshBusy()" :aria-busy="eventsRefreshBusy()" class="mt-4 px-5 min-h-11 font-bold text-fg text-sm bg-panel hover:bg-surface-hover border border-line rounded-pill focus-visible:outline focus-visible:outline-[var(--coral)] focus-visible:outline-2 disabled:opacity-60">Try again</button>
+        <button type="button" @click="loadEvents()" :disabled="eventsRefreshBusy()" :aria-busy="eventsRefreshBusy()" class="mt-4 px-5 min-h-11 font-bold text-fg text-sm bg-panel hover:bg-surface-hover border border-line rounded-pill focus-visible:outline focus-visible:outline-[var(--coral)] focus-visible:outline-2 disabled:opacity-60">
+          <span :show="!eventsRefreshBusy()">Try again</span>
+          <span :show="eventsRefreshBusy()" style="display:none">Loading...</span>
+        </button>
       </div>
 
       <div :if="showEventsEmpty()" class="p-10 text-center">
@@ -541,8 +563,14 @@ onMount(() => {
       <div :if="showEvents()" class="flex items-center justify-between p-4 border-line border-t">
         <p class="m-0 text-fg-muted text-xs">Page {{ eventsPage() }}</p>
         <div class="flex gap-2">
-          <button type="button" @click="previousEvents()" :disabled="eventsPage() <= 1 || eventsPrevBusy()" :aria-busy="eventsPrevBusy()" class="px-4 min-h-11 font-bold text-fg text-sm bg-panel hover:bg-surface-hover border border-line rounded-pill focus-visible:outline focus-visible:outline-[var(--coral)] focus-visible:outline-2 disabled:opacity-50">Previous</button>
-          <button type="button" @click="nextEvents()" :disabled="!eventsMore() || eventsNextBusy()" :aria-busy="eventsNextBusy()" class="px-4 min-h-11 font-bold text-fg text-sm bg-panel hover:bg-surface-hover border border-line rounded-pill focus-visible:outline focus-visible:outline-[var(--coral)] focus-visible:outline-2 disabled:opacity-50">Next</button>
+          <button type="button" @click="previousEvents()" :disabled="eventsPage() <= 1 || eventsPrevBusy()" :aria-busy="eventsPrevBusy()" class="px-4 min-h-11 font-bold text-fg text-sm bg-panel hover:bg-surface-hover border border-line rounded-pill focus-visible:outline focus-visible:outline-[var(--coral)] focus-visible:outline-2 disabled:opacity-50">
+            <span :show="!eventsPrevBusy()">Previous</span>
+            <span :show="eventsPrevBusy()" style="display:none">Loading...</span>
+          </button>
+          <button type="button" @click="nextEvents()" :disabled="!eventsMore() || eventsNextBusy()" :aria-busy="eventsNextBusy()" class="px-4 min-h-11 font-bold text-fg text-sm bg-panel hover:bg-surface-hover border border-line rounded-pill focus-visible:outline focus-visible:outline-[var(--coral)] focus-visible:outline-2 disabled:opacity-50">
+            <span :show="!eventsNextBusy()">Next</span>
+            <span :show="eventsNextBusy()" style="display:none">Loading...</span>
+          </button>
         </div>
       </div>
     </section>
