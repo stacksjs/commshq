@@ -56,6 +56,8 @@ const actionError = state('')
 const busySource = state('refresh')
 /* The sponsor a status change is in flight for, so only its buttons are busy. */
 const busyId = state(0)
+/** Which action the busy row is running, so only that button reads busy. */
+const busyAction = state('')
 
 const addOpen = state(false)
 const addName = state('')
@@ -163,6 +165,7 @@ async function setStatus(id, next) {
   if (busyId() || !next)
     return
   busyId.set(id)
+  busyAction.set(next)
   actionError.set('')
   try {
     const response = await fetch(sponsorUrl(id), {
@@ -182,6 +185,7 @@ async function setStatus(id, next) {
   }
   finally {
     busyId.set(0)
+    busyAction.set('')
   }
 }
 
@@ -244,7 +248,10 @@ onMount(() => {
         <p class="mt-2 max-w-2xl text-fg-muted text-sm">The sponsors this workspace works with, and the earnings recorded for it.</p>
       </div>
       <div class="flex gap-2">
-        <button type="button" @click="refresh()" :disabled="refreshBusy()" :aria-busy="refreshBusy()" class="px-5 min-h-11 font-bold text-fg text-sm bg-panel hover:bg-surface-hover border border-line rounded-pill focus-visible:outline focus-visible:outline-[var(--coral)] focus-visible:outline-2 focus-visible:outline-offset-2 disabled:opacity-60">Refresh</button>
+        <button type="button" @click="refresh()" :disabled="refreshBusy()" :aria-busy="refreshBusy()" class="px-5 min-h-11 font-bold text-fg text-sm bg-panel hover:bg-surface-hover border border-line rounded-pill focus-visible:outline focus-visible:outline-[var(--coral)] focus-visible:outline-2 focus-visible:outline-offset-2 disabled:opacity-60">
+          <span :show="!refreshBusy()">Refresh</span>
+          <span :show="refreshBusy()" style="display:none">Refreshing...</span>
+        </button>
         <button type="button" @click="toggleAdd()" class="px-5 min-h-11 font-bold text-[var(--coral-ink)] text-sm bg-accent rounded-pill focus-visible:outline focus-visible:outline-[var(--coral)] focus-visible:outline-2 focus-visible:outline-offset-2">Add sponsor</button>
       </div>
     </header>
@@ -272,7 +279,10 @@ onMount(() => {
       </div>
       <p :if="addError()" class="mt-3 font-bold text-danger text-xs" role="alert">{{ addError() }}</p>
       <div class="flex gap-2 mt-4">
-        <button type="button" @click="addSponsor()" :disabled="saving()" :aria-busy="saving()" class="px-5 min-h-11 font-bold text-[var(--coral-ink)] text-sm bg-accent rounded-pill focus-visible:outline focus-visible:outline-[var(--coral)] focus-visible:outline-2 focus-visible:outline-offset-2 disabled:opacity-60">Save sponsor</button>
+        <button type="button" @click="addSponsor()" :disabled="saving()" :aria-busy="saving()" class="px-5 min-h-11 font-bold text-[var(--coral-ink)] text-sm bg-accent rounded-pill focus-visible:outline focus-visible:outline-[var(--coral)] focus-visible:outline-2 focus-visible:outline-offset-2 disabled:opacity-60">
+          <span :show="!saving()">Save sponsor</span>
+          <span :show="saving()" style="display:none">Saving...</span>
+        </button>
         <button type="button" @click="toggleAdd()" class="px-5 min-h-11 font-bold text-fg text-sm bg-panel hover:bg-surface-hover border border-line rounded-pill focus-visible:outline focus-visible:outline-[var(--coral)] focus-visible:outline-2 focus-visible:outline-offset-2">Cancel</button>
       </div>
     </section>
@@ -304,7 +314,10 @@ onMount(() => {
       <div :if="errorText()" class="p-8 text-center" role="alert">
         <span aria-hidden="true" class="inline-block h-6 w-6 text-danger i-hugeicons-alert-02"></span>
         <p class="mt-3 font-bold text-sm">{{ errorText() }}</p>
-        <button type="button" @click="load()" :disabled="refreshBusy()" :aria-busy="refreshBusy()" class="mt-4 px-5 min-h-11 font-bold text-fg text-sm bg-panel hover:bg-surface-hover border border-line rounded-pill focus-visible:outline focus-visible:outline-[var(--coral)] focus-visible:outline-2 focus-visible:outline-offset-2 disabled:opacity-60">Try again</button>
+        <button type="button" @click="load()" :disabled="refreshBusy()" :aria-busy="refreshBusy()" class="mt-4 px-5 min-h-11 font-bold text-fg text-sm bg-panel hover:bg-surface-hover border border-line rounded-pill focus-visible:outline focus-visible:outline-[var(--coral)] focus-visible:outline-2 focus-visible:outline-offset-2 disabled:opacity-60">
+          <span :show="!refreshBusy()">Try again</span>
+          <span :show="refreshBusy()" style="display:none">Loading...</span>
+        </button>
       </div>
 
       <div :if="showEmpty()" class="p-10 text-center">
@@ -323,8 +336,11 @@ onMount(() => {
               <p :if="sponsor.notes" class="mt-0.5 text-xs">{{ sponsor.notes }}</p>
             </div>
             <div class="flex flex-wrap gap-2 shrink-0">
-              <button :if="sponsor.nextStatus" type="button" @click="setStatus(sponsor.id, sponsor.nextStatus)" :disabled="busyId() !== 0" :aria-busy="busyId() === sponsor.id" class="px-4 min-h-11 font-bold text-fg text-sm bg-panel hover:bg-surface-hover border border-line rounded-pill focus-visible:outline focus-visible:outline-[var(--coral)] focus-visible:outline-2 disabled:opacity-50">{{ sponsor.nextLabel }}</button>
-              <button :if="sponsor.canBlock" type="button" @click="setStatus(sponsor.id, 'blocked')" :disabled="busyId() !== 0" :aria-busy="busyId() === sponsor.id" class="px-4 min-h-11 font-bold text-fg text-sm bg-panel hover:bg-surface-hover border border-line rounded-pill focus-visible:outline focus-visible:outline-[var(--coral)] focus-visible:outline-2 disabled:opacity-50">Block</button>
+              <button :if="sponsor.nextStatus" type="button" @click="setStatus(sponsor.id, sponsor.nextStatus)" :disabled="busyId() !== 0" :aria-busy="busyId() === sponsor.id" class="px-4 min-h-11 font-bold text-fg text-sm bg-panel hover:bg-surface-hover border border-line rounded-pill focus-visible:outline focus-visible:outline-[var(--coral)] focus-visible:outline-2 disabled:opacity-50 disabled:cursor-not-allowed">{{ busyId() === sponsor.id && busyAction() === sponsor.nextStatus ? 'Updating...' : sponsor.nextLabel }}</button>
+              <button :if="sponsor.canBlock" type="button" @click="setStatus(sponsor.id, 'blocked')" :disabled="busyId() !== 0" :aria-busy="busyId() === sponsor.id" class="px-4 min-h-11 font-bold text-fg text-sm bg-panel hover:bg-surface-hover border border-line rounded-pill focus-visible:outline focus-visible:outline-[var(--coral)] focus-visible:outline-2 disabled:opacity-50">
+                <span :show="!(busyId() === sponsor.id && busyAction() === 'blocked')">Block</span>
+                <span :show="busyId() === sponsor.id && busyAction() === 'blocked'" style="display:none">Blocking...</span>
+              </button>
             </div>
           </article>
         </template>
@@ -333,8 +349,14 @@ onMount(() => {
       <div :if="showList()" class="flex items-center justify-between p-4 border-line border-t">
         <p class="m-0 text-fg-muted text-xs">Page {{ page() }}</p>
         <div class="flex gap-2">
-          <button type="button" @click="previousPage()" :disabled="page() <= 1 || prevBusy()" :aria-busy="prevBusy()" class="px-4 min-h-11 font-bold text-fg text-sm bg-panel hover:bg-surface-hover border border-line rounded-pill focus-visible:outline focus-visible:outline-[var(--coral)] focus-visible:outline-2 disabled:opacity-50">Previous</button>
-          <button type="button" @click="nextPage()" :disabled="!hasMore() || nextBusy()" :aria-busy="nextBusy()" class="px-4 min-h-11 font-bold text-fg text-sm bg-panel hover:bg-surface-hover border border-line rounded-pill focus-visible:outline focus-visible:outline-[var(--coral)] focus-visible:outline-2 disabled:opacity-50">Next</button>
+          <button type="button" @click="previousPage()" :disabled="page() <= 1 || prevBusy()" :aria-busy="prevBusy()" class="px-4 min-h-11 font-bold text-fg text-sm bg-panel hover:bg-surface-hover border border-line rounded-pill focus-visible:outline focus-visible:outline-[var(--coral)] focus-visible:outline-2 disabled:opacity-50">
+            <span :show="!prevBusy()">Previous</span>
+            <span :show="prevBusy()" style="display:none">Loading...</span>
+          </button>
+          <button type="button" @click="nextPage()" :disabled="!hasMore() || nextBusy()" :aria-busy="nextBusy()" class="px-4 min-h-11 font-bold text-fg text-sm bg-panel hover:bg-surface-hover border border-line rounded-pill focus-visible:outline focus-visible:outline-[var(--coral)] focus-visible:outline-2 disabled:opacity-50">
+            <span :show="!nextBusy()">Next</span>
+            <span :show="nextBusy()" style="display:none">Loading...</span>
+          </button>
         </div>
       </div>
     </section>
