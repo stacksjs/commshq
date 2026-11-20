@@ -71,6 +71,10 @@ export const rows = sections.map(section => ({
     </StxLink>
   </div>
 
+  <div class="pt-4 px-3">
+    <WorkspaceSwitcher />
+  </div>
+
   <nav class="overflow-y-auto flex-1 px-3 py-4" aria-label="Dashboard">
     @foreach(rows as section)
       <section class="pb-4" aria-labelledby="nav-{{ section.id }}">
@@ -115,6 +119,9 @@ export const rows = sections.map(section => ({
         <span class="h-5 w-5 i-hugeicons-menu-01" aria-hidden="true"></span>
       </summary>
       <div class="absolute overflow-y-auto overscroll-contain right-0 top-[calc(100%+0.65rem)] p-3 max-h-[calc(100dvh-6rem)] w-[min(92vw,340px)] bg-panel border border-line rounded-panel shadow-[0_24px_70px_rgba(32,29,26,0.18)]">
+        <div class="pb-3">
+          <WorkspaceSwitcher />
+        </div>
         <nav aria-label="Dashboard">
           @foreach(rows as section)
             <section class="py-2 border-line border-t first:border-0">

@@ -1,0 +1,95 @@
+<script client>
+/**
+ * The open workspace, and the others the person can switch to.
+ *
+ * Reads `/api/v1/workspaces`. With one workspace it only names it. With more,
+ * the name opens a list of the others; choosing one posts to
+ * `/api/v1/workspaces/active`, which sets the framework's `active_team`
+ * cookie, and the page reloads in full so every figure on it is the new
+ * workspace's. Nothing here decides which workspace is open: the server does,
+ * for every page and every API call alike.
+ *
+ * The list is a <details>, as the phone menu is: a browser opens it itself,
+ * with no script, and a failed hydration leaves it working.
+ */
+import { SWITCH_ENDPOINT, switchErrorMessage, toWorkspaceMenu, WORKSPACES_ENDPOINT } from '../../data/workspace-switch'
+
+const menu = state(toWorkspaceMenu(null))
+const loaded = state(false)
+const switchingId = state(0)
+const errorText = state('')
+
+const csrfToken = useCookie('X-CSRF-Token')
+const route = useRoute()
+
+async function load() {
+  try {
+    const response = await fetch(WORKSPACES_ENDPOINT, { credentials: 'same-origin', headers: { Accept: 'application/json' } })
+    if (response.ok)
+      menu.set(toWorkspaceMenu(await response.json()))
+  }
+  catch {
+    /* The name stays blank; the pages say for themselves when the workspace cannot be read. */
+  }
+  finally {
+    loaded.set(true)
+  }
+}
+
+async function choose(id) {
+  if (switchingId())
+    return
+  switchingId.set(id)
+  errorText.set('')
+  try {
+    const response = await fetch(SWITCH_ENDPOINT, {
+      method: 'POST',
+      credentials: 'same-origin',
+      headers: { 'Content-Type': 'application/json', 'Accept': 'application/json', 'X-CSRF-Token': csrfToken() || '' },
+      body: JSON.stringify({ workspace_id: id }),
+    })
+    if (!response.ok) {
+      errorText.set(switchErrorMessage(response.status))
+      switchingId.set(0)
+      return
+    }
+    navigate(route.path, { reload: true })
+  }
+  catch {
+    errorText.set('That workspace could not be opened. Check your connection and try again.')
+    switchingId.set(0)
+  }
+}
+
+onMount(() => {
+  void load()
+})
+</script>
+
+<div class="min-w-0" :show="loaded() && menu().activeName" style="display:none">
+  <p class="m-0 px-3 font-bold text-[11px] text-fg-muted tracking-[0.18em] uppercase">Workspace</p>
+
+  <p :if="!menu().canSwitch" class="m-0 mt-1 px-3 font-semibold text-fg text-sm truncate" :title="menu().activeName">{{ menu().activeName }}</p>
+
+  <details :if="menu().canSwitch" class="relative mt-1">
+    <summary class="flex gap-2 items-center justify-between px-3 min-h-11 font-semibold list-none text-fg text-sm hover:bg-surface-hover border border-line rounded-control focus-visible:outline focus-visible:outline-[var(--coral)] focus-visible:outline-2 focus-visible:outline-offset-2 cursor-pointer" aria-label="Switch workspace">
+      <span class="min-w-0 truncate">{{ menu().activeName }}</span>
+      <span class="shrink-0 h-4 w-4 text-fg-muted i-hugeicons-arrow-down-01" aria-hidden="true"></span>
+    </summary>
+    <div class="mt-1 p-1 bg-panel border border-line rounded-control">
+      <p class="m-0 pb-1 pt-2 px-3 text-fg-muted text-xs">Switch to</p>
+      <ul class="m-0 p-0 list-none">
+        <template :for="workspace in menu().others">
+          <li>
+            <button type="button" @click="choose(workspace.id)" :disabled="switchingId() !== 0" :aria-busy="switchingId() === workspace.id" class="flex gap-2 items-center justify-between px-3 min-h-11 w-full font-semibold text-fg text-left text-sm bg-transparent hover:bg-surface-hover border-0 rounded-control focus-visible:outline focus-visible:outline-[var(--coral)] focus-visible:outline-2 disabled:opacity-60 cursor-pointer disabled:cursor-not-allowed">
+              <span class="min-w-0 truncate">{{ switchingId() === workspace.id ? 'Opening...' : workspace.name }}</span>
+              <span class="shrink-0 font-normal text-fg-muted text-xs">{{ workspace.roleLabel }}</span>
+            </button>
+          </li>
+        </template>
+      </ul>
+    </div>
+  </details>
+
+  <p role="alert" class="m-0 mt-2 px-3 text-sm coral" :show="errorText()" style="display:none">{{ errorText() }}</p>
+</div>
