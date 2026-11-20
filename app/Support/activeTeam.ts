@@ -1,5 +1,6 @@
+import type { TeamAuthRequest } from '@stacksjs/auth'
 import type { RequestInstance } from '@stacksjs/types'
-import { db } from '@stacksjs/database'
+import { resolveAuthenticatedMembership } from '@stacksjs/auth'
 
 export interface ActiveTeam {
   teamId: number
@@ -8,41 +9,58 @@ export interface ActiveTeam {
 }
 
 /**
- * Resolve which team the request is acting on, and with what role.
+ * The request as the framework's team resolver reads it: the bearer token and
+ * the cookies, taken from the raw headers.
  *
- * Membership lives in `team_members`, not on the user row. The framework
- * default reads `user.current_team_id ?? user.team_id`, and this application
- * has neither column, so that check resolved to undefined for every user and
- * every team-scoped endpoint answered 403. The same absence made
- * `user.team_role` undefined, so role checks failed closed as well.
+ * The same shape `@stacksjs/orm`'s ownership layer builds before it scopes an
+ * auto-generated `/api/v1/<model>` route, so both sides read the same token
+ * and the same `active_team` cookie from the same place.
+ */
+export function teamRequest(request: { headers?: { get?: (name: string) => string | null } }): TeamAuthRequest {
+  const header = request?.headers?.get?.('authorization') ?? ''
+  const token = /^Bearer\s+/i.test(header) ? header.replace(/^Bearer\s+/i, '').trim() : null
+  const cookieHeader = request?.headers?.get?.('cookie') ?? ''
+  return {
+    bearerToken: () => token,
+    cookies: {
+      get: (name: string) => {
+        for (const part of cookieHeader.split(';')) {
+          const eq = part.indexOf('=')
+          if (eq !== -1 && part.slice(0, eq).trim() === name) {
+            try {
+              return decodeURIComponent(part.slice(eq + 1).trim())
+            }
+            catch {
+              return null
+            }
+          }
+        }
+        return null
+      },
+    },
+  }
+}
+
+/**
+ * Resolve which workspace the request is acting on, and with what role.
  *
- * A denormalized column still wins when one is present, so an app that later
- * adds `current_team_id` keeps its explicit team selection.
+ * This is the framework's own answer (`resolveAuthenticatedMembership`): the
+ * workspace the `active_team` cookie names when the person is an active member
+ * of it, otherwise the one they own, then one they administer, then any. The
+ * auto-generated model routes scope by exactly this, so a page that reads both
+ * an app action and a model route always sees one workspace.
+ *
+ * It used to be the earliest membership instead, while the model routes used
+ * the framework's rule. For someone in two workspaces the two could differ,
+ * and one page could show figures from one workspace beside rows from another.
+ * The workspace switcher sets the cookie; see `SwitchWorkspaceAction`.
  */
 export async function activeTeam(request: RequestInstance): Promise<ActiveTeam | null> {
-  const user = await request.user()
-  if (!user) return null
-
-  const userId = Number(user.id)
-  if (!Number.isInteger(userId) || userId < 1) return null
-
-  const selected = Number((user as any).current_team_id ?? (user as any).team_id)
-  const query = db
-    .selectFrom('team_members' as any)
-    .select(['team_id', 'role'] as any)
-    .where('user_id' as any, '=', userId)
-    .where('status' as any, '=', 'active')
-
-  const row = (Number.isInteger(selected) && selected > 0
-    ? await query.where('team_id' as any, '=', selected).executeTakeFirst()
-    // No explicit selection: fall back to the earliest membership, so the
-    // answer is stable across requests rather than whatever the DB returns first.
-    : await query.orderBy('id' as any, 'asc').executeTakeFirst()) as { team_id: number, role: string } | undefined
-
-  if (!row) return null
-
-  const teamId = Number(row.team_id)
-  return Number.isInteger(teamId) && teamId > 0 ? { teamId, role: String(row.role) } : null
+  const membership = await resolveAuthenticatedMembership(teamRequest(request as any))
+  if (!membership)
+    return null
+  const teamId = Number(membership.teamId)
+  return Number.isInteger(teamId) && teamId > 0 ? { teamId, role: String(membership.role) } : null
 }
 
 export async function activeTeamId(request: RequestInstance): Promise<number | null> {

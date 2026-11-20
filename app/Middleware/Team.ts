@@ -1,7 +1,7 @@
-import { db } from '@stacksjs/database'
 import { authenticatedUser } from '@stacksjs/auth'
 import { HttpError } from '@stacksjs/error-handling'
 import { Middleware } from '@stacksjs/router'
+import { activeTeam } from '../Support/activeTeam'
 import { ensureSignupWorkspace } from '../Support/signupWorkspace'
 
 /**
@@ -11,6 +11,10 @@ import { ensureSignupWorkspace } from '../Support/signupWorkspace'
  * `user.current_team_id ?? user.team_id`. This application keeps membership in
  * `team_members` and has neither column on `users`, so the default rejected
  * every request to a team-scoped route regardless of who was signed in.
+ *
+ * Which workspace is `activeTeam()`'s answer, the same one the auto-generated
+ * model routes scope by: the one the workspace switcher chose, when the person
+ * still belongs to it, and otherwise the one they own.
  *
  * An account that has never belonged to a workspace gets its own here, on
  * its first request: see `app/Support/signupWorkspace.ts`.
@@ -28,25 +32,13 @@ export default new Middleware({
     if (!user)
       throw new HttpError(401, 'Unauthenticated.')
 
-    const userId = Number((user as any).id)
-    const selected = Number((user as any).current_team_id ?? (user as any).team_id)
-
-    const query = db
-      .selectFrom('team_members' as any)
-      .select(['team_id', 'role'] as any)
-      .where('user_id' as any, '=', userId)
-      .where('status' as any, '=', 'active')
-
-    const explicit = Number.isInteger(selected) && selected > 0
-    let membership = (explicit
-      ? await query.where('team_id' as any, '=', selected).executeTakeFirst()
-      : await query.orderBy('id' as any, 'asc').executeTakeFirst()) as { team_id: number, role: string } | undefined
+    let membership = await activeTeam(request as any)
 
     // A new account has no workspace yet: make the one sign-up promised.
-    if (!membership && !explicit) {
-      const made = await ensureSignupWorkspace({ id: userId, name: (user as any).name, email: (user as any).email })
+    if (!membership) {
+      const made = await ensureSignupWorkspace({ id: (user as any).id, name: (user as any).name, email: (user as any).email })
       if (made.teamId)
-        membership = { team_id: made.teamId, role: 'owner' }
+        membership = { teamId: made.teamId, role: 'owner' }
     }
 
     if (!membership)

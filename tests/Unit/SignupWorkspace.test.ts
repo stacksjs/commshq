@@ -35,9 +35,10 @@ describe('one workspace per person', () => {
     expect(signupWorkspaceUuid(7)).toMatch(/^[0-9a-f]{8}-[0-9a-f]{4}-5[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/)
   })
 
-  test('the team middleware makes it only when nobody chose a team', async () => {
+  test('the team middleware makes it when the person belongs to no workspace', async () => {
     const middleware = await source('app/Middleware/Team.ts')
-    expect(middleware).toContain('if (!membership && !explicit) {\n      const made = await ensureSignupWorkspace(')
+    expect(middleware).toContain('let membership = await activeTeam(request as any)')
+    expect(middleware).toContain('if (!membership) {\n      const made = await ensureSignupWorkspace(')
   })
 
   test('members, suspended members and invited people get none', async () => {
