@@ -262,7 +262,7 @@ onMount(() => {
         </label>
         <label class="block font-bold text-xs">
           Role
-          <select x-model="addRole" class="mt-1 field">
+          <select x-model="addRole" class="mt-1 field field-select">
             @foreach(roleOptions as option)
               <option value="{{ option.value }}">{{ option.label }}</option>
             @endforeach

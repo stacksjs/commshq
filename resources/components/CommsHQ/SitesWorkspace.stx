@@ -326,7 +326,7 @@ onMount(() => {
         <h2 id="pages-title" class="font-bold">{{ kindLabel() }}</h2>
         <label :if="isLink()" class="block">
           <span class="sr-only">Filter link pages by status</span>
-          <select x-model="status" @change="onStatusChange()" class="field">
+          <select x-model="status" @change="onStatusChange()" class="field field-select">
             <option value="">Every status</option>
             @foreach(linkStatusOptions as option)
               <option value="{{ option.value }}">{{ option.label }}</option>
@@ -335,7 +335,7 @@ onMount(() => {
         </label>
         <label :if="!isLink()" class="block">
           <span class="sr-only">Filter landing pages by status</span>
-          <select x-model="status" @change="onStatusChange()" class="field">
+          <select x-model="status" @change="onStatusChange()" class="field field-select">
             <option value="">Every status</option>
             @foreach(landingStatusOptions as option)
               <option value="{{ option.value }}">{{ option.label }}</option>

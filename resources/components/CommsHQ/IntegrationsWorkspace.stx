@@ -198,7 +198,7 @@ onMount(() => {
       <div class="grid gap-3 sm:grid-cols-[1fr_2fr] mt-4">
         <label class="block font-bold text-xs">
           Service
-          <select x-model="addProvider" class="mt-1 field">
+          <select x-model="addProvider" class="mt-1 field field-select">
             @foreach(connectorOptions as option)
               <option value="{{ option.provider }}">{{ option.label }}</option>
             @endforeach
