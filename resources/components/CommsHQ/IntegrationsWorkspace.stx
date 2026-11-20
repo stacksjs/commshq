@@ -185,7 +185,10 @@ onMount(() => {
         <p class="mt-2 max-w-2xl text-fg-muted text-sm">The outside services this workspace holds a credential for. A credential is encrypted when it is stored and is never shown again, here or anywhere else.</p>
       </div>
       <div class="flex gap-2">
-        <button type="button" @click="load()" :disabled="loading()" :aria-busy="loading()" class="px-5 min-h-11 font-bold text-fg text-sm bg-panel hover:bg-surface-hover border border-line rounded-pill focus-visible:outline focus-visible:outline-[var(--coral)] focus-visible:outline-2 focus-visible:outline-offset-2 disabled:opacity-60">Refresh</button>
+        <button type="button" @click="load()" :disabled="loading()" :aria-busy="loading()" class="px-5 min-h-11 font-bold text-fg text-sm bg-panel hover:bg-surface-hover border border-line rounded-pill focus-visible:outline focus-visible:outline-[var(--coral)] focus-visible:outline-2 focus-visible:outline-offset-2 disabled:opacity-60">
+          <span :show="!loading()">Refresh</span>
+          <span :show="loading()" style="display:none">Refreshing...</span>
+        </button>
       </div>
     </header>
 
@@ -208,7 +211,10 @@ onMount(() => {
       </div>
       <p :if="addError()" class="mt-3 font-bold text-danger text-xs" role="alert">{{ addError() }}</p>
       <div class="flex gap-2 mt-4">
-        <button type="button" @click="store()" :disabled="saving()" :aria-busy="saving()" class="px-5 min-h-11 font-bold text-[var(--coral-ink)] text-sm bg-accent rounded-pill focus-visible:outline focus-visible:outline-[var(--coral)] focus-visible:outline-2 focus-visible:outline-offset-2 disabled:opacity-60">Store credential</button>
+        <button type="button" @click="store()" :disabled="saving()" :aria-busy="saving()" class="px-5 min-h-11 font-bold text-[var(--coral-ink)] text-sm bg-accent rounded-pill focus-visible:outline focus-visible:outline-[var(--coral)] focus-visible:outline-2 focus-visible:outline-offset-2 disabled:opacity-60">
+          <span :show="!saving()">Store credential</span>
+          <span :show="saving()" style="display:none">Saving...</span>
+        </button>
         <button type="button" @click="closeAdd()" class="px-5 min-h-11 font-bold text-fg text-sm bg-panel hover:bg-surface-hover border border-line rounded-pill focus-visible:outline focus-visible:outline-[var(--coral)] focus-visible:outline-2 focus-visible:outline-offset-2">Cancel</button>
       </div>
     </section>
@@ -232,7 +238,10 @@ onMount(() => {
       <div :if="errorText()" class="p-8 text-center" role="alert">
         <span aria-hidden="true" class="inline-block h-6 w-6 text-danger i-hugeicons-alert-02"></span>
         <p class="mt-3 font-bold text-sm">{{ errorText() }}</p>
-        <button type="button" @click="load()" :disabled="loading()" :aria-busy="loading()" class="mt-4 px-5 min-h-11 font-bold text-fg text-sm bg-panel hover:bg-surface-hover border border-line rounded-pill focus-visible:outline focus-visible:outline-[var(--coral)] focus-visible:outline-2 focus-visible:outline-offset-2 disabled:opacity-60">Try again</button>
+        <button type="button" @click="load()" :disabled="loading()" :aria-busy="loading()" class="mt-4 px-5 min-h-11 font-bold text-fg text-sm bg-panel hover:bg-surface-hover border border-line rounded-pill focus-visible:outline focus-visible:outline-[var(--coral)] focus-visible:outline-2 focus-visible:outline-offset-2 disabled:opacity-60">
+          <span :show="!loading()">Try again</span>
+          <span :show="loading()" style="display:none">Loading...</span>
+        </button>
       </div>
 
       <div :if="showList()" class="divide-line divide-y">
@@ -247,12 +256,18 @@ onMount(() => {
             <div :if="confirmId() === 0 || confirmId() !== connector.credentialId" class="flex flex-wrap gap-2 shrink-0">
               <button :if="!connector.connected" type="button" @click="openFor(connector.provider)" class="px-4 min-h-11 font-bold text-fg text-sm bg-panel hover:bg-surface-hover border border-line rounded-pill focus-visible:outline focus-visible:outline-[var(--coral)] focus-visible:outline-2 disabled:opacity-50">Connect</button>
               <button :if="connector.connected" type="button" @click="openFor(connector.provider)" class="px-4 min-h-11 font-bold text-fg text-sm bg-panel hover:bg-surface-hover border border-line rounded-pill focus-visible:outline focus-visible:outline-[var(--coral)] focus-visible:outline-2 disabled:opacity-50">Replace credential</button>
-              <button :if="connector.connected" type="button" @click="askRemove(connector.credentialId)" :disabled="busyId() !== 0" :aria-busy="busyId() === connector.credentialId" class="px-4 min-h-11 font-bold text-fg text-sm bg-panel hover:bg-surface-hover border border-line rounded-pill focus-visible:outline focus-visible:outline-[var(--coral)] focus-visible:outline-2 disabled:opacity-50">Remove</button>
+              <button :if="connector.connected" type="button" @click="askRemove(connector.credentialId)" :disabled="busyId() !== 0" :aria-busy="busyId() === connector.credentialId" class="px-4 min-h-11 font-bold text-fg text-sm bg-panel hover:bg-surface-hover border border-line rounded-pill focus-visible:outline focus-visible:outline-[var(--coral)] focus-visible:outline-2 disabled:opacity-50">
+                <span :show="!(busyId() === connector.credentialId)">Remove</span>
+                <span :show="busyId() === connector.credentialId" style="display:none">Removing...</span>
+              </button>
             </div>
             <div :if="confirmId() !== 0 && confirmId() === connector.credentialId" class="flex flex-col gap-2 shrink-0" role="group" aria-label="Confirm removal">
               <p class="m-0 font-bold text-xs">Remove this credential? Its profiles stop syncing.</p>
               <div class="flex gap-2">
-                <button type="button" @click="remove(connector.credentialId)" :disabled="busyId() !== 0" :aria-busy="busyId() === connector.credentialId" class="px-4 min-h-11 font-bold text-fg text-sm bg-panel hover:bg-surface-hover border border-line rounded-pill focus-visible:outline focus-visible:outline-[var(--coral)] focus-visible:outline-2 disabled:opacity-50">Yes, remove it</button>
+                <button type="button" @click="remove(connector.credentialId)" :disabled="busyId() !== 0" :aria-busy="busyId() === connector.credentialId" class="px-4 min-h-11 font-bold text-fg text-sm bg-panel hover:bg-surface-hover border border-line rounded-pill focus-visible:outline focus-visible:outline-[var(--coral)] focus-visible:outline-2 disabled:opacity-50">
+                  <span :show="!(busyId() === connector.credentialId)">Yes, remove it</span>
+                  <span :show="busyId() === connector.credentialId" style="display:none">Removing...</span>
+                </button>
                 <button type="button" @click="cancelRemove()" class="px-4 min-h-11 font-bold text-fg text-sm bg-panel hover:bg-surface-hover border border-line rounded-pill focus-visible:outline focus-visible:outline-[var(--coral)] focus-visible:outline-2 disabled:opacity-50">Keep it</button>
               </div>
             </div>
