@@ -100,7 +100,10 @@ onMount(() => {
         <p class="mt-2 max-w-2xl text-fg-muted text-sm">The plan on record for this workspace and what its meters have counted, period by period.</p>
       </div>
       <div class="flex gap-2">
-        <button type="button" @click="load()" :disabled="loading()" :aria-busy="loading()" class="px-5 min-h-11 font-bold text-fg text-sm bg-panel hover:bg-surface-hover border border-line rounded-pill focus-visible:outline focus-visible:outline-[var(--coral)] focus-visible:outline-2 focus-visible:outline-offset-2 disabled:opacity-60">Refresh</button>
+        <button type="button" @click="load()" :disabled="loading()" :aria-busy="loading()" class="px-5 min-h-11 font-bold text-fg text-sm bg-panel hover:bg-surface-hover border border-line rounded-pill focus-visible:outline focus-visible:outline-[var(--coral)] focus-visible:outline-2 focus-visible:outline-offset-2 disabled:opacity-60">
+          <span :show="!loading()">Refresh</span>
+          <span :show="loading()" style="display:none">Refreshing...</span>
+        </button>
       </div>
     </header>
 

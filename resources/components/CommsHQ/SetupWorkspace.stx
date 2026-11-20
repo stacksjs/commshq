@@ -57,7 +57,10 @@ onMount(() => {
         <p class="mt-2 max-w-2xl text-fg-muted text-sm">The steps from an empty workspace to a delivered campaign, in the order they depend on each other. Each one is ticked from what this workspace has actually done.</p>
       </div>
       <div class="flex gap-2">
-        <button type="button" @click="load()" :disabled="loading()" :aria-busy="loading()" class="px-5 min-h-11 font-bold text-fg text-sm bg-panel hover:bg-surface-hover border border-line rounded-pill focus-visible:outline focus-visible:outline-[var(--coral)] focus-visible:outline-2 focus-visible:outline-offset-2 disabled:opacity-60">Refresh</button>
+        <button type="button" @click="load()" :disabled="loading()" :aria-busy="loading()" class="px-5 min-h-11 font-bold text-fg text-sm bg-panel hover:bg-surface-hover border border-line rounded-pill focus-visible:outline focus-visible:outline-[var(--coral)] focus-visible:outline-2 focus-visible:outline-offset-2 disabled:opacity-60">
+          <span :show="!loading()">Refresh</span>
+          <span :show="loading()" style="display:none">Refreshing...</span>
+        </button>
       </div>
     </header>
 
@@ -85,7 +88,10 @@ onMount(() => {
       <div :if="errorText()" class="p-8 text-center" role="alert">
         <span aria-hidden="true" class="inline-block h-6 w-6 text-danger i-hugeicons-alert-02"></span>
         <p class="mt-3 font-bold text-sm">{{ errorText() }}</p>
-        <button type="button" @click="load()" :disabled="loading()" :aria-busy="loading()" class="mt-4 px-5 min-h-11 font-bold text-fg text-sm bg-panel hover:bg-surface-hover border border-line rounded-pill focus-visible:outline focus-visible:outline-[var(--coral)] focus-visible:outline-2 focus-visible:outline-offset-2 disabled:opacity-60">Try again</button>
+        <button type="button" @click="load()" :disabled="loading()" :aria-busy="loading()" class="mt-4 px-5 min-h-11 font-bold text-fg text-sm bg-panel hover:bg-surface-hover border border-line rounded-pill focus-visible:outline focus-visible:outline-[var(--coral)] focus-visible:outline-2 focus-visible:outline-offset-2 disabled:opacity-60">
+          <span :show="!loading()">Try again</span>
+          <span :show="loading()" style="display:none">Loading...</span>
+        </button>
       </div>
 
       <ol :if="showList()" class="m-0 p-0 list-none divide-line divide-y">
