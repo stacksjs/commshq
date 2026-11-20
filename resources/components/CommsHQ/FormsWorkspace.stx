@@ -234,7 +234,7 @@ onMount(() => {
         </label>
         <label class="block font-bold text-xs">
           Kind
-          <select x-model="addKind" class="mt-1 field">
+          <select x-model="addKind" class="mt-1 field field-select">
             @foreach(kindOptions as option)
               <option value="{{ option.value }}">{{ option.label }}</option>
             @endforeach
@@ -242,7 +242,7 @@ onMount(() => {
         </label>
         <label class="block font-bold text-xs">
           Confirmation
-          <select x-model="addOptIn" class="mt-1 field">
+          <select x-model="addOptIn" class="mt-1 field field-select">
             <option value="double">Double opt-in</option>
             <option value="single">Single opt-in</option>
           </select>
@@ -265,7 +265,7 @@ onMount(() => {
         <h2 id="forms-title" class="font-bold">Forms</h2>
         <label class="block">
           <span class="sr-only">Filter by status</span>
-          <select x-model="status" @change="onStatusChange()" class="field">
+          <select x-model="status" @change="onStatusChange()" class="field field-select">
             <option value="">Every status</option>
             @foreach(statusOptions as option)
               <option value="{{ option.value }}">{{ option.label }}</option>

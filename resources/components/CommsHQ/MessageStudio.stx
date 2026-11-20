@@ -200,7 +200,7 @@ onMount(() => {
         </label>
         <label class="block font-bold text-xs">
           Channel
-          <select x-model="addChannel" class="mt-1 field">
+          <select x-model="addChannel" class="mt-1 field field-select">
             @foreach(channelOptions as option)
               <option value="{{ option.value }}">{{ option.label }}</option>
             @endforeach
@@ -229,7 +229,7 @@ onMount(() => {
         </div>
         <label class="block">
           <span class="sr-only">Filter by channel</span>
-          <select x-model="channel" @change="onChannelChange()" class="field">
+          <select x-model="channel" @change="onChannelChange()" class="field field-select">
             <option value="">Every channel</option>
             @foreach(channelOptions as option)
               <option value="{{ option.value }}">{{ option.label }}</option>

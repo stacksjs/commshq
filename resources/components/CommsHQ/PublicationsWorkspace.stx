@@ -239,7 +239,7 @@ onMount(() => {
         </label>
         <label class="block font-bold text-xs">
           Access
-          <select x-model="addAccess" class="mt-1 field">
+          <select x-model="addAccess" class="mt-1 field field-select">
             @foreach(accessOptions as option)
               <option value="{{ option.value }}">{{ option.label }}</option>
             @endforeach
@@ -267,7 +267,7 @@ onMount(() => {
         <h2 id="publications-title" class="font-bold">Publications</h2>
         <label class="block">
           <span class="sr-only">Filter by status</span>
-          <select x-model="status" @change="onStatusChange()" class="field">
+          <select x-model="status" @change="onStatusChange()" class="field field-select">
             <option value="">Every status</option>
             @foreach(statusOptions as option)
               <option value="{{ option.value }}">{{ option.label }}</option>

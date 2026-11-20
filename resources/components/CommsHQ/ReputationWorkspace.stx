@@ -254,7 +254,7 @@ onMount(() => {
       <div class="grid gap-3 sm:grid-cols-3 mt-4">
         <label class="block font-bold text-xs">
           Platform
-          <select x-model="addPlatform" class="mt-1 field">
+          <select x-model="addPlatform" class="mt-1 field field-select">
             @foreach(platformOptions as option)
               <option value="{{ option.value }}">{{ option.label }}</option>
             @endforeach
@@ -327,7 +327,7 @@ onMount(() => {
         <h2 id="mentions-title" class="font-bold">Reviews and mentions</h2>
         <label class="block">
           <span class="sr-only">Filter by sentiment</span>
-          <select x-model="sentiment" @change="onSentimentChange()" class="field">
+          <select x-model="sentiment" @change="onSentimentChange()" class="field field-select">
             <option value="">Every sentiment</option>
             @foreach(sentimentOptions as option)
               <option value="{{ option.value }}">{{ option.label }}</option>

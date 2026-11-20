@@ -203,7 +203,7 @@ onMount(() => {
         </label>
         <label class="block font-bold text-xs">
           A contact must match
-          <select x-model="addMatchType" class="mt-1 field">
+          <select x-model="addMatchType" class="mt-1 field field-select">
             @foreach(matchOptions as option)
               <option value="{{ option.value }}">{{ option.label }}</option>
             @endforeach
