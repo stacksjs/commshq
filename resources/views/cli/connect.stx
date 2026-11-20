@@ -153,7 +153,10 @@ async function approve(e: Event): Promise<void> {
         {{-- Static label. A reactive mustache as an element's own text makes stx
             cloak it, and the primary control on this page must not be
             display:none before the bundle runs. --}}
-        <button type="submit" :disabled="loading()" :aria-busy="loading()" class="px-4 py-2.5 w-full font-semibold text-[var(--coral-ink)] text-sm bg-coral border-0 rounded-xl cursor-pointer">Approve connection</button>
+        <button type="submit" :disabled="loading()" :aria-busy="loading()" class="px-4 py-2.5 w-full font-semibold text-[var(--coral-ink)] text-sm bg-coral border-0 rounded-xl disabled:opacity-60 cursor-pointer disabled:cursor-not-allowed">
+          <span :show="!loading()">Approve connection</span>
+          <span :show="loading()" style="display:none">Approving...</span>
+        </button>
         <p id="connect-confirm-help" class="text-center text-xs muted">The command you ran printed this code. If you did not just run a connect command yourself, or you were sent this link, close this page.</p>
       </form>
       <p id="connect-error" role="alert" class="mt-4 px-3 py-2 text-center text-sm rounded-lg coral" :show="!!error()" style="display:none" :text="error()"></p>

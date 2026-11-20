@@ -115,11 +115,11 @@ onMount(() => {
 @section('content')
 <div class="max-w-sm w-full">
   <div class="mb-8 text-center">
-    <StxLink to="/" class="font-bold text-2xl no-underline ink">CommsHQ</StxLink>
+    <StxLink to="/" class="font-bold no-underline text-2xl ink">CommsHQ</StxLink>
     <p class="mt-2 text-sm muted">Workspace invitation</p>
   </div>
 
-  <div class="p-6 rounded-2xl border border-tone panel">
+  <div class="p-6 border border-tone rounded-2xl panel">
     <p role="status" class="text-center text-sm muted" :show="loading()">Loading your invitation...</p>
 
     <div :show="found() && !accepted()" style="display:none">
@@ -129,13 +129,16 @@ onMount(() => {
 
       {{-- The label is static and the busy state rides on :disabled, the way
           the sign-in button does it. --}}
-      <button type="button" @click="accept()" :show="canAccept() && !needsSignIn()" :disabled="accepting()" :aria-busy="accepting()" class="mt-5 px-4 py-2.5 w-full font-semibold text-sm text-[var(--coral-ink)] cursor-pointer rounded-xl border-0 bg-coral" style="display:none">Accept invitation</button>
+      <button type="button" @click="accept()" :show="canAccept() && !needsSignIn()" :disabled="accepting()" :aria-busy="accepting()" class="mt-5 px-4 py-2.5 w-full font-semibold text-[var(--coral-ink)] text-sm bg-coral border-0 rounded-xl disabled:opacity-60 cursor-pointer disabled:cursor-not-allowed" style="display:none">
+        <span :show="!accepting()">Accept invitation</span>
+        <span :show="accepting()" style="display:none">Accepting...</span>
+      </button>
 
       <div :show="needsSignIn()" style="display:none">
         <p class="mt-4 text-sm ink">Sign in as {{ invitedEmail() }} to accept. If you do not have an account yet, create one with that address.</p>
         <div class="grid gap-2 mt-4">
-          <a :href="loginHref()" class="block px-4 py-2.5 font-semibold text-center text-sm text-[var(--coral-ink)] no-underline rounded-xl bg-coral">Sign in</a>
-          <a :href="registerHref()" class="block px-4 py-2.5 font-semibold text-center text-sm no-underline rounded-xl border border-tone ink">Create an account</a>
+          <a :href="loginHref()" class="block px-4 py-2.5 font-semibold no-underline text-[var(--coral-ink)] text-center text-sm bg-coral rounded-xl">Sign in</a>
+          <a :href="registerHref()" class="block px-4 py-2.5 font-semibold no-underline text-center text-sm border border-tone rounded-xl ink">Create an account</a>
         </div>
       </div>
     </div>
@@ -143,10 +146,10 @@ onMount(() => {
     <div :show="accepted()" style="display:none">
       <h1 class="font-semibold text-lg ink">You have joined {{ teamName() }}</h1>
       <p class="mt-2 text-sm muted">Your access is as {{ invitedRole() }}.</p>
-      <button type="button" @click="openWorkspace()" class="mt-5 px-4 py-2.5 w-full font-semibold text-sm text-[var(--coral-ink)] cursor-pointer rounded-xl border-0 bg-coral">Open the workspace</button>
+      <button type="button" @click="openWorkspace()" class="mt-5 px-4 py-2.5 w-full font-semibold text-[var(--coral-ink)] text-sm bg-coral border-0 rounded-xl cursor-pointer">Open the workspace</button>
     </div>
 
-    <p role="alert" class="mt-4 px-3 py-2 text-sm text-center rounded-lg coral" :show="error()" style="display:none">{{ error() }}</p>
+    <p role="alert" class="mt-4 px-3 py-2 text-center text-sm rounded-lg coral" :show="error()" style="display:none">{{ error() }}</p>
   </div>
 </div>
 @endsection
