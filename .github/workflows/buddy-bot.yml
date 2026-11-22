@@ -56,8 +56,11 @@ jobs:
         run: $BUDDY update --strategy patch --verbose $DRY_RUN
         env:
           GITHUB_TOKEN: ${{ secrets.BUDDY_BOT_TOKEN || secrets.GITHUB_TOKEN }}
+      # `dashboard` has no --dry-run (Buddy 0.11.18): it always writes the
+      # dashboard issue, so a dry run skips it.
       - name: Update dependency dashboard
-        run: $BUDDY dashboard --verbose $DRY_RUN
+        if: ${{ !inputs.dry_run }}
+        run: $BUDDY dashboard --verbose
         env:
           GITHUB_TOKEN: ${{ secrets.BUDDY_BOT_TOKEN || secrets.GITHUB_TOKEN }}
       - name: Close landed pull requests and clean up branches
