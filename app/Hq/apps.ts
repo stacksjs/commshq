@@ -114,6 +114,12 @@ export interface AppStore {
 
 export interface HqUser {
   id: number | string
+  /**
+   * The workspace the person has open in the dashboard, as `activeTeam()`
+   * resolved it for the approving request. The app is added there, so a
+   * person in two workspaces connects the one they chose with the switcher.
+   */
+  team?: { teamId: number, role: string } | null
 }
 
 export class ConnectRefusedError extends Error {
@@ -141,7 +147,9 @@ export function createCommshqAdapter(deps: CommshqAdapterDeps): HqServiceAdapter
     // Somebody with no workspace is given one, as its owner. They used to be
     // told to create one and run the command again, and there is nowhere in
     // the app to create one: the connect was a dead end for every new account.
-    const membership = await store.teamOf(userId) ?? await store.createWorkspace(userId)
+    // The open workspace when the approving request named one; otherwise the
+    // earliest membership, as before, for a caller that passes none.
+    const membership = user.team ?? await store.teamOf(userId) ?? await store.createWorkspace(userId)
     // A send key puts mail out under the workspace's name and spends its
     // allowance, which is the same trust as setting up sending.
     if (!['owner', 'admin'].includes(membership.role.toLowerCase()))

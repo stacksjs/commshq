@@ -141,6 +141,27 @@ describe('the keys', () => {
     expect(member.workspaces).toHaveLength(0)
   })
 
+  test('the app joins the workspace open in the dashboard, not the earliest one', async () => {
+    const s = setup({ teams: { 1: { teamId: 10, role: 'owner' } } })
+    const { app } = await s.connect('Votescape', { id: 1, team: { teamId: 20, role: 'admin' } } as any)
+    expect(app.teamId).toBe(20)
+    // With nothing chosen, the earliest membership, as before.
+    const { app: fallback } = await s.connect('Other app', ALICE)
+    expect(fallback.teamId).toBe(10)
+  })
+
+  test('the open workspace still needs an admin or owner', async () => {
+    const s = setup({ teams: { 1: { teamId: 10, role: 'owner' } } })
+    expect(s.adapter.provision({ id: 1, team: { teamId: 20, role: 'viewer' } } as any, { app: 'Votescape' })).rejects.toBeInstanceOf(ConnectRefusedError)
+    expect(s.apps).toHaveLength(0)
+  })
+
+  test('approving passes the workspace the dashboard has open', async () => {
+    const routes = await Bun.file(new URL('../../routes/hq.ts', import.meta.url)).text()
+    expect(routes).toContain('const team = await activeTeam(request as any)')
+    expect(routes).toContain('hq.approveConnect(String(request.params?.code ?? \'\'), { id, team }, request.jsonBody?.confirm)')
+  })
+
   test('somebody with no workspace is given one, as its owner, and the connect carries on', async () => {
     const nobody = setup({ teams: {} })
     const { grant, app } = await nobody.connect()

@@ -44,6 +44,23 @@ if (authToken) {
 const signInHref = withConnectReturn('/login', code)
 const registerHref = withConnectReturn('/register', code)
 
+// The workspace the app will join: the one open in the dashboard, resolved
+// the way the approve button resolves it (activeTeam() in routes/hq.ts), so
+// the page names the workspace the keys will actually belong to.
+let workspaceName = ''
+if (signedIn) {
+  try {
+    const { resolveAuthenticatedMembership } = await import('@stacksjs/auth')
+    const membership = await resolveAuthenticatedMembership({ bearerToken: () => null, cookies: { get: (name: string) => (typeof cookies !== 'undefined' ? cookies[name] : '') || null } })
+    if (membership) {
+      const { db } = await import('@stacksjs/database')
+      const team = await db.selectFrom('teams' as any).select(['name'] as any).where('id' as any, '=', membership.teamId).executeTakeFirst() as { name?: string } | undefined
+      workspaceName = String(team?.name ?? '')
+    }
+  }
+  catch { workspaceName = '' }
+}
+
 let appName = ''
 let pending = false
 if (signedIn && code) {
@@ -144,7 +161,8 @@ async function approve(e: Event): Promise<void> {
       <form :show="!connected()" action="/api/cli/connect" method="POST" @submit="approve" class="flex flex-col gap-4">
         <div class="text-center">
           <h1 class="font-semibold text-xl tracking-tight ink">Connect {{ appName }} to CommsHQ?</h1>
-          <p class="mt-2 text-sm muted">This adds an app called {{ appName }} to your workspace, or reuses the one you already have, and sends a new send key and read key to the terminal that asked. Whoever holds the send key can send email as this workspace and add contacts to it, and that mail counts against your plan.</p>
+          <p class="mt-2 text-sm muted">This adds an app called {{ appName }} to @if(workspaceName)<strong class="ink">{{ workspaceName }}</strong>@else your workspace@endif, or reuses the one it already has, and sends a new send key and read key to the terminal that asked. Whoever holds the send key can send email as this workspace and add contacts to it, and that mail counts against your plan.</p>
+          @if(workspaceName)<p class="mt-2 text-sm muted">To connect another workspace, switch to it from the workspace menu in the dashboard, then come back to this page.</p>@endif
         </div>
         <div>
           <label for="connect-confirm" class="block mb-1.5 font-medium text-xs ink">Confirmation code from your terminal</label>

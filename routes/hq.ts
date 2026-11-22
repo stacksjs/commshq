@@ -27,6 +27,7 @@ import { bearerKey } from '../app/Hq/keys'
 import { rateLimit } from '../app/Hq/limits'
 import { MAX_PER_RECIPIENT_PER_HOUR } from '../app/Hq/standing'
 import { appOrigin, canSignOutbound, fallbackAddress, hq, lookupTxt, notifyPaused, sqlAppStore, transport } from '../app/Hq/service'
+import { activeTeam } from '../app/Support/activeTeam'
 
 function json(data: unknown, status = 200, extraHeaders: Record<string, string> = {}): Response {
   return new Response(JSON.stringify(data), {
@@ -124,7 +125,9 @@ route.post('/api/cli/connect/{code}/approve', async (request: RouterRequest) => 
     return json({ error: 'Too many attempts. Wait a minute and try again.' }, 429, { 'Retry-After': String(limit.retryAfter) })
 
   try {
-    const result = await hq.approveConnect(String(request.params?.code ?? ''), { id }, request.jsonBody?.confirm)
+    // The workspace open in the dashboard, chosen with the switcher.
+    const team = await activeTeam(request as any)
+    const result = await hq.approveConnect(String(request.params?.code ?? ''), { id, team }, request.jsonBody?.confirm)
     if (!result.ok) {
       if (result.reason === 'confirmation_mismatch')
         return json({ error: 'That code does not match. Enter the confirmation code your terminal is showing.', reason: result.reason }, 422)
