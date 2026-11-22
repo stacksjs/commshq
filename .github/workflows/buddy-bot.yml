@@ -1,9 +1,26 @@
+# Dependency updates, by Buddy (@buddysh/buddy), the bot that replaced
+# buddy-bot. Configured in config/buddy-bot.ts.
+#
+# Run with `bunx`, not installed: @buddysh/buddy's commands are named `buddy`,
+# `bud` and `stacks`, the same as the Stacks CLI's, and installing it (through
+# better-dx 0.2.40) points node_modules/.bin/buddy at the bot and
+# node_modules/.bin/stacks at a launcher that fetches another Stacks version.
+# `bunx` fetches it into Bun's cache and leaves the project's bins alone.
 name: Buddy Bot
 
 on:
   schedule:
+    # Once a day: open and refresh update pull requests, refresh the dashboard
+    # issue, and close pull requests whose update already landed.
     - cron: '0 4 * * *'
+
   workflow_dispatch:
+    inputs:
+      dry_run:
+        description: Dry run (preview only)
+        required: false
+        default: false
+        type: boolean
 
 permissions:
   contents: write
@@ -14,9 +31,14 @@ concurrency:
   group: buddy-bot
   cancel-in-progress: false
 
+env:
+  BUDDY: bunx @buddysh/buddy@0.11.18
+  DRY_RUN: ${{ inputs.dry_run && '--dry-run' || '' }}
+
 jobs:
   dependencies:
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@v6
         with:
@@ -26,11 +48,19 @@ jobs:
           version: 0.11.28
           install: false
       - run: bun install --frozen-lockfile
+      - name: Configure Git
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
       - name: Update dependencies
-        run: bun x buddy-bot update --strategy patch --verbose
+        run: $BUDDY update --strategy patch --verbose $DRY_RUN
         env:
           GITHUB_TOKEN: ${{ secrets.BUDDY_BOT_TOKEN || secrets.GITHUB_TOKEN }}
       - name: Update dependency dashboard
-        run: bun x buddy-bot dashboard --verbose
+        run: $BUDDY dashboard --verbose $DRY_RUN
+        env:
+          GITHUB_TOKEN: ${{ secrets.BUDDY_BOT_TOKEN || secrets.GITHUB_TOKEN }}
+      - name: Close landed pull requests and clean up branches
+        run: $BUDDY update-check $DRY_RUN
         env:
           GITHUB_TOKEN: ${{ secrets.BUDDY_BOT_TOKEN || secrets.GITHUB_TOKEN }}

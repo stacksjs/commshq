@@ -1,5 +1,13 @@
-import type { BuddyBotConfig } from 'buddy-bot'
-
+/**
+ * Dependency updates, run by Buddy (@buddysh/buddy) from
+ * .github/workflows/buddy-bot.yml.
+ *
+ * No type import: the bot is run with `bunx` rather than installed (its
+ * commands share the Stacks CLI's names, see the workflow), so its types are
+ * not in node_modules. `buddy upgrade` also rewrites a buddy-bot type import
+ * to @buddysh/buddy, which then fails typecheck; with no import there is
+ * nothing for it to rewrite.
+ */
 export default {
   repository: {
     owner: 'stacksjs',
@@ -33,4 +41,4 @@ export default {
     ],
   },
   verbose: false,
-} satisfies BuddyBotConfig
+}
