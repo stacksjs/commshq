@@ -16,10 +16,11 @@ export const statusOptions = SPONSOR_STATUSES
  *
  * It lists sponsors from `GET /api/v1/sponsors`, adds one as a prospect and
  * moves it between statuses, and it shows the latest entries of the earnings
- * ledger from `GET /api/v1/earnings`. Nothing records an earning yet, so the
- * ledger is normally empty and the page says why. A sponsor's status is a
- * label on the record. `monetization-query.ts` records what else the old
- * page showed that has nothing behind it.
+ * ledger from `GET /api/v1/earnings`. An owner or admin records a sponsor's
+ * payment from that sponsor's row; the ledger is append-only, so the form
+ * says so before it saves. A sponsor's status is a label on the record.
+ * `monetization-query.ts` records what else the old page showed that has
+ * nothing behind it.
  *
  * A sponsor's website is only rendered as a link when it is a plain http or
  * https address; the module decides, never the markup.
@@ -31,7 +32,14 @@ import {
   draftError,
   earningsUrl,
   listErrorMessage,
+  localDate,
+  paymentDraftError,
+  paymentErrorMessage,
+  paymentPayload,
+  parseAmount,
+  formatAmount,
   saveErrorMessage,
+  sponsorPaymentUrl,
   sponsorPayload,
   SPONSORS_ENDPOINT,
   SPONSORS_PER_PAGE,
@@ -42,7 +50,12 @@ import {
 } from '../../data/monetization-query'
 
 const sponsors = state([])
-const earnings = state([])
+/* Raw ledger rows; the views are derived so a sponsor's name fills in once
+ * the sponsor list has loaded, whichever request lands first. */
+const earningRows = state([])
+/* Every sponsor name the page has seen, across pages and filters. */
+const sponsorNames = state({})
+const earnings = derived(() => toEarningViews({ data: earningRows() }, undefined, sponsorNames()))
 const earningsError = state('')
 const earningsLoaded = state(false)
 const hasMore = state(false)
@@ -67,6 +80,21 @@ const addNotes = state('')
 const saving = state(false)
 const addError = state('')
 
+/* The payment form: open for one sponsor at a time. */
+const payId = state(0)
+const payName = state('')
+const payAmount = state('')
+const payFee = state('')
+const payDate = state('')
+const payToday = state('')
+/* Made when the form opens, so a double click or a retry records one payment. */
+const payKey = state('')
+const paying = state(false)
+const payError = state('')
+const payNotice = state('')
+/* The sponsor the last recorded payment was from, so the notice shows in its row. */
+const payNoticeId = state(0)
+
 const csrfToken = useCookie('X-CSRF-Token')
 
 const refreshBusy = derived(() => loading() && busySource() === 'refresh')
@@ -76,6 +104,13 @@ const showEmpty = derived(() => !loading() && !errorText() && sponsors().length 
 const showList = derived(() => !loading() && !errorText() && sponsors().length > 0)
 const showNoEarnings = derived(() => earningsLoaded() && !earningsError() && earnings().length === 0)
 const showEarnings = derived(() => earningsLoaded() && !earningsError() && earnings().length > 0)
+const payNet = derived(() => {
+  const gross = parseAmount(payAmount())
+  const fee = payFee().trim() ? parseAmount(payFee()) : 0
+  if (gross === null || fee === null || fee > gross)
+    return ''
+  return `${formatAmount(gross - fee)} goes into the ledger.`
+})
 
 /* The ledger is its own request and its own failure: sponsors still list
  * when it cannot be read, and the panel says so in its own place. */
@@ -85,14 +120,15 @@ async function loadEarnings() {
     const response = await fetch(earningsUrl(), { credentials: 'same-origin', headers: { Accept: 'application/json' } })
     if (!response.ok) {
       earningsError.set(listErrorMessage(response.status, 'earnings'))
-      earnings.set([])
+      earningRows.set([])
       return
     }
-    earnings.set(toEarningViews(await response.json()))
+    const body = await response.json()
+    earningRows.set(Array.isArray(body?.data) ? body.data : [])
   }
   catch {
     earningsError.set('Earnings could not be loaded. Check your connection and try again.')
-    earnings.set([])
+    earningRows.set([])
   }
   finally {
     earningsLoaded.set(true)
@@ -116,7 +152,14 @@ async function load(source = 'refresh') {
     }
 
     const body = await response.json()
-    sponsors.set(toSponsorViews(body))
+    const views = toSponsorViews(body)
+    sponsors.set(views)
+    sponsorNames.update(names => {
+      const next = { ...names }
+      for (const sponsor of views)
+        next[sponsor.id] = sponsor.name
+      return next
+    })
     hasMore.set(body?.has_more_pages === true)
   }
   catch {
@@ -192,6 +235,74 @@ async function setStatus(id, next) {
 function toggleAdd() {
   addOpen.update(value => !value)
   addError.set('')
+  payId.set(0)
+}
+
+function openPayment(id, name) {
+  const today = localDate()
+  payId.set(id)
+  payName.set(name)
+  payAmount.set('')
+  payFee.set('')
+  payToday.set(today)
+  payDate.set(today)
+  payKey.set(crypto.randomUUID())
+  payError.set('')
+  payNotice.set('')
+  payNoticeId.set(0)
+  addOpen.set(false)
+}
+
+function closePayment() {
+  payId.set(0)
+  payError.set('')
+}
+
+async function recordPayment() {
+  if (paying())
+    return
+  const draft = { amount: payAmount(), fee: payFee(), date: payDate() }
+  const problem = paymentDraftError(draft, payToday() || localDate())
+  if (problem) {
+    payError.set(problem)
+    return
+  }
+
+  paying.set(true)
+  payError.set('')
+  try {
+    const response = await fetch(sponsorPaymentUrl(payId()), {
+      method: 'POST',
+      credentials: 'same-origin',
+      headers: writeHeaders(),
+      body: JSON.stringify(paymentPayload(draft, payKey())),
+    })
+
+    if (response.ok) {
+      const body = await response.json()
+      /* "Studio Supply Co." ends its own sentence. */
+      const name = payName().endsWith('.') ? payName() : `${payName()}.`
+      payNotice.set(`Recorded ${formatAmount(body?.data?.net_amount)} from ${name} It is in Recent earnings below.`)
+      payNoticeId.set(payId())
+      payId.set(0)
+      await loadEarnings()
+      return
+    }
+
+    /* The error text says whether a 403 was the role check or a stale page. */
+    const error = await response.json().then(body => String(body?.error || ''), () => '')
+    payError.set(paymentErrorMessage(response.status, error))
+    if (response.status === 404) {
+      payId.set(0)
+      await load()
+    }
+  }
+  catch {
+    payError.set('The payment could not be recorded. Check your connection and try again.')
+  }
+  finally {
+    paying.set(false)
+  }
 }
 
 async function addSponsor() {
@@ -328,21 +439,52 @@ onMount(() => {
 
       <div :if="showList()" class="divide-line divide-y">
         <template :for="sponsor in sponsors()">
-          <article class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between p-5">
-            <div class="min-w-0">
-              <h3 class="font-bold text-sm">{{ sponsor.name }}</h3>
-              <p class="mt-0.5 break-all text-fg-muted text-xs">{{ sponsor.statusLabel }}. {{ sponsor.email }}. Last changed {{ sponsor.updatedLabel }}.</p>
-              <p :if="sponsor.website" class="mt-0.5 text-xs"><a :href="sponsor.website" target="_blank" rel="noopener noreferrer nofollow" class="font-bold text-fg">{{ sponsor.websiteLabel }}</a></p>
-              <p :if="sponsor.notes" class="mt-0.5 text-xs">{{ sponsor.notes }}</p>
-            </div>
-            <div class="flex flex-wrap gap-2 shrink-0">
-              <button :if="sponsor.nextStatus" type="button" @click="setStatus(sponsor.id, sponsor.nextStatus)" :disabled="busyId() !== 0" :aria-busy="busyId() === sponsor.id" class="px-4 min-h-11 font-bold text-fg text-sm bg-panel hover:bg-surface-hover border border-line rounded-pill focus-visible:outline focus-visible:outline-[var(--coral)] focus-visible:outline-2 disabled:opacity-50 disabled:cursor-not-allowed">{{ busyId() === sponsor.id && busyAction() === sponsor.nextStatus ? 'Updating...' : sponsor.nextLabel }}</button>
-              <button :if="sponsor.canBlock" type="button" @click="setStatus(sponsor.id, 'blocked')" :disabled="busyId() !== 0" :aria-busy="busyId() === sponsor.id" class="px-4 min-h-11 font-bold text-fg text-sm bg-panel hover:bg-surface-hover border border-line rounded-pill focus-visible:outline focus-visible:outline-[var(--coral)] focus-visible:outline-2 disabled:opacity-50">
-                <span :show="!(busyId() === sponsor.id && busyAction() === 'blocked')">Block</span>
-                <span :show="busyId() === sponsor.id && busyAction() === 'blocked'" style="display:none">Blocking...</span>
-              </button>
-            </div>
-          </article>
+          <div>
+            <article class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between p-5">
+              <div class="min-w-0">
+                <h3 class="font-bold text-sm">{{ sponsor.name }}</h3>
+                <p class="mt-0.5 break-words text-fg-muted text-xs">{{ sponsor.statusLabel }}. {{ sponsor.email }}. Last changed {{ sponsor.updatedLabel }}.</p>
+                <p :if="sponsor.website" class="mt-0.5 text-xs"><a :href="sponsor.website" target="_blank" rel="noopener noreferrer nofollow" class="font-bold text-fg">{{ sponsor.websiteLabel }}</a></p>
+                <p :if="sponsor.notes" class="mt-0.5 text-xs">{{ sponsor.notes }}</p>
+              </div>
+              <div class="flex flex-wrap gap-2 shrink-0">
+                <button type="button" @click="openPayment(sponsor.id, sponsor.name)" class="px-4 min-h-11 font-bold text-fg text-sm bg-panel hover:bg-surface-hover border border-line rounded-pill focus-visible:outline focus-visible:outline-[var(--coral)] focus-visible:outline-2">Record payment</button>
+                <button :if="sponsor.nextStatus" type="button" @click="setStatus(sponsor.id, sponsor.nextStatus)" :disabled="busyId() !== 0" :aria-busy="busyId() === sponsor.id" class="px-4 min-h-11 font-bold text-fg text-sm bg-panel hover:bg-surface-hover border border-line rounded-pill focus-visible:outline focus-visible:outline-[var(--coral)] focus-visible:outline-2 disabled:opacity-50 disabled:cursor-not-allowed">{{ busyId() === sponsor.id && busyAction() === sponsor.nextStatus ? 'Updating...' : sponsor.nextLabel }}</button>
+                <button :if="sponsor.canBlock" type="button" @click="setStatus(sponsor.id, 'blocked')" :disabled="busyId() !== 0" :aria-busy="busyId() === sponsor.id" class="px-4 min-h-11 font-bold text-fg text-sm bg-panel hover:bg-surface-hover border border-line rounded-pill focus-visible:outline focus-visible:outline-[var(--coral)] focus-visible:outline-2 disabled:opacity-50">
+                  <span :show="!(busyId() === sponsor.id && busyAction() === 'blocked')">Block</span>
+                  <span :show="busyId() === sponsor.id && busyAction() === 'blocked'" style="display:none">Blocking...</span>
+                </button>
+              </div>
+            </article>
+            <p :if="payNoticeId() === sponsor.id" class="m-0 pb-5 px-5 font-bold text-sm" role="status">{{ payNotice() }}</p>
+            <section :if="payId() === sponsor.id" class="pb-5 px-5" aria-label="Record a payment">
+              <h4 class="font-bold text-sm">Record a payment from {{ payName() }}</h4>
+              <p class="mt-1 text-fg-muted text-xs">In US dollars. The earnings ledger cannot be edited afterwards, so check the figures before you save.</p>
+              <div class="grid gap-3 sm:grid-cols-3 mt-4">
+                <label class="block font-bold text-xs">
+                  Amount received
+                  <input x-model.trim="payAmount" type="text" inputmode="decimal" autocomplete="off" maxlength="20" class="mt-1 field" placeholder="1,250.00">
+                </label>
+                <label class="block font-bold text-xs">
+                  Fees taken, if any
+                  <input x-model.trim="payFee" type="text" inputmode="decimal" autocomplete="off" maxlength="20" class="mt-1 field" placeholder="36.25">
+                </label>
+                <label class="block font-bold text-xs">
+                  Day it arrived
+                  <input x-model="payDate" type="date" min="2000-01-01" :max="payToday()" class="mt-1 field">
+                </label>
+              </div>
+              <p :if="payNet()" class="mt-3 text-fg-muted text-xs">{{ payNet() }}</p>
+              <p :if="payError()" class="mt-3 font-bold text-danger text-xs" role="alert">{{ payError() }}</p>
+              <div class="flex gap-2 mt-4">
+                <button type="button" @click="recordPayment()" :disabled="paying()" :aria-busy="paying()" class="px-5 min-h-11 font-bold text-[var(--coral-ink)] text-sm bg-accent rounded-pill focus-visible:outline focus-visible:outline-[var(--coral)] focus-visible:outline-2 focus-visible:outline-offset-2 disabled:opacity-60">
+                  <span :show="!paying()">Record payment</span>
+                  <span :show="paying()" style="display:none">Recording...</span>
+                </button>
+                <button type="button" @click="closePayment()" class="px-5 min-h-11 font-bold text-fg text-sm bg-panel hover:bg-surface-hover border border-line rounded-pill focus-visible:outline focus-visible:outline-[var(--coral)] focus-visible:outline-2 focus-visible:outline-offset-2">Cancel</button>
+              </div>
+            </section>
+          </div>
         </template>
       </div>
 
@@ -369,7 +511,7 @@ onMount(() => {
       <div :if="showNoEarnings()" class="p-8 text-center">
         <span aria-hidden="true" class="inline-block h-7 w-7 text-fg-muted i-hugeicons-coins-dollar"></span>
         <p class="mt-3 font-bold">No earnings have been recorded.</p>
-        <p class="mt-1 text-fg-muted text-sm">Nothing records sponsor, referral or subscription income yet, so this stays empty for now.</p>
+        <p class="mt-1 text-fg-muted text-sm">Record a sponsor's payment from its row above. Referral and subscription income is not recorded yet.</p>
       </div>
       <div :if="showEarnings()" class="divide-line divide-y">
         <template :for="earning in earnings()">

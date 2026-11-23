@@ -3,19 +3,28 @@
  *
  * Two rules matter most. A sponsor's website is typed by one member and
  * shown to the others as a link, so only an http or https address may become
- * one. And the page says the ledger is empty because nothing records an
- * earning yet; a test holds that claim to the code, so the wording is
- * revisited the day something does.
+ * one. And the ledger is append-only and written in one place, the sponsor
+ * payment action; a test holds that to the code, so a second writer is a
+ * decision someone makes on purpose.
  */
 import { describe, expect, test } from 'bun:test'
 import {
   draftError,
   EARNINGS_ENDPOINT,
   earningsUrl,
+  formatAmount,
   listErrorMessage,
+  localDate,
+  MAX_PAYMENT_MINOR,
+  parseAmount,
+  paymentDraftError,
+  paymentErrorMessage,
+  paymentPayload,
   safeWebsite,
   saveErrorMessage,
   sourceLabel,
+  sponsorIdOf,
+  sponsorPaymentUrl,
   SPONSOR_NAME_MAX,
   SPONSOR_NOTES_MAX,
   SPONSOR_STATUSES,
@@ -35,12 +44,6 @@ function params(url: string): Record<string, string> {
   return Object.fromEntries(new URL(url, 'https://commshq.org').searchParams.entries())
 }
 
-async function sourcesUnder(pattern: string): Promise<string[]> {
-  const root = new URL('../../', import.meta.url).pathname
-  const files = await Array.fromAsync(new Bun.Glob(pattern).scan({ cwd: root, absolute: true, onlyFiles: true }))
-  return Promise.all(files.map(file => Bun.file(file).text()))
-}
-
 describe('the requests', () => {
   test('sponsors are listed by name then id, earnings newest first', () => {
     expect(SPONSORS_ENDPOINT).toBe('/api/v1/sponsors')
@@ -57,14 +60,26 @@ describe('the requests', () => {
     expect(model).toContain(`schema.enum([${SPONSOR_STATUSES.map(item => `'${item.value}'`).join(', ')}])`)
   })
 
-  test('still true: no application code records an earning', async () => {
-    // When this fails, something writes the ledger, and the page's wording
-    // about an empty one should be looked at again.
-    const sources = [...await sourcesUnder('app/{Actions,Jobs,Listeners,Support}/**/*.ts'), ...await sourcesUnder('routes/*.ts')]
-    for (const text of sources) {
-      expect(text).not.toMatch(/Earning\.(?:create|forceCreate)\(/)
-      expect(text).not.toMatch(/insertInto\('earnings'/)
+  test('a payment is recorded under its sponsor', () => {
+    expect(sponsorPaymentUrl(4)).toBe('/api/v1/sponsors/4/payments')
+  })
+
+  test('the sponsor payment action is the only thing that writes the ledger', async () => {
+    // When this fails, something else writes earnings: the empty-state copy,
+    // the ledger's append-only promise and the summary's single-currency sum
+    // should all be looked at again.
+    const root = new URL('../../', import.meta.url).pathname
+    const files = [
+      ...await Array.fromAsync(new Bun.Glob('app/{Actions,Jobs,Listeners,Support}/**/*.ts').scan({ cwd: root, onlyFiles: true })),
+      ...await Array.fromAsync(new Bun.Glob('routes/*.ts').scan({ cwd: root, onlyFiles: true })),
+    ]
+    const writers: string[] = []
+    for (const file of files) {
+      const text = await Bun.file(`${root}${file}`).text()
+      if (/Earning\.(?:create|forceCreate|update|delete)\(|(?:insertInto|updateTable|deleteFrom)\('earnings'/.test(text))
+        writers.push(file)
     }
+    expect(writers).toEqual(['app/Actions/Api/V1/Monetization/RecordSponsorPaymentAction.ts'])
   })
 })
 
@@ -118,9 +133,26 @@ describe('the ledger', () => {
       id: 1,
       sourceLabel: 'Sponsorship',
       netLabel: '$4,320',
-      detail: '$4,800 gross, $480 in fees',
+      detail: '$4,800 received, $480 in fees',
       whenLabel: 'Nov 1, 2026',
     })
+  })
+
+  test('cents are shown when there are cents, and only then', () => {
+    expect(formatAmount(1250, 'en-US')).toBe('$12.50')
+    expect(formatAmount(125000, 'en-US')).toBe('$1,250')
+    expect(formatAmount(null, 'en-US')).toBe('$0')
+    expect(formatAmount(1250, 'en-US', 'NOPE')).toBe('12.50 NOPE')
+  })
+
+  test('a sponsor payment names its sponsor once the page knows it', () => {
+    const row = { id: 2, source_type: 'sponsorship', source_id: 'sponsor:7:8b1f0c2e-1d3a-4c5b-9e6f-0a1b2c3d4e5f', gross_amount: 50000, fee_amount: 0, net_amount: 50000, currency: 'USD', occurred_at: '2026-11-20T12:00:00.000Z' }
+    expect(sponsorIdOf(row.source_id)).toBe(7)
+    expect(sponsorIdOf('order:7')).toBe(0)
+    expect(sponsorIdOf(null)).toBe(0)
+    expect(toEarningView(row, 'en-US', { 7: 'Studio Supply Co.' })).toMatchObject({ sourceLabel: 'Sponsorship from Studio Supply Co.', detail: '$500 received, no fees' })
+    expect(toEarningView(row, 'en-US', { 8: 'Someone else' }).sourceLabel).toBe('Sponsorship')
+    expect(toEarningViews({ data: [row] }, 'en-US', { 7: 'Studio' })[0]!.sourceLabel).toBe('Sponsorship from Studio')
   })
 
   test('sources read as words', () => {
@@ -128,6 +160,48 @@ describe('the ledger', () => {
     expect(sourceLabel('some_new_kind')).toBe('Some new kind')
     expect(sourceLabel(null)).toBe('Unknown source')
     expect(toEarningViews(null)).toEqual([])
+  })
+})
+
+describe('recording a payment', () => {
+  const today = '2026-11-23'
+
+  test('amounts are read as people type them, in cents', () => {
+    expect(parseAmount('1,250')).toBe(125000)
+    expect(parseAmount('$1250.5')).toBe(125050)
+    expect(parseAmount(' 1250.50 ')).toBe(125050)
+    expect(parseAmount('0.07')).toBe(7)
+    for (const value of ['', 'abc', '-5', '1.234', '1e3', '12.', null, undefined])
+      expect(parseAmount(value)).toBeNull()
+  })
+
+  test('the date field holds the browser\'s own day', () => {
+    expect(localDate(new Date(2026, 0, 5, 23, 30))).toBe('2026-01-05')
+  })
+
+  test('a payment needs an amount and a day; fees are optional', () => {
+    expect(paymentDraftError({ amount: '1,250', date: today }, today)).toBe('')
+    expect(paymentDraftError({ amount: '1,250', fee: '36.25', date: today }, today)).toBe('')
+    expect(paymentDraftError({ amount: '', date: today }, today)).toContain('amount received')
+    expect(paymentDraftError({ amount: '0', date: today }, today)).toContain('amount received')
+    expect(paymentDraftError({ amount: String(MAX_PAYMENT_MINOR / 100 + 1), date: today }, today)).toContain('extra zeros')
+    expect(paymentDraftError({ amount: '100', fee: 'lots', date: today }, today)).toContain('fees as an amount')
+    expect(paymentDraftError({ amount: '100', fee: '101', date: today }, today)).toContain('cannot be more')
+    expect(paymentDraftError({ amount: '100', date: '' }, today)).toContain('Choose the day')
+    expect(paymentDraftError({ amount: '100', date: '2026-11-24' }, today)).toContain('future')
+    expect(paymentDraftError({ amount: '100', date: '1999-12-31' }, today)).toContain('before 2000')
+  })
+
+  test('the body carries cents, the day and the form\'s key', () => {
+    expect(paymentPayload({ amount: '1,250', fee: '36.25', date: today }, 'k')).toEqual({ gross_amount: 125000, fee_amount: 3625, occurred_on: today, key: 'k' })
+    expect(paymentPayload({ amount: '1,250', fee: ' ', date: today }, 'k').fee_amount).toBe(0)
+  })
+
+  test('a refusal says whether it was the role or the page', () => {
+    expect(paymentErrorMessage(403, 'Recording earnings requires an admin or owner role')).toBe('Only an owner or admin can record earnings.')
+    expect(paymentErrorMessage(403, 'CSRF token mismatch')).toContain('Reload the page')
+    expect(paymentErrorMessage(404)).toContain('no longer exists')
+    expect(paymentErrorMessage(500)).toContain('(500)')
   })
 })
 

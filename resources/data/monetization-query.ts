@@ -12,18 +12,20 @@
  * `/api/v1/earnings`, which is the ledger the command center already sums,
  * so the page shows its most recent entries.
  *
- * ## What the page does not show, and why the ledger is usually empty
+ * An owner or admin records a payment from a sponsor in that ledger
+ * (`POST /api/v1/sponsors/{id}/payments`), with the amount, any fees and the
+ * day it arrived. The ledger is append-only, so the form says to check the
+ * figures before saving.
  *
- * Nothing in the application writes an earning yet. No payment, placement or
- * referral records one, so the ledger is empty until something does, and the
- * page says that instead of showing a zero that reads like a slow month.
- * For the same reason there is no fill rate, no referral income and no
- * payout: placements, inventory, offers and payouts have tables and nothing
- * behind them. A sponsor's status is a label on the record; it does not
- * start or stop anything.
+ * ## What the page does not show
+ *
+ * Sponsor payments are the only earnings anything records. Referral,
+ * recommendation and subscription income have no writer, so there is no
+ * fill rate, no referral income and no payout: placements, inventory, offers
+ * and payouts have tables and nothing behind them. A sponsor's status is a
+ * label on the record; it does not start or stop anything.
  */
 import { formatSeen } from './contacts-query'
-import { formatMoney } from './workspace-summary'
 
 export const SPONSORS_ENDPOINT = '/api/v1/sponsors'
 export const EARNINGS_ENDPOINT = '/api/v1/earnings'
@@ -81,6 +83,11 @@ export function sponsorsUrl(query: { page?: number, perPage?: number, status?: s
 
 export function sponsorUrl(id: number): string {
   return `${SPONSORS_ENDPOINT}/${Math.trunc(Number(id))}`
+}
+
+/** Where a sponsor's payment is recorded. */
+export function sponsorPaymentUrl(id: number): string {
+  return `${sponsorUrl(id)}/payments`
 }
 
 /** The most recent ledger entries, newest first. */
@@ -178,6 +185,7 @@ export function toSponsorViews(body: { data?: SponsorRow[] } | null | undefined,
 export interface EarningRow {
   id: number
   source_type?: string | null
+  source_id?: string | null
   net_amount?: number | null
   gross_amount?: number | null
   fee_amount?: number | null
@@ -193,20 +201,134 @@ export interface EarningView {
   whenLabel: string
 }
 
-/** Normalize one ledger entry. Amounts are minor units, as everywhere else. */
-export function toEarningView(row: EarningRow, locale?: string): EarningView {
+/**
+ * Money from minor units, to the cent when there are cents.
+ *
+ * The summary tiles round to whole units; a ledger entry is the figure
+ * someone typed in, so $12.50 must not read as $13.
+ */
+export function formatAmount(minorUnits?: number | null, locale?: string, currency = 'USD'): string {
+  const minor = Number(minorUnits)
+  const safe = Number.isFinite(minor) ? Math.trunc(minor) : 0
+  const digits = safe % 100 === 0 ? 0 : 2
+  try {
+    return (safe / 100).toLocaleString(locale, { style: 'currency', currency, minimumFractionDigits: digits, maximumFractionDigits: digits })
+  }
+  catch {
+    // An unknown currency code throws rather than falling back on its own.
+    return `${(safe / 100).toFixed(digits)} ${currency}`
+  }
+}
+
+/** The sponsor a payment entry came from, or 0 when the entry is not one. */
+export function sponsorIdOf(sourceId?: string | null): number {
+  const match = /^sponsor:(\d+):/.exec(String(sourceId || ''))
+  return match ? Number(match[1]) : 0
+}
+
+/**
+ * Normalize one ledger entry. Amounts are minor units, as everywhere else.
+ * `sponsorNames` names the sponsors the page has seen, so a payment reads
+ * as coming from someone; an entry from a sponsor it has not seen still
+ * reads as a sponsorship.
+ */
+export function toEarningView(row: EarningRow, locale?: string, sponsorNames: Record<number, string> = {}): EarningView {
   const currency = (row.currency || 'USD').toUpperCase()
+  const sponsor = row.source_type === 'sponsorship' ? sponsorNames[sponsorIdOf(row.source_id)] : ''
+  const fee = Number(row.fee_amount) || 0
   return {
     id: row.id,
-    sourceLabel: sourceLabel(row.source_type),
-    netLabel: formatMoney(row.net_amount, locale, currency),
-    detail: `${formatMoney(row.gross_amount, locale, currency)} gross, ${formatMoney(row.fee_amount, locale, currency)} in fees`,
+    sourceLabel: sponsor ? `Sponsorship from ${sponsor}` : sourceLabel(row.source_type),
+    netLabel: formatAmount(row.net_amount, locale, currency),
+    detail: fee > 0
+      ? `${formatAmount(row.gross_amount, locale, currency)} received, ${formatAmount(fee, locale, currency)} in fees`
+      : `${formatAmount(row.gross_amount, locale, currency)} received, no fees`,
     whenLabel: formatSeen(row.occurred_at, locale),
   }
 }
 
-export function toEarningViews(body: { data?: EarningRow[] } | null | undefined, locale?: string): EarningView[] {
-  return (body?.data ?? []).map(row => toEarningView(row, locale))
+export function toEarningViews(body: { data?: EarningRow[] } | null | undefined, locale?: string, sponsorNames: Record<number, string> = {}): EarningView[] {
+  return (body?.data ?? []).map(row => toEarningView(row, locale, sponsorNames))
+}
+
+/** The largest single payment the server accepts: $10,000,000, in cents. */
+export const MAX_PAYMENT_MINOR = 1_000_000_000
+
+/**
+ * An amount as typed, in cents: "1,250", "$1250.5" and "1250.50" are all
+ * 125050. Null when it is not a plain amount with at most two decimals.
+ */
+export function parseAmount(text?: string | null): number | null {
+  const cleaned = String(text ?? '').trim().replace(/^\$/, '').replace(/,/g, '').trim()
+  if (!/^\d+(\.\d{1,2})?$/.test(cleaned))
+    return null
+  const [whole, fraction = ''] = cleaned.split('.')
+  const cents = Number(whole) * 100 + Number(fraction.padEnd(2, '0'))
+  return Number.isSafeInteger(cents) ? cents : null
+}
+
+/** A date as the date field holds it, in the browser's own timezone. */
+export function localDate(date: Date = new Date()): string {
+  const pad = (value: number) => String(value).padStart(2, '0')
+  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`
+}
+
+export interface PaymentDraft {
+  amount?: string
+  fee?: string
+  date?: string
+}
+
+/** Why a payment cannot be recorded yet, or '' when it can. */
+export function paymentDraftError(draft: PaymentDraft, today: string): string {
+  const gross = parseAmount(draft.amount)
+  if (gross === null || gross < 1)
+    return 'Enter the amount received, such as 1,250 or 1250.50.'
+  if (gross > MAX_PAYMENT_MINOR)
+    return 'That is more than one payment can be. Check for extra zeros.'
+  const feeText = (draft.fee ?? '').trim()
+  const fee = feeText ? parseAmount(feeText) : 0
+  if (fee === null)
+    return 'Enter the fees as an amount, such as 36.25, or leave them blank.'
+  if (fee > gross)
+    return 'The fees cannot be more than the amount received.'
+  const date = (draft.date ?? '').trim()
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(date))
+    return 'Choose the day the payment arrived.'
+  if (date > today)
+    return 'The day the payment arrived cannot be in the future.'
+  if (date < '2000-01-01')
+    return 'Payments from before 2000 cannot be recorded here.'
+  return ''
+}
+
+/** The request body for a payment. `key` makes a repeated save record it once. */
+export function paymentPayload(draft: PaymentDraft, key: string): { gross_amount: number, fee_amount: number, occurred_on: string, key: string } {
+  const feeText = (draft.fee ?? '').trim()
+  return {
+    gross_amount: parseAmount(draft.amount) ?? 0,
+    fee_amount: feeText ? (parseAmount(feeText) ?? 0) : 0,
+    occurred_on: (draft.date ?? '').trim(),
+    key,
+  }
+}
+
+/**
+ * What to tell someone when a payment could not be recorded. A 403 is either
+ * the role check or a stale page, and the server's error says which.
+ */
+export function paymentErrorMessage(status: number, error = ''): string {
+  if (status === 403)
+    return /role/i.test(error) ? 'Only an owner or admin can record earnings.' : 'That request was refused. Reload the page and try again.'
+  if (status === 404)
+    return 'That sponsor no longer exists. The list has been refreshed.'
+  if (status === 422)
+    return 'That payment was rejected as invalid. Check the amount, the fees and the day.'
+  if (status === 401)
+    return 'Your session has ended. Sign in again to record this payment.'
+  if (status === 429)
+    return 'Too many requests just now. Wait a moment and try again.'
+  return `The payment could not be recorded (${status}).`
 }
 
 const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
