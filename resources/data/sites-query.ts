@@ -15,8 +15,9 @@
  * - landing pages at `/api/v1/landing-pages`: a name and what a search
  *   result would show for it
  *
- * So this page lists them, creates them as drafts, and archives or restores
- * them.
+ * So this page lists them, creates them as drafts, edits them, and archives
+ * or restores them. An edit changes what the form holds and nothing else:
+ * never the status, a landing page's blocks or a link page's theme.
  *
  * ## What the page does not do
  *
@@ -114,14 +115,22 @@ export function pageUrl(kind: PageKind, id: number): string {
   return `${kindOf(kind).endpoint}/${Math.trunc(Number(id))}`
 }
 
-/** Ask whether a page of this kind already uses the short name. */
+/**
+ * Ask whether a page of this kind already uses the short name. Two rows, so
+ * that when the page being edited is one of them the other still shows.
+ */
 export function slugCheckUrl(kind: PageKind, slug: string): string {
-  const params = new URLSearchParams({ slug, per_page: '1' })
+  const params = new URLSearchParams({ slug, per_page: '2' })
   return `${kindOf(kind).endpoint}?${params.toString()}`
 }
 
 export function slugTaken(body: { data?: unknown[] } | null | undefined): boolean {
   return Array.isArray(body?.data) && body.data.length > 0
+}
+
+/** Whether a page other than `id` uses the short name: the check for an edit. */
+export function slugTakenByOther(body: { data?: unknown[] } | null | undefined, id: number): boolean {
+  return Array.isArray(body?.data) && body.data.some(row => Number((row as { id?: unknown } | null)?.id) !== Number(id))
 }
 
 export interface PageLink {
@@ -205,6 +214,8 @@ export interface PageView {
   /** The one status this page can be moved to from here, or ''. */
   nextStatus: string
   nextLabel: string
+  /** What the form holds when this page is edited. */
+  draft: Required<PageDraft>
 }
 
 /** Normalize one API row into the shape the list renders. */
@@ -229,7 +240,27 @@ export function toPageView(kind: PageKind, row: PageRow, locale?: string): PageV
     // Whatever the status, the only way out of archived is back to a draft.
     nextStatus: archived ? 'draft' : 'archived',
     nextLabel: archived ? 'Restore as draft' : 'Archive',
+    draft: {
+      name: String((kind === 'link' ? row.title : row.name) ?? '').trim(),
+      slug: (row.slug || '').trim(),
+      bio: kind === 'link' ? String(row.bio ?? '').trim() : '',
+      links: linksText(links),
+      seoTitle: seo.title,
+      seoDescription: seo.description,
+    },
   }
+}
+
+/**
+ * Links as the links box holds them, the reverse of `parseLinks`: one per
+ * line, the label and a bar before the address, or the address alone when
+ * the label is only its host.
+ */
+export function linksText(links: ReadonlyArray<{ label: string, url: string }>): string {
+  return links.map((link) => {
+    const host = new URL(link.url).host
+    return link.label && link.label !== host ? `${link.label} | ${link.url}` : link.url
+  }).join('\n')
 }
 
 export function toPageViews(kind: PageKind, body: { data?: PageRow[] } | null | undefined, locale?: string): PageView[] {
@@ -342,6 +373,21 @@ export function pagePayload(kind: PageKind, draft: PageDraft): Record<string, st
     seo: JSON.stringify(seo),
     status: 'draft',
   }
+}
+
+/**
+ * The request body for an edit: only the fields the form holds. A cleared
+ * bio is sent empty, so it is cleared; the status, a landing page's blocks
+ * and a link page's theme are left as they are.
+ */
+export function editPayload(kind: PageKind, draft: PageDraft): Record<string, string> {
+  const fields = pagePayload(kind, draft)
+  delete fields.status
+  delete fields.document
+  delete fields.theme
+  if (kind === 'link')
+    fields.bio = (draft.bio ?? '').trim()
+  return fields
 }
 
 /** The body of a status change, or null when this page does not write that status. */

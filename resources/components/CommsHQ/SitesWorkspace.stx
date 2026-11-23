@@ -18,7 +18,10 @@ export const landingStatusOptions = PAGE_STATUSES.landing
  *
  * It manages the two kinds of page a site would hold: link pages from
  * `/api/v1/link-pages` and landing pages from `/api/v1/landing-pages`. It
- * lists them, creates them as drafts, and archives or restores them. It
+ * lists them, creates them as drafts, edits them, and archives or restores
+ * them. One form does both: `editingId` is the page it is editing, or 0 for
+ * a new one, and while a page is edited the list is put away, so on a phone
+ * the form is what is on screen. It
  * never publishes, because no route serves a page; the page says so, and
  * `sites-query.ts` records the detail.
  *
@@ -27,6 +30,7 @@ export const landingStatusOptions = PAGE_STATUSES.landing
  */
 import {
   draftError,
+  editPayload,
   kindOf,
   listErrorMessage,
   NOT_SERVED,
@@ -38,6 +42,7 @@ import {
   saveErrorMessage,
   slugCheckUrl,
   slugTaken,
+  slugTakenByOther,
   statusPayload,
   toPageViews,
 } from '../../data/sites-query'
@@ -68,6 +73,10 @@ const addSeoTitle = state('')
 const addSeoDescription = state('')
 const saving = state(false)
 const addError = state('')
+/* The page the form is editing, and its short name as stored, or 0 for a new page. */
+const editingId = state(0)
+const editingSlug = state('')
+const editingName = state('')
 
 const csrfToken = useCookie('X-CSRF-Token')
 
@@ -75,6 +84,8 @@ const isLink = derived(() => kind() === 'link')
 const kindLabel = derived(() => kindOf(kind()).label)
 const nameLabel = derived(() => kindOf(kind()).nameLabel)
 const newLabel = derived(() => `New ${kindOf(kind()).singular}`)
+const formTitle = derived(() => (editingId() ? `Edit ${editingName()}` : newLabel()))
+const formNote = derived(() => (editingId() ? 'Saving changes what is here and nothing else. The status stays as it is.' : 'It is saved as a draft.'))
 const refreshBusy = derived(() => loading() && busySource() === 'refresh')
 const prevBusy = derived(() => loading() && busySource() === 'prev')
 const nextBusy = derived(() => loading() && busySource() === 'next')
@@ -113,7 +124,7 @@ async function load(source = 'refresh') {
 }
 
 function chooseKind(next) {
-  if (next === kind() || loading() || saving())
+  if (next === kind() || loading() || saving() || editingId())
     return
   kind.set(next)
   status.set('')
@@ -177,13 +188,59 @@ async function setStatus(id, next) {
   }
 }
 
-function toggleAdd() {
-  addOpen.update(value => !value)
+function fillForm(draft) {
+  addName.set(draft.name)
+  addSlug.set(draft.slug)
+  addBio.set(draft.bio)
+  addLinks.set(draft.links)
+  addSeoTitle.set(draft.seoTitle)
+  addSeoDescription.set(draft.seoDescription)
+}
+
+const EMPTY_DRAFT = { name: '', slug: '', bio: '', links: '', seoTitle: '', seoDescription: '' }
+
+function closeForm() {
+  const wasEditing = editingId() !== 0
+  addOpen.set(false)
   addError.set('')
+  editingId.set(0)
+  editingSlug.set('')
+  editingName.set('')
+  /* An edit's fields are that page's; a new page's half-typed draft is kept. */
+  if (wasEditing)
+    fillForm(EMPTY_DRAFT)
+}
+
+function toggleAdd() {
+  if (addOpen() && !editingId()) {
+    closeForm()
+    return
+  }
+  if (editingId())
+    fillForm(EMPTY_DRAFT)
+  editingId.set(0)
+  editingSlug.set('')
+  editingName.set('')
+  addError.set('')
+  actionError.set('')
+  addOpen.set(true)
+}
+
+function editPage(item) {
+  if (saving())
+    return
+  fillForm(item.draft)
+  editingId.set(item.id)
+  editingSlug.set(item.draft.slug)
+  editingName.set(item.name)
+  addError.set('')
+  actionError.set('')
+  addOpen.set(true)
 }
 
 async function addPage() {
   const asked = kind()
+  const id = editingId()
   const draft = { name: addName(), slug: addSlug(), bio: addBio(), links: addLinks(), seoTitle: addSeoTitle(), seoDescription: addSeoDescription() }
   const problem = draftError(asked, draft)
   if (problem) {
@@ -194,41 +251,50 @@ async function addPage() {
   saving.set(true)
   addError.set('')
   try {
-    const payload = pagePayload(asked, draft)
+    const payload = id ? editPayload(asked, draft) : pagePayload(asked, draft)
 
     /* The database does not stop two pages sharing a short name here, so ask
-     * first. `sites-query.ts` records why. */
-    const check = await fetch(slugCheckUrl(asked, payload.slug), { credentials: 'same-origin', headers: { Accept: 'application/json' } })
-    if (!check.ok) {
-      addError.set(saveErrorMessage(check.status))
-      return
-    }
-    if (slugTaken(await check.json())) {
-      addError.set(saveErrorMessage(409))
-      return
+     * first. `sites-query.ts` records why. An edit that keeps its short name
+     * has nothing to ask. */
+    if (!id || payload.slug !== editingSlug()) {
+      const check = await fetch(slugCheckUrl(asked, payload.slug), { credentials: 'same-origin', headers: { Accept: 'application/json' } })
+      if (!check.ok) {
+        addError.set(saveErrorMessage(check.status))
+        return
+      }
+      const found = await check.json()
+      if (id ? slugTakenByOther(found, id) : slugTaken(found)) {
+        addError.set(saveErrorMessage(409))
+        return
+      }
     }
 
-    const response = await fetch(kindOf(asked).endpoint, {
-      method: 'POST',
+    const response = await fetch(id ? pageUrl(asked, id) : kindOf(asked).endpoint, {
+      method: id ? 'PATCH' : 'POST',
       credentials: 'same-origin',
       headers: writeHeaders(),
       body: JSON.stringify(payload),
     })
 
     if (response.status === 201 || response.ok) {
-      addName.set('')
-      addSlug.set('')
-      addBio.set('')
-      addLinks.set('')
-      addSeoTitle.set('')
-      addSeoDescription.set('')
-      addOpen.set(false)
-      status.set('')
-      page.set(1)
+      fillForm(EMPTY_DRAFT)
+      closeForm()
+      /* A new page can land anywhere in the order, so start from the top;
+       * an edited one is where it was. */
+      if (!id) {
+        status.set('')
+        page.set(1)
+      }
       await load()
       return
     }
 
+    if (id && response.status === 404) {
+      closeForm()
+      actionError.set(saveErrorMessage(404))
+      await load()
+      return
+    }
     addError.set(saveErrorMessage(response.status))
   }
   catch {
@@ -266,15 +332,15 @@ onMount(() => {
       <span>{{ notServed }}</span>
     </p>
 
-    <div class="inline-flex flex-wrap gap-1 mb-5 p-1 bg-panel border border-line rounded-pill" role="group" aria-label="Kind of page">
+    <div :if="!editingId()" class="inline-flex flex-wrap gap-1 mb-5 p-1 bg-panel border border-line rounded-pill" role="group" aria-label="Kind of page">
       <template :for="option in kinds">
         <button type="button" @click="chooseKind(option.key)" :aria-pressed="kind() === option.key" class="px-4 min-h-9 font-bold text-xs rounded-pill focus-visible:outline focus-visible:outline-[var(--coral)] focus-visible:outline-2 focus-visible:outline-offset-2" :class="kind() === option.key ? 'bg-accent text-[var(--coral-ink)]' : 'text-fg-muted hover:bg-surface-hover'">{{ option.label }}</button>
       </template>
     </div>
 
     <section :if="addOpen()" class="mb-5 p-5 bg-panel border border-line rounded-panel" aria-labelledby="add-page-title">
-      <h2 id="add-page-title" class="font-bold text-sm">{{ newLabel() }}</h2>
-      <p class="mt-1 text-fg-muted text-xs">It is saved as a draft.</p>
+      <h2 id="add-page-title" class="font-bold text-sm">{{ formTitle() }}</h2>
+      <p class="mt-1 text-fg-muted text-xs">{{ formNote() }}</p>
       <div class="grid gap-3 sm:grid-cols-2 mt-4">
         <label class="block font-bold text-xs">
           {{ nameLabel() }}
@@ -312,16 +378,17 @@ onMount(() => {
       <p :if="addError()" class="mt-3 font-bold text-danger text-xs" role="alert">{{ addError() }}</p>
       <div class="flex gap-2 mt-4">
         <button type="button" @click="addPage()" :disabled="saving()" :aria-busy="saving()" class="px-5 min-h-11 font-bold text-[var(--coral-ink)] text-sm bg-accent rounded-pill focus-visible:outline focus-visible:outline-[var(--coral)] focus-visible:outline-2 focus-visible:outline-offset-2 disabled:opacity-60">
-          <span :show="!saving()">Save draft</span>
+          <span :show="!saving() && !editingId()">Save draft</span>
+          <span :show="!saving() && editingId()" style="display:none">Save changes</span>
           <span :show="saving()" style="display:none">Saving...</span>
         </button>
-        <button type="button" @click="toggleAdd()" class="px-5 min-h-11 font-bold text-fg text-sm bg-panel hover:bg-surface-hover border border-line rounded-pill focus-visible:outline focus-visible:outline-[var(--coral)] focus-visible:outline-2 focus-visible:outline-offset-2">Cancel</button>
+        <button type="button" @click="closeForm()" class="px-5 min-h-11 font-bold text-fg text-sm bg-panel hover:bg-surface-hover border border-line rounded-pill focus-visible:outline focus-visible:outline-[var(--coral)] focus-visible:outline-2 focus-visible:outline-offset-2">Cancel</button>
       </div>
     </section>
 
     <p :if="actionError()" class="mb-5 p-4 font-bold text-danger text-sm bg-panel border border-line rounded-panel" role="alert">{{ actionError() }}</p>
 
-    <section class="overflow-hidden bg-panel border border-line rounded-panel" aria-labelledby="pages-title">
+    <section :if="!editingId()" class="overflow-hidden bg-panel border border-line rounded-panel" aria-labelledby="pages-title">
       <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between p-5 border-b border-line">
         <h2 id="pages-title" class="font-bold">{{ kindLabel() }}</h2>
         <label :if="isLink()" class="block">
@@ -382,6 +449,7 @@ onMount(() => {
               </ul>
             </div>
             <div class="flex flex-wrap gap-2 shrink-0">
+              <button type="button" @click="editPage(item)" class="px-4 min-h-11 font-bold text-fg text-sm bg-panel hover:bg-surface-hover border border-line rounded-pill focus-visible:outline focus-visible:outline-[var(--coral)] focus-visible:outline-2">Edit</button>
               <button type="button" @click="setStatus(item.id, item.nextStatus)" :disabled="busyId() !== 0" :aria-busy="busyId() === item.id" class="px-4 min-h-11 font-bold text-fg text-sm bg-panel hover:bg-surface-hover border border-line rounded-pill focus-visible:outline focus-visible:outline-[var(--coral)] focus-visible:outline-2 disabled:opacity-50 disabled:cursor-not-allowed">{{ busyId() === item.id ? 'Updating...' : item.nextLabel }}</button>
             </div>
           </article>

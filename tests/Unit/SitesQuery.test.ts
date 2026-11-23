@@ -10,6 +10,7 @@
 import { describe, expect, test } from 'bun:test'
 import {
   draftError,
+  editPayload,
   kindOf,
   LINK_LABEL_MAX,
   LINKS_MAX,
@@ -26,7 +27,9 @@ import {
   SETTABLE_STATUSES,
   slugCheckUrl,
   slugTaken,
+  slugTakenByOther,
   statusPayload,
+  linksText,
   storedLinks,
   toPageView,
   toPageViews,
@@ -68,7 +71,7 @@ describe('the requests', () => {
   })
 
   test('a short name is looked up before a save, and any row means taken', () => {
-    expect(params(slugCheckUrl('link', 'links'))).toEqual({ slug: 'links', per_page: '1' })
+    expect(params(slugCheckUrl('link', 'links'))).toEqual({ slug: 'links', per_page: '2' })
     expect(slugCheckUrl('landing', 'a b').startsWith('/api/v1/landing-pages?')).toBe(true)
     expect(slugTaken({ data: [{ id: 1 }] })).toBe(true)
     for (const body of [{ data: [] }, {}, null, undefined])
@@ -225,5 +228,50 @@ describe('what the page shows and saves', () => {
   test('the user-visible text has no em-dash or en-dash', async () => {
     const text = `${await source('resources/data/sites-query.ts')}${await source('resources/components/CommsHQ/SitesWorkspace.stx')}`
     expect(text).not.toMatch(/[—–]/)
+  })
+})
+
+describe('editing', () => {
+  const linkRow = { id: 3, title: ' Find us ', slug: 'links', bio: 'Weekly', status: 'published', links: '[{"label":"Site","url":"https://example.com/"},{"label":"example.org","url":"https://example.org/"},{"label":"Bad","url":"javascript:alert(1)"}]' }
+
+  test('a row carries what the form holds for it', () => {
+    expect(toPageView('link', linkRow).draft).toEqual({
+      name: 'Find us',
+      slug: 'links',
+      bio: 'Weekly',
+      links: 'Site | https://example.com/\nhttps://example.org/',
+      seoTitle: '',
+      seoDescription: '',
+    })
+    expect(toPageView('landing', { id: 5, name: 'Welcome', slug: 'welcome', seo: '{"title":"Hi","description":"There"}' }).draft)
+      .toMatchObject({ name: 'Welcome', slug: 'welcome', bio: '', links: '', seoTitle: 'Hi', seoDescription: 'There' })
+  })
+
+  test('the links box reads back what it wrote', () => {
+    const links = [{ label: 'News', url: 'https://example.com/n' }, { label: 'example.org', url: 'https://example.org/' }]
+    expect(parseLinks(linksText(links)).links).toEqual(links)
+    expect(linksText([])).toBe('')
+  })
+
+  test('an edit sends only the form\'s fields: never the status, blocks or theme', () => {
+    const link = editPayload('link', { name: 'Links', slug: 'links', bio: '', links: 'https://example.com' })
+    expect(link).toEqual({ title: 'Links', slug: 'links', links: '[{"label":"example.com","url":"https://example.com/"}]', bio: '' })
+    const landing = editPayload('landing', { name: 'Welcome', slug: 'welcome', seoDescription: 'Hello' })
+    expect(landing).toEqual({ name: 'Welcome', slug: 'welcome', seo: '{"description":"Hello"}' })
+  })
+
+  test('a short name is taken only when another page has it', () => {
+    expect(slugTakenByOther({ data: [{ id: 3 }] }, 3)).toBe(false)
+    expect(slugTakenByOther({ data: [{ id: 3 }, { id: 9 }] }, 3)).toBe(true)
+    expect(slugTakenByOther({ data: [{ id: '9' }] }, 3)).toBe(true)
+    expect(slugTakenByOther(null, 3)).toBe(false)
+  })
+
+  test('the page saves an edit with PATCH, and asks about a short name only when it changed', async () => {
+    const page = await source('resources/components/CommsHQ/SitesWorkspace.stx')
+    expect(page).toContain("const payload = id ? editPayload(asked, draft) : pagePayload(asked, draft)")
+    expect(page).toContain("if (!id || payload.slug !== editingSlug()) {")
+    expect(page).toContain("method: id ? 'PATCH' : 'POST',")
+    expect(page).toContain('@click="editPage(item)"')
   })
 })
