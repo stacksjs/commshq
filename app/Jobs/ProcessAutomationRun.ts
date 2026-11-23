@@ -6,7 +6,7 @@ import { log } from '@stacksjs/logging'
 import { Job } from '@stacksjs/queue'
 import { estimateSmsSegments, isWithinSmsQuietHours, sendSms } from '@stacksjs/sms'
 import { withUnsubscribe } from '../Mail/unsubscribe'
-import { messageHtml, readRunnableGraph, withCartLink } from '../Support/automationGraph'
+import { messageHtml, readRunnableGraph, withCartLink, withSmsCartLink } from '../Support/automationGraph'
 import type { RunnableStep } from '../Support/automationGraph'
 import { automationStepKey } from '../Support/automationFlow'
 import { verifiedSender } from '../Support/automationRunner'
@@ -305,9 +305,10 @@ export default new Job({
       await setRun(runId, teamId, { current_node_id: step.id })
       try {
         if (step.type === 'send_sms') {
-          const segments = estimateSmsSegments(step.config.body).segments
+          const body = withSmsCartLink(step.config.body, cartUrl)
+          const segments = estimateSmsSegments(body).segments
           await assertQuota(teamId, 'sms', segments)
-          const result = await sendSms({ to: phone, body: step.config.body, statusCallback: config.sms?.drivers?.twilio?.statusCallback } as any)
+          const result = await sendSms({ to: phone, body, statusCallback: config.sms?.drivers?.twilio?.statusCallback } as any)
           if (!result?.success)
             throw new Error(result?.error || 'SMS provider rejected the message')
           await setStep(stepId, teamId, { status: 'completed', completed_at: nowIso(), output: JSON.stringify({ sent: true, messageId: result.messageId ?? null, segments }) })

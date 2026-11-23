@@ -10,7 +10,7 @@
  */
 import { describe, expect, test } from 'bun:test'
 import { contextCartId } from '../../app/Jobs/ProcessAutomationRun'
-import { CART_LINK_LABEL, runIdempotencyKey, TRIGGER_TYPES, withCartLink } from '../../app/Support/automationGraph'
+import { CART_LINK_LABEL, runIdempotencyKey, TRIGGER_TYPES, withCartLink, withSmsCartLink } from '../../app/Support/automationGraph'
 import { CART_ABANDON_MINUTES, CART_STATUSES, CART_TRIGGER_MAX_HOURS, cartFromCheckout, closedStatus, laterTime, recoveryLink, remindable } from '../../app/Support/commerceCarts'
 import { cartsLine, toRevenueView } from '../../resources/data/analytics-query'
 import { triggerLabel, turnOnNote } from '../../resources/data/automations-query'
@@ -138,6 +138,29 @@ describe('the email', () => {
 
   test('is unchanged with no cart', () => {
     expect(withCartLink('<p>Hi</p>', 'Hi', null)).toEqual({ html: '<p>Hi</p>', text: 'Hi' })
+  })
+})
+
+describe('the text', () => {
+  test('ends with the link back, on a line of its own', () => {
+    expect(withSmsCartLink(' Still thinking? ', 'https://shop.example/r?a=1')).toBe(`Still thinking?\n${CART_LINK_LABEL}: https://shop.example/r?a=1`)
+  })
+
+  test('is unchanged with no cart', () => {
+    expect(withSmsCartLink('Hi', null)).toBe('Hi')
+  })
+
+  test('is sent, and counted against the allowance, with the link in it', async () => {
+    const job = await Bun.file(new URL('../../app/Jobs/ProcessAutomationRun.ts', import.meta.url)).text()
+    expect(job).toContain('const body = withSmsCartLink(step.config.body, cartUrl)')
+    expect(job).toContain('const segments = estimateSmsSegments(body).segments')
+    expect(job).toContain('const result = await sendSms({ to: phone, body,')
+    expect(job).not.toContain('body: step.config.body')
+  })
+
+  test('the editor says the line is added, only for a cart automation', async () => {
+    const builder = await Bun.file(new URL('../../resources/components/CommsHQ/AutomationBuilder.stx', import.meta.url)).text()
+    expect(builder).toContain("editTrigger() === 'cart_abandoned' ? ' A line linking back to the cart is added at the end.' : ''")
   })
 })
 

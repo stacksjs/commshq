@@ -190,6 +190,15 @@ export function withCartLink(html: string, text: string, url: string | null): { 
 }
 
 /**
+ * The same link at the end of a cart automation's text, on a line of its
+ * own. The link is counted with the text, so the segments charged against
+ * the SMS allowance are the ones the provider actually sends.
+ */
+export function withSmsCartLink(body: string, url: string | null): string {
+  return url ? `${body.trim()}\n${CART_LINK_LABEL}: ${url}` : body
+}
+
+/**
  * A plain-text message as email HTML: escaped, with a paragraph per blank
  * line and a line break per newline. Nothing the author typed becomes markup.
  */

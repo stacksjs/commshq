@@ -129,7 +129,7 @@ const readiness = derived(() => readinessError(editSenderId(), editSteps()))
 const readinessText = derived(() => (readiness() ? `Not ready to turn on. ${readiness()}` : 'Ready to turn on once saved.'))
 const triggerDetail = derived(() => triggers.find(item => item.value === addTrigger())?.detail ?? '')
 const stepTitle = derived(() => `${stepId() ? 'Edit' : 'Add'} ${stepKind() === 'email' ? 'an email' : (stepKind() === 'sms' ? 'a text' : 'a wait')}`)
-const smsCount = derived(() => `${stepBody().trim().length} of 640 characters. A long text is sent as several, each counted against the SMS allowance.`)
+const smsCount = derived(() => `${stepBody().trim().length} of 640 characters.${editTrigger() === 'cart_abandoned' ? ' A line linking back to the cart is added at the end.' : ''} A long text is sent as several, each counted against the SMS allowance.`)
 const enrollText = derived(() => enrollLabel(confirmCount(), confirmLimit()))
 const confirmNote = derived(() => turnOnNote(enrollText() !== ''))
 

@@ -84,7 +84,7 @@ export const AUTOMATION_STATUSES = [
 export const TRIGGERS = [
   { value: 'subscriber_joined', label: 'When someone confirms a signup', detail: 'Starts for each person who confirms a signup through one of your forms.' },
   { value: 'purchase_made', label: 'When a contact places an order', detail: 'Starts when a connected store sends an order from someone who is already a contact.' },
-  { value: 'cart_abandoned', label: 'When a contact leaves a cart', detail: 'Starts when a contact leaves a cart in a connected Shopify store for an hour without ordering. Each email ends with a link back to the cart, and the messages stop once they buy.' },
+  { value: 'cart_abandoned', label: 'When a contact leaves a cart', detail: 'Starts when a contact leaves a cart in a connected Shopify store for an hour without ordering. Each email and text ends with a link back to the cart, and the messages stop once they buy.' },
 ] as const
 
 export const DEFAULT_TRIGGER_TYPE = 'subscriber_joined'
