@@ -52,6 +52,10 @@ route.delete('/v1/sender-domains/{id}', 'Actions/Api/V1/Sending/DeleteSenderDoma
 // pending with no way to change it.
 route.post('/v1/sender-identities', 'Actions/Api/V1/Sending/CreateSenderIdentityAction').middleware('auth').middleware('team').rateLimit(20, 'minute')
 
+// The earnings ledger is append-only and its columns are not fillable, so
+// the generated API only reads it. A sponsor's payment is recorded here.
+route.post('/v1/sponsors/{id}/payments', 'Actions/Api/V1/Monetization/RecordSponsorPaymentAction').middleware('auth').middleware('team').rateLimit(30, 'minute')
+
 // Credentials are stored encrypted and never returned; the generated API
 // only reads them.
 route.post('/v1/integration-credentials', 'Actions/Api/V1/Integrations/StoreIntegrationCredentialAction').middleware('auth').middleware('team').rateLimit(10, 'minute')
