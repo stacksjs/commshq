@@ -15,7 +15,7 @@
  * request scope every accessor answers an empty value instead of throwing,
  * which is what keeps a standalone render of this component working.
  *
- * The drawer is a <details>, not a signal. config/crosswind.ts already carries
+ * The drawer is a <details>, not a signal. config/css.ts already carries
  * the `body:has(.mobile-menu[open])` scroll lock the marketing nav relies on,
  * so reusing the element reuses that rule, and a disclosure a browser opens
  * itself needs no script and survives a failed hydration.

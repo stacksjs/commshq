@@ -5,7 +5,7 @@
  * Outlook lays out with Word, and neither runs script. So this is the shape
  * that holds up everywhere: nested tables, every style inline, a button built
  * from a padded table cell around a link, and system fonts. The colours are
- * CommsHQ's light theme (config/crosswind.ts), which reads well on the white
+ * CommsHQ's light theme (config/css.ts), which reads well on the white
  * and near-white backgrounds clients force on email.
  *
  * The header names the list, not CommsHQ: the reader signed up to that list,

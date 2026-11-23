@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'bun:test'
 import { readFileSync } from 'node:fs'
 import { join } from 'node:path'
-import theme from '../../config/crosswind'
+import theme from '../../config/css'
 // The installed STX package does not export these subpaths by bare specifier.
 import { loadCssEngine } from '../../node_modules/@stacksjs/stx/dist/dev-server/ts-css.js'
 import { mergeCssConfig } from '../../node_modules/@stacksjs/stx/dist/ts-css-config.js'
@@ -11,7 +11,7 @@ const auth = readFileSync(join(import.meta.dir, '../../resources/views/layouts/a
 
 /*
  * These used to read the CSS out of the page's own <style> block. That CSS is
- * in config/crosswind.ts now (stx-standards rule 3), so they generate it
+ * in config/css.ts now (stx-standards rule 3), so they generate it
  * instead -- which is the stronger assertion anyway: a rule can be present in
  * the config and still not reach the page, and matching the source text never
  * proved it did.
@@ -95,7 +95,7 @@ describe('mobile layout contracts', () => {
      * loader this file uses, that class emits its ::-webkit-details-marker rule.
      *
      * The rule stays a preflight anyway, with the two selectors it belongs
-     * with (see config/crosswind.ts), so this assertion is deliberately about
+     * with (see config/css.ts), so this assertion is deliberately about
      * the OUTPUT and not the spelling: without it the twin arrows come back
      * and nothing fails.
      */

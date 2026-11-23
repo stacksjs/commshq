@@ -13,7 +13,7 @@ const config: Partial<StxConfig> = {
    * those paths never see. `plugins` was one, so @stacksjs/components never
    * loaded there: every <Badge> silently resolved to the framework's own
    * default instead, which ignores `className` and left the badge shortcuts in
-   * config/crosswind.ts as dead code. A library-only tag such as <Breadcrumb>
+   * config/css.ts as dead code. A library-only tag such as <Breadcrumb>
    * did not resolve at all. config/ui.ts looked correct throughout, which is
    * what made it hard to see. Filed as stacksjs/stx#2056.
    */

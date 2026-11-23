@@ -38,7 +38,7 @@ export default {
   /*
    * No `app.head.link`. It carried /component-tokens.css, which declared a
    * second copy of the palette and, being unlayered, beat the one in
-   * config/crosswind.ts on every page. The file is deleted and its two
+   * config/css.ts on every page. The file is deleted and its two
    * extra tokens are folded into that palette (stx-standards rule 3, §11.2).
    */
 
