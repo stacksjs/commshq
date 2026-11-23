@@ -1,4 +1,5 @@
 import { config } from '@stacksjs/config'
+import { escapeHtml, renderEmail } from './layout'
 
 export interface ConfirmationMessage {
   to: string[]
@@ -17,10 +18,6 @@ export interface ConfirmationOptions {
   replyTo?: string
 }
 
-function escapeHtml(value: string): string {
-  return value.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;')
-}
-
 /**
  * The double opt-in email.
  *
@@ -35,15 +32,25 @@ export function buildConfirmationMessage(to: string, confirmationUrl: string, op
   const subject = list ? `Confirm your subscription to ${list}` : 'Confirm your subscription'
   const lead = list
     ? `You asked to get emails from ${escapeHtml(list)}. One click confirms it.`
-    : 'One quick step remains.'
-  const url = escapeHtml(confirmationUrl)
+    : 'You asked to join this list. One click confirms it.'
+  const brand = list || String(from.name || 'CommsHQ')
 
   return {
     to: [to],
     from: { name: String(from.name || 'CommsHQ'), address: String(from.address) },
     replyTo: options.replyTo || undefined,
     subject,
-    html: `<p>${lead}</p><p><a href="${url}">Confirm your subscription</a></p><p>If you did not ask for this, ignore this email and you will not hear from us again.</p>`,
-    text: `${list ? `You asked to get emails from ${list}. ` : ''}Confirm your subscription:\n${confirmationUrl}\n\nIf you did not ask for this, ignore this email and you will not hear from us again.`,
+    html: renderEmail({
+      brand,
+      preheader: 'One click confirms your subscription.',
+      heading: 'Confirm your subscription',
+      paragraphs: [lead],
+      button: { label: 'Confirm subscription', url: confirmationUrl },
+      footer: [
+        'If you did not ask for this, ignore this email. You will not be added, and you will not hear from us again.',
+        `Sent to ${escapeHtml(to)}.`,
+      ],
+    }),
+    text: `${list ? `You asked to get emails from ${list}. ` : ''}Confirm your subscription:\n${confirmationUrl}\n\nIf you did not ask for this, ignore this email. You will not be added, and you will not hear from us again.`,
   }
 }

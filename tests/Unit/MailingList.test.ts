@@ -4,6 +4,7 @@ import { resolve } from 'node:path'
 import { originAllowed, parseFormSettings, wantsHtml } from '../../app/Support/formSettings'
 import { createPublicToken, verifyPublicToken } from '../../app/Support/signedToken'
 import { buildConfirmationMessage } from '../../app/Mail/ConfirmSubscription'
+import { brandInitial, renderEmail } from '../../app/Mail/layout'
 
 describe('form settings', () => {
   it('reads the list, sender, landing page and origins from the schema document', () => {
@@ -61,6 +62,39 @@ describe('confirmation email', () => {
   it('escapes a list name before it reaches the HTML', () => {
     const message = buildConfirmationMessage('r@example.com', 'https://x/confirm/t', { listName: '<b>Lists</b>' })
     expect(message.html).not.toContain('<b>Lists</b>')
+  })
+
+  it('is a full email page: a header naming the list, a button, the link written out, and who it went to', () => {
+    const message = buildConfirmationMessage('reader@example.com', 'https://commshq.org/confirm/a?b=1&c=2', { listName: 'Chris Breuer' })
+    expect(message.html.startsWith('<!doctype html>')).toBe(true)
+    expect(message.html).toContain('>C</td>')
+    expect(message.html).toContain('>Chris Breuer</td>')
+    expect(message.html).toContain('>Confirm subscription</a>')
+    expect(message.html.match(/href="https:\/\/commshq\.org\/confirm\/a\?b=1&amp;c=2"/g)?.length).toBe(2)
+    expect(message.html).toContain('Sent to reader@example.com.')
+    expect(message.html).not.toMatch(/[–—]/)
+  })
+
+  it('names the sender in the header when the form names no list', () => {
+    const message = buildConfirmationMessage('r@example.com', 'https://x/confirm/t', { from: { name: 'CommsHQ', address: 'no-reply@commshq.org' } })
+    expect(message.subject).toBe('Confirm your subscription')
+    expect(message.html).toContain('>CommsHQ</td>')
+  })
+})
+
+describe('email frame', () => {
+  it('takes the first letter or digit of the brand for its tile', () => {
+    expect(brandInitial('chris breuer')).toBe('C')
+    expect(brandInitial('  "42 Weekly"')).toBe('4')
+    expect(brandInitial('')).toBe('C')
+  })
+
+  it('escapes what it is given and leaves paragraphs as written', () => {
+    const html = renderEmail({ brand: '<x>', preheader: '"p"', heading: 'H & co', paragraphs: ['<em>ok</em>'], footer: [] })
+    expect(html).toContain('&lt;x&gt;')
+    expect(html).toContain('H &amp; co')
+    expect(html).toContain('<em>ok</em>')
+    expect(html).not.toContain('<x>')
   })
 })
 
