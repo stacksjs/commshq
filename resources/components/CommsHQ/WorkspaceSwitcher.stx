@@ -36,7 +36,7 @@ async function load() {
   }
 }
 
-async function choose(id) {
+async function choose(id: ReturnType<typeof toWorkspaceMenu>['others'][number]['id']) {
   if (switchingId())
     return
   switchingId.set(id)

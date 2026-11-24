@@ -44,10 +44,11 @@ import {
   toProfileViews,
   triageUrl,
 } from '../../data/reputation-query'
+import type { AlertView, MentionView, ProfileView } from '../../data/reputation-query'
 
-const profiles = state([])
-const mentions = state([])
-const alerts = state([])
+const profiles = state<ProfileView[]>([])
+const mentions = state<MentionView[]>([])
+const alerts = state<AlertView[]>([])
 const hasMore = state(false)
 const page = state(1)
 const sentiment = state('')
@@ -87,7 +88,7 @@ async function load(source = '') {
   loading.set(true)
   errorText.set('')
   try {
-    const options = { credentials: 'same-origin', headers: { Accept: 'application/json' } }
+    const options: RequestInit = { credentials: 'same-origin', headers: { Accept: 'application/json' } }
     const responses = await Promise.all([
       fetch(profilesUrl(), options),
       fetch(alertsUrl(), options),
@@ -140,7 +141,7 @@ function previousPage() {
   void load('prev')
 }
 
-async function send(key, url, body) {
+async function send(key: string, url: string, body: { status?: string, decision?: string }) {
   if (busyKey())
     return
   busyKey.set(key)
@@ -173,11 +174,11 @@ async function send(key, url, body) {
   }
 }
 
-function triage(id, status) {
+function triage(id: MentionView['id'], status: string) {
   void send(`mention:${id}`, triageUrl(id), { status })
 }
 
-function decide(id, decision) {
+function decide(id: AlertView['id'], decision: string) {
   void send(`alert:${id}`, decisionUrl(id), { decision })
 }
 

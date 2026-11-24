@@ -36,8 +36,9 @@ import {
   saveErrorMessage,
   toPublicationViews,
 } from '../../data/publications-query'
+import type { PublicationView } from '../../data/publications-query'
 
-const publications = state([])
+const publications = state<PublicationView[]>([])
 const hasMore = state(false)
 const page = state(1)
 const status = state('')
@@ -125,7 +126,7 @@ function writeHeaders() {
   }
 }
 
-async function setStatus(id, next) {
+async function setStatus(id: PublicationView['id'], next: string) {
   if (busyId() || !next)
     return
   busyId.set(id)

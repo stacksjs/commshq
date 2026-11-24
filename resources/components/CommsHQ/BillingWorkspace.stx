@@ -27,9 +27,10 @@ import {
   toUsagePeriods,
   usageMetersUrl,
 } from '../../data/billing-query'
+import type { SubscriptionView } from '../../data/billing-query'
 
 const meterRows = state([])
-const subscriptions = state([])
+const subscriptions = state<SubscriptionView[]>([])
 const periodKey = state('')
 const loading = state(true)
 const errorText = state('')
@@ -43,7 +44,7 @@ const showMeters = derived(() => ready() && meters().length > 0)
 const showNoMeters = derived(() => ready() && meters().length === 0)
 const showPeriods = derived(() => ready() && periods().length > 1)
 
-function selectPeriod(key) {
+function selectPeriod(key: ReturnType<typeof toUsagePeriods>[number]['key']) {
   periodKey.set(key)
 }
 
@@ -51,7 +52,7 @@ async function load() {
   loading.set(true)
   errorText.set('')
   try {
-    const options = { credentials: 'same-origin', headers: { Accept: 'application/json' } }
+    const options: RequestInit = { credentials: 'same-origin', headers: { Accept: 'application/json' } }
     const [usage, plans] = await Promise.all([
       fetch(usageMetersUrl(), options),
       fetch(subscriptionsUrl(), options),

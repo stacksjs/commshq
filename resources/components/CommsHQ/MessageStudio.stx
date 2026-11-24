@@ -37,8 +37,9 @@ import {
   templatesUrl,
   toTemplateViews,
 } from '../../data/templates-query'
+import type { TemplateView } from '../../data/templates-query'
 
-const templates = state([])
+const templates = state<TemplateView[]>([])
 const total = state(null)
 const hasMore = state(false)
 const page = state(1)

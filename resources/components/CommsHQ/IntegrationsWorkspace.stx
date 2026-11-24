@@ -39,8 +39,9 @@ import {
   listErrorMessage,
   toConnectorViews,
 } from '../../data/integrations-query'
+import type { ConnectorView } from '../../data/integrations-query'
 
-const connectors = state([])
+const connectors = state<ConnectorView[]>([])
 const loading = state(true)
 const errorText = state('')
 const actionError = state('')
@@ -91,7 +92,7 @@ function writeHeaders() {
   }
 }
 
-function openFor(provider) {
+function openFor(provider: ConnectorView['provider']) {
   addProvider.set(provider)
   addValue.set('')
   addError.set('')
@@ -141,7 +142,7 @@ async function store() {
   }
 }
 
-function askRemove(id) {
+function askRemove(id: ConnectorView['credentialId']) {
   actionError.set('')
   actionNotice.set('')
   confirmId.set(id)
@@ -151,7 +152,7 @@ function cancelRemove() {
   confirmId.set(0)
 }
 
-async function remove(id) {
+async function remove(id: ConnectorView['credentialId']) {
   if (busyId() || confirmId() !== id)
     return
   busyId.set(id)

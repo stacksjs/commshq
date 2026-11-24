@@ -48,13 +48,14 @@ import {
   toEarningViews,
   toSponsorViews,
 } from '../../data/monetization-query'
+import type { SponsorView } from '../../data/monetization-query'
 
-const sponsors = state([])
+const sponsors = state<SponsorView[]>([])
 /* Raw ledger rows; the views are derived so a sponsor's name fills in once
  * the sponsor list has loaded, whichever request lands first. */
 const earningRows = state([])
 /* Every sponsor name the page has seen, across pages and filters. */
-const sponsorNames = state({})
+const sponsorNames = state<Record<number, string>>({})
 const earnings = derived(() => toEarningViews({ data: earningRows() }, undefined, sponsorNames()))
 const earningsError = state('')
 const earningsLoaded = state(false)
@@ -204,7 +205,7 @@ function writeHeaders() {
   }
 }
 
-async function setStatus(id, next) {
+async function setStatus(id: SponsorView['id'], next: string) {
   if (busyId() || !next)
     return
   busyId.set(id)
@@ -238,7 +239,7 @@ function toggleAdd() {
   payId.set(0)
 }
 
-function openPayment(id, name) {
+function openPayment(id: SponsorView['id'], name: SponsorView['name']) {
   const today = localDate()
   payId.set(id)
   payName.set(name)

@@ -40,8 +40,9 @@ import {
   segmentsUrl,
   toSegmentViews,
 } from '../../data/segments-query'
+import type { SegmentView } from '../../data/segments-query'
 
-const segments = state([])
+const segments = state<SegmentView[]>([])
 const total = state(null)
 const hasMore = state(false)
 const page = state(1)
