@@ -44,12 +44,13 @@ import {
   toMe,
   toMemberViews,
 } from '../../data/teams-query'
+import type { InvitationView, MemberView } from '../../data/teams-query'
 
 const teamId = state(0)
 const teamName = state('')
 const me = state(toMe(null))
-const members = state([])
-const invitations = state([])
+const members = state<MemberView[]>([])
+const invitations = state<InvitationView[]>([])
 const loading = state(true)
 const errorText = state('')
 const actionError = state('')
@@ -113,7 +114,7 @@ function writeHeaders() {
 }
 
 /* One request, the server's own words on a refusal, then the list again. */
-async function change(key, url, method, payload, done) {
+async function change(key: string, url: string, method: string, payload: { status?: string, role?: string } | null, done: string) {
   if (busyKey())
     return
   busyKey.set(key)
@@ -142,17 +143,17 @@ async function change(key, url, method, payload, done) {
   }
 }
 
-function setStatus(id, next) {
+function setStatus(id: MemberView['id'], next: string) {
   void change(`member:${id}`, memberUrl(teamId(), id), 'PATCH', { status: next }, next === 'suspended' ? 'That member is suspended and can no longer open the workspace.' : 'That member is active again.')
 }
 
-function setRole(id, next) {
+function setRole(id: MemberView['id'], next: MemberView['swapRole']) {
   if (!next)
     return
   void change(`member:${id}`, memberUrl(teamId(), id), 'PATCH', { role: next }, 'That member\'s role has changed.')
 }
 
-function askRemove(id) {
+function askRemove(id: MemberView['id']) {
   actionError.set('')
   actionNotice.set('')
   confirmId.set(id)
@@ -162,17 +163,17 @@ function cancelRemove() {
   confirmId.set(0)
 }
 
-function remove(id) {
+function remove(id: MemberView['id']) {
   if (confirmId() !== id)
     return
   void change(`member:${id}`, memberUrl(teamId(), id), 'DELETE', null, 'That member has been removed from the workspace.')
 }
 
-function resend(id) {
+function resend(id: InvitationView['id']) {
   void change(`invitation:${id}`, resendUrl(teamId(), id), 'POST', null, 'The invitation was sent again.')
 }
 
-function revoke(id) {
+function revoke(id: InvitationView['id']) {
   void change(`invitation:${id}`, invitationUrl(teamId(), id), 'DELETE', null, 'The invitation was revoked. Its link no longer works.')
 }
 

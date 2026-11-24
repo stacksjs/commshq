@@ -46,10 +46,11 @@ import {
   toSenderOptions,
   verifiedSendersUrl,
 } from '../../data/campaigns-query'
+import type { AudienceOption, CampaignView, SenderOption } from '../../data/campaigns-query'
 
-const campaigns = state([])
-const audiences = state([])
-const fromSenders = state([])
+const campaigns = state<CampaignView[]>([])
+const audiences = state<AudienceOption[]>([])
+const fromSenders = state<SenderOption[]>([])
 const hasMore = state(false)
 const page = state(1)
 const status = state('')
@@ -166,7 +167,7 @@ function writeHeaders() {
   }
 }
 
-async function setStatus(id, next) {
+async function setStatus(id: CampaignView['id'], next: string) {
   if (busyId())
     return
   busyId.set(id)
@@ -195,7 +196,7 @@ async function setStatus(id, next) {
   }
 }
 
-function askSend(id) {
+function askSend(id: CampaignView['id']) {
   actionError.set('')
   actionNotice.set('')
   confirmId.set(id)
@@ -205,7 +206,7 @@ function cancelSend() {
   confirmId.set(0)
 }
 
-async function send(id) {
+async function send(id: CampaignView['id']) {
   if (busyId() || confirmId() !== id)
     return
   busyId.set(id)
@@ -239,11 +240,11 @@ function toggleAdd() {
   addError.set('')
 }
 
-function pickAudience(id) {
+function pickAudience(id: AudienceOption['id']) {
   addAudience.set(id)
 }
 
-function pickSender(id) {
+function pickSender(id: SenderOption['id']) {
   addSender.set(id)
 }
 

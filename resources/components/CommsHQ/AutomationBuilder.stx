@@ -62,12 +62,14 @@ import {
   withFields,
 } from '../../data/automations-query'
 import { toSenderOptions, verifiedSendersUrl } from '../../data/campaigns-query'
+import type { AutomationView, EditorStep } from '../../data/automations-query'
+import type { SenderOption } from '../../data/campaigns-query'
 
 const howItRuns = HOW_IT_RUNS
 const waitUnits = WAIT_UNITS
 const triggers = TRIGGERS
 
-const automations = state([])
+const automations = state<AutomationView[]>([])
 const hasMore = state(false)
 const page = state(1)
 const status = state('')
@@ -98,24 +100,24 @@ const addError = state('')
 const editId = state(0)
 const editName = state('')
 const editGraph = state('')
-const editSteps = state([])
+const editSteps = state<EditorStep[]>([])
 const editSenderId = state(0)
 const editTrigger = state('subscriber_joined')
 const editSaving = state(false)
 const editError = state('')
 const editSaved = state('')
-const senders = state([])
+const senders = state<SenderOption[]>([])
 const sendersLoading = state(false)
 const sendersError = state('')
 
 /* The step being written: a new one, or one from the list by id. */
 const stepOpen = state(false)
 const stepId = state('')
-const stepKind = state('email')
+const stepKind = state<EditorStep['kind']>('email')
 const stepSubject = state('')
 const stepBody = state('')
 const stepAmount = state('1')
-const stepUnit = state('days')
+const stepUnit = state<NonNullable<EditorStep['unit']>>('days')
 const stepProblem = state('')
 
 const csrfToken = useCookie('X-CSRF-Token')
@@ -192,7 +194,7 @@ function writeHeaders() {
   }
 }
 
-async function setStatus(id, next) {
+async function setStatus(id: AutomationView['id'], next: string) {
   /* `statusPayload` returns nothing for `active`, which goes through publish. */
   const payload = statusPayload(next)
   if (busyId() || !payload)
@@ -226,7 +228,7 @@ async function setStatus(id, next) {
 /* Two presses: once on, it sends to everyone its trigger catches. The first
  * press also asks how many people already qualify, so the second can offer
  * to include them, saying how many, rather than doing it unasked. */
-async function turnOn(id, enrollExisting = false) {
+async function turnOn(id: AutomationView['id'], enrollExisting = false) {
   if (busyId())
     return
   if (confirmId() !== id) {
@@ -277,7 +279,7 @@ function cancelConfirm() {
   confirmId.set(0)
 }
 
-function chooseTrigger(value) {
+function chooseTrigger(value: (typeof TRIGGERS)[number]['value']) {
   addTrigger.set(value)
 }
 
@@ -343,7 +345,7 @@ async function loadSenders() {
   }
 }
 
-function openEditor(id, name, graph, trigger) {
+function openEditor(id: AutomationView['id'], name: AutomationView['name'], graph: AutomationView['graph'], trigger: AutomationView['triggerType']) {
   if (editId() === id) {
     closeEditor()
     return
@@ -368,17 +370,17 @@ function closeEditor() {
   editSaved.set('')
 }
 
-function chooseEditTrigger(value) {
+function chooseEditTrigger(value: (typeof TRIGGERS)[number]['value']) {
   editTrigger.set(value)
   editSaved.set('')
 }
 
-function chooseSender(id) {
+function chooseSender(id: SenderOption['id']) {
   editSenderId.set(id)
   editSaved.set('')
 }
 
-function startStep(kind) {
+function startStep(kind: EditorStep['kind']) {
   stepOpen.set(true)
   stepId.set('')
   stepKind.set(kind)
@@ -389,7 +391,7 @@ function startStep(kind) {
   stepProblem.set('')
 }
 
-function editStep(id) {
+function editStep(id: EditorStep['id']) {
   const step = editSteps().find(item => item.id === id)
   if (!step || step.kind === 'other')
     return
@@ -403,7 +405,7 @@ function editStep(id) {
   stepProblem.set('')
 }
 
-function chooseUnit(unit) {
+function chooseUnit(unit: (typeof WAIT_UNITS)[number]['value']) {
   stepUnit.set(unit)
 }
 
@@ -432,17 +434,17 @@ function cancelStep() {
   stepProblem.set('')
 }
 
-function moveUp(id) {
+function moveUp(id: EditorStep['id']) {
   editSteps.set(moveStep(editSteps(), editSteps().findIndex(step => step.id === id), -1))
   editSaved.set('')
 }
 
-function moveDown(id) {
+function moveDown(id: EditorStep['id']) {
   editSteps.set(moveStep(editSteps(), editSteps().findIndex(step => step.id === id), 1))
   editSaved.set('')
 }
 
-function removeStep(id) {
+function removeStep(id: EditorStep['id']) {
   editSteps.set(editSteps().filter(step => step.id !== id))
   if (stepId() === id)
     stepOpen.set(false)

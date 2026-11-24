@@ -46,7 +46,7 @@ async function load() {
   }
 }
 
-function choose(period) {
+function choose(period: (typeof PERIODS)[number]['days']) {
   if (period === days() || loading()) return
   days.set(period)
   void load()

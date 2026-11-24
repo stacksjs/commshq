@@ -39,8 +39,9 @@ import {
   listErrorMessage,
   toContactViews,
 } from '../../data/contacts-query'
+import type { ContactView } from '../../data/contacts-query'
 
-const contacts = state([])
+const contacts = state<ContactView[]>([])
 const total = state(null)
 const hasMore = state(false)
 const page = state(1)

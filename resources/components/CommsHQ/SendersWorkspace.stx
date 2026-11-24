@@ -32,8 +32,9 @@ import {
   toDomainViews,
   toSenderViews,
 } from '../../data/sending-query'
+import type { SenderView } from '../../data/sending-query'
 
-const senders = state([])
+const senders = state<SenderView[]>([])
 const loading = state(true)
 const errorText = state('')
 const actionError = state('')
@@ -102,7 +103,7 @@ function writeHeaders() {
   }
 }
 
-function askRemove(id) {
+function askRemove(id: SenderView['id']) {
   actionError.set('')
   confirmId.set(id)
 }
@@ -111,7 +112,7 @@ function cancelRemove() {
   confirmId.set(0)
 }
 
-async function remove(id) {
+async function remove(id: SenderView['id']) {
   if (busyId() || confirmId() !== id)
     return
   busyId.set(id)

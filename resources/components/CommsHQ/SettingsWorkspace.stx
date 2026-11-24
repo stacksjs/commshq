@@ -45,7 +45,7 @@ const canEdit = derived(() => saved().canEdit)
 const readOnly = derived(() => !saved().canEdit)
 const dirty = derived(() => isChanged({ name: name(), description: description() }, saved()))
 
-function apply(body) {
+function apply(body: Parameters<typeof toSettingsView>[0]) {
   const view = toSettingsView(body)
   /* A save answers without the created date; keep the one already read. */
   saved.set({ ...view, createdLabel: view.createdLabel || saved().createdLabel })

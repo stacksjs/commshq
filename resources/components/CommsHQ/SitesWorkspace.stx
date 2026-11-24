@@ -46,12 +46,13 @@ import {
   statusPayload,
   toPageViews,
 } from '../../data/sites-query'
+import type { PageKind, PageView } from '../../data/sites-query'
 
 const kinds = PAGE_KINDS
 const notServed = NOT_SERVED
 
-const kind = state('link')
-const pages = state([])
+const kind = state<PageKind>('link')
+const pages = state<PageView[]>([])
 const hasMore = state(false)
 const page = state(1)
 const status = state('')
@@ -123,7 +124,7 @@ async function load(source = 'refresh') {
   }
 }
 
-function chooseKind(next) {
+function chooseKind(next: (typeof PAGE_KINDS)[number]['key']) {
   if (next === kind() || loading() || saving() || editingId())
     return
   kind.set(next)
@@ -161,7 +162,7 @@ function writeHeaders() {
   }
 }
 
-async function setStatus(id, next) {
+async function setStatus(id: PageView['id'], next: PageView['nextStatus']) {
   const body = statusPayload(next)
   if (busyId() || !body)
     return
@@ -188,7 +189,7 @@ async function setStatus(id, next) {
   }
 }
 
-function fillForm(draft) {
+function fillForm(draft: typeof EMPTY_DRAFT) {
   addName.set(draft.name)
   addSlug.set(draft.slug)
   addBio.set(draft.bio)
@@ -226,7 +227,7 @@ function toggleAdd() {
   addOpen.set(true)
 }
 
-function editPage(item) {
+function editPage(item: PageView) {
   if (saving())
     return
   fillForm(item.draft)

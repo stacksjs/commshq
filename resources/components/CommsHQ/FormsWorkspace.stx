@@ -41,8 +41,9 @@ import {
   saveErrorMessage,
   toFormViews,
 } from '../../data/forms-query'
+import type { FormView } from '../../data/forms-query'
 
-const forms = state([])
+const forms = state<FormView[]>([])
 const hasMore = state(false)
 const page = state(1)
 const status = state('')
@@ -128,7 +129,7 @@ function writeHeaders() {
   }
 }
 
-async function setStatus(id, next) {
+async function setStatus(id: FormView['id'], next: string) {
   if (busyId())
     return
   busyId.set(id)

@@ -47,6 +47,7 @@ import {
   toEventViews,
   toStoresView,
 } from '../../data/commerce-query'
+import type { CartView, EventView, StoreView } from '../../data/commerce-query'
 
 const notUsedYet = NOT_USED_YET
 
@@ -61,7 +62,7 @@ const busyAction = state('')
 /* The store whose Pause is waiting for its second press. */
 const confirmId = state(0)
 
-const events = state([])
+const events = state<EventView[]>([])
 const eventsLoading = state(true)
 const eventsError = state('')
 const eventsMore = state(false)
@@ -69,7 +70,7 @@ const eventsPage = state(1)
 const eventType = state('')
 const eventsBusy = state('refresh')
 
-const carts = state([])
+const carts = state<CartView[]>([])
 const cartsLoading = state(true)
 const cartsError = state('')
 const cartState = state('')
@@ -210,7 +211,7 @@ function toggleAdd() {
   addSecret.set('')
 }
 
-function chooseProvider(provider) {
+function chooseProvider(provider: string) {
   addProvider.set(provider)
   addError.set('')
 }
@@ -261,7 +262,7 @@ function dismissConnected() {
   connectedSetup.set('')
 }
 
-async function patchStore(id, body) {
+async function patchStore(id: StoreView['id'], body: Record<string, unknown>) {
   busyId.set(id)
   busyAction.set(body && 'secret' in body ? 'secret' : 'status')
   actionError.set('')
@@ -289,7 +290,7 @@ async function patchStore(id, body) {
 }
 
 /* Resuming is one press. Pausing is two: it stops the store's events arriving. */
-function changeStatus(id, next) {
+function changeStatus(id: StoreView['id'], next: StoreView['nextStatus']) {
   if (busyId() || !next)
     return
   if (next === 'disabled' && confirmId() !== id) {
@@ -304,13 +305,13 @@ function cancelConfirm() {
   confirmId.set(0)
 }
 
-function openSecret(id) {
+function openSecret(id: StoreView['id']) {
   secretId.set(secretId() === id ? 0 : id)
   secretValue.set('')
   secretProblem.set('')
 }
 
-async function replaceSecret(id) {
+async function replaceSecret(id: StoreView['id']) {
   if (busyId())
     return
   const problem = secretError(secretValue())

@@ -29,8 +29,9 @@ import {
   verifyResultMessage,
   verifyUrl,
 } from '../../data/sending-query'
+import type { DomainView } from '../../data/sending-query'
 
-const domains = state([])
+const domains = state<DomainView[]>([])
 const loading = state(true)
 const errorText = state('')
 const actionError = state('')
@@ -83,7 +84,7 @@ function writeHeaders() {
   }
 }
 
-async function check(id, name) {
+async function check(id: DomainView['id'], name: DomainView['domain']) {
   if (busyId())
     return
   busyId.set(id)
@@ -107,7 +108,7 @@ async function check(id, name) {
   }
 }
 
-function askRemove(id) {
+function askRemove(id: DomainView['id']) {
   actionError.set('')
   actionNotice.set('')
   confirmId.set(id)
@@ -117,7 +118,7 @@ function cancelRemove() {
   confirmId.set(0)
 }
 
-async function remove(id) {
+async function remove(id: DomainView['id']) {
   if (busyId() || confirmId() !== id)
     return
   busyId.set(id)
