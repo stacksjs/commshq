@@ -55,6 +55,8 @@ route.post('/v1/sender-identities', 'Actions/Api/V1/Sending/CreateSenderIdentity
 // The earnings ledger is append-only and its columns are not fillable, so
 // the generated API only reads it. A sponsor's payment is recorded here.
 route.post('/v1/sponsors/{id}/payments', 'Actions/Api/V1/Monetization/RecordSponsorPaymentAction').middleware('auth').middleware('team').rateLimit(30, 'minute')
+// A wrong entry is cancelled by a reversal beside it, never edited.
+route.post('/v1/earnings/{id}/reverse', 'Actions/Api/V1/Monetization/ReverseEarningAction').middleware('auth').middleware('team').rateLimit(30, 'minute')
 
 // Credentials are stored encrypted and never returned; the generated API
 // only reads them.

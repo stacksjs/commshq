@@ -18,6 +18,7 @@ export const actions = {
   'Actions/Api/V1/Integrations/StoreIntegrationCredentialAction': '../../../app/Actions/Api/V1/Integrations/StoreIntegrationCredentialAction.ts',
   'Actions/Api/V1/ListWorkspacesAction': '../../../app/Actions/Api/V1/ListWorkspacesAction.ts',
   'Actions/Api/V1/Monetization/RecordSponsorPaymentAction': '../../../app/Actions/Api/V1/Monetization/RecordSponsorPaymentAction.ts',
+  'Actions/Api/V1/Monetization/ReverseEarningAction': '../../../app/Actions/Api/V1/Monetization/ReverseEarningAction.ts',
   'Actions/Api/V1/Reputation/AcknowledgeAlertAction': '../../../app/Actions/Api/V1/Reputation/AcknowledgeAlertAction.ts',
   'Actions/Api/V1/Reputation/CreateMonitoredProfileAction': '../../../app/Actions/Api/V1/Reputation/CreateMonitoredProfileAction.ts',
   'Actions/Api/V1/Reputation/TriageMentionAction': '../../../app/Actions/Api/V1/Reputation/TriageMentionAction.ts',

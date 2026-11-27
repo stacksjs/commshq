@@ -100,3 +100,40 @@ export function readSponsorPayment(body: Record<string, unknown>, today: string)
 export function sponsorPaymentSource(sponsorId: number, key: string): string {
   return `sponsor:${Math.trunc(sponsorId)}:${key}`
 }
+
+/**
+ * Correcting an entry.
+ *
+ * Nothing in the ledger is edited or deleted. A wrong entry is cancelled by
+ * a reversal: a second entry of the same kind with every amount negated, so
+ * the two sum to nothing and both stay on record. The right figure is then
+ * recorded as a new payment.
+ *
+ * A reversal's source is `reversal:{id}` of the entry it cancels, and the
+ * unique index on the source means an entry can be reversed once. A
+ * reversal is never itself reversed: recording the payment again is how
+ * that is undone.
+ */
+const REVERSAL = /^reversal:(\d+)$/
+
+export function reversalSource(earningId: number): string {
+  return `reversal:${Math.trunc(earningId)}`
+}
+
+/** The entry a reversal cancels, or 0 when the source is not a reversal. */
+export function reversedIdOf(sourceId: unknown): number {
+  const match = REVERSAL.exec(String(sourceId ?? ''))
+  return match ? Number(match[1]) : 0
+}
+
+export interface LedgerAmounts {
+  gross_amount: number
+  fee_amount: number
+  net_amount: number
+}
+
+/** The amounts that cancel an entry: each one negated. */
+export function reversalAmounts(entry: LedgerAmounts): LedgerAmounts {
+  const negate = (value: number) => (Number(value) === 0 ? 0 : -Number(value))
+  return { gross_amount: negate(entry.gross_amount), fee_amount: negate(entry.fee_amount), net_amount: negate(entry.net_amount) }
+}
