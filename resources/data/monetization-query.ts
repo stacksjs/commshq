@@ -14,8 +14,9 @@
  *
  * An owner or admin records a payment from a sponsor in that ledger
  * (`POST /api/v1/sponsors/{id}/payments`), with the amount, any fees and the
- * day it arrived. The ledger is append-only, so the form says to check the
- * figures before saving.
+ * day it arrived. The ledger is append-only: a wrong entry is cancelled by
+ * a reversal beside it (`POST /api/v1/earnings/{id}/reverse`), never
+ * edited, and the right figure is recorded again.
  *
  * ## What the page does not show
  *
@@ -199,6 +200,11 @@ export interface EarningView {
   netLabel: string
   detail: string
   whenLabel: string
+  /** This entry cancels another. */
+  reversal: boolean
+  /** Another entry on the page cancels this one. */
+  reversed: boolean
+  canReverse: boolean
 }
 
 /**
@@ -226,29 +232,82 @@ export function sponsorIdOf(sourceId?: string | null): number {
   return match ? Number(match[1]) : 0
 }
 
+/** The entry a reversal cancels, or 0 when the entry is not a reversal. */
+export function reversedIdOf(sourceId?: string | null): number {
+  const match = /^reversal:(\d+)$/.exec(String(sourceId || ''))
+  return match ? Number(match[1]) : 0
+}
+
+export function earningReverseUrl(id: number): string {
+  return `${EARNINGS_ENDPOINT}/${Math.trunc(Number(id))}/reverse`
+}
+
 /**
  * Normalize one ledger entry. Amounts are minor units, as everywhere else.
  * `sponsorNames` names the sponsors the page has seen, so a payment reads
  * as coming from someone; an entry from a sponsor it has not seen still
- * reads as a sponsorship.
+ * reads as a sponsorship. `ledger` is the rest of the page's entries, which
+ * is how a reversal and the entry it cancels find each other.
  */
-export function toEarningView(row: EarningRow, locale?: string, sponsorNames: Record<number, string> = {}): EarningView {
+export function toEarningView(row: EarningRow, locale?: string, sponsorNames: Record<number, string> = {}, ledger: EarningRow[] = [row]): EarningView {
   const currency = (row.currency || 'USD').toUpperCase()
-  const sponsor = row.source_type === 'sponsorship' ? sponsorNames[sponsorIdOf(row.source_id)] : ''
+  const money = (value?: number | null) => formatAmount(value, locale, currency)
+  const sponsorOf = (entry: EarningRow) => (entry.source_type === 'sponsorship' ? sponsorNames[sponsorIdOf(entry.source_id)] ?? '' : '')
+  const reversedId = reversedIdOf(row.source_id)
+
+  if (reversedId) {
+    const original = ledger.find(entry => entry.id === reversedId)
+    const sponsor = original ? sponsorOf(original) : ''
+    return {
+      id: row.id,
+      sourceLabel: sponsor ? `Reversal of a payment from ${sponsor}` : 'Reversal',
+      netLabel: money(row.net_amount),
+      detail: original
+        ? `Cancels the ${money(original.net_amount)} entry from ${formatSeen(original.occurred_at, locale)}`
+        : 'Cancels an earlier entry',
+      whenLabel: formatSeen(row.occurred_at, locale),
+      reversal: true,
+      reversed: false,
+      canReverse: false,
+    }
+  }
+
+  const sponsor = sponsorOf(row)
   const fee = Number(row.fee_amount) || 0
+  const reversed = ledger.some(entry => reversedIdOf(entry.source_id) === row.id)
+  const amounts = fee > 0
+    ? `${money(row.gross_amount)} received, ${money(fee)} in fees`
+    : `${money(row.gross_amount)} received, no fees`
   return {
     id: row.id,
     sourceLabel: sponsor ? `Sponsorship from ${sponsor}` : sourceLabel(row.source_type),
-    netLabel: formatAmount(row.net_amount, locale, currency),
-    detail: fee > 0
-      ? `${formatAmount(row.gross_amount, locale, currency)} received, ${formatAmount(fee, locale, currency)} in fees`
-      : `${formatAmount(row.gross_amount, locale, currency)} received, no fees`,
+    netLabel: money(row.net_amount),
+    detail: reversed ? `${amounts}. Reversed` : amounts,
     whenLabel: formatSeen(row.occurred_at, locale),
+    reversal: false,
+    reversed,
+    canReverse: !reversed,
   }
 }
 
 export function toEarningViews(body: { data?: EarningRow[] } | null | undefined, locale?: string, sponsorNames: Record<number, string> = {}): EarningView[] {
-  return (body?.data ?? []).map(row => toEarningView(row, locale, sponsorNames))
+  const rows = body?.data ?? []
+  return rows.map(row => toEarningView(row, locale, sponsorNames, rows))
+}
+
+/** What to tell someone when a reversal failed. */
+export function reverseErrorMessage(status: number, error = ''): string {
+  if (status === 403)
+    return /role/i.test(error) ? 'Only an owner or admin can reverse earnings.' : 'That request was refused. Reload the page and try again.'
+  if (status === 404)
+    return 'That entry is not in this workspace\'s ledger. The list has been refreshed.'
+  if (status === 409)
+    return 'A reversal cannot be reversed. Record the payment again instead.'
+  if (status === 401)
+    return 'Your session has ended. Sign in again to reverse this entry.'
+  if (status === 429)
+    return 'Too many requests just now. Wait a moment and try again.'
+  return `The entry could not be reversed (${status}).`
 }
 
 /** The largest single payment the server accepts: $10,000,000, in cents. */

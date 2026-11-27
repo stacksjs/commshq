@@ -30,6 +30,7 @@ export const statusOptions = SPONSOR_STATUSES
  */
 import {
   draftError,
+  earningReverseUrl,
   earningsUrl,
   listErrorMessage,
   localDate,
@@ -37,6 +38,7 @@ import {
   paymentErrorMessage,
   paymentPayload,
   parseAmount,
+  reverseErrorMessage,
   formatAmount,
   saveErrorMessage,
   sponsorPaymentUrl,
@@ -58,6 +60,10 @@ const earningRows = state([])
 const sponsorNames = state<Record<number, string>>({})
 const earnings = derived(() => toEarningViews({ data: earningRows() }, undefined, sponsorNames()))
 const earningsError = state('')
+/* Reversing takes two clicks: the first asks, the second does it. */
+const confirmReverseId = state(0)
+const reversingId = state(0)
+const reverseError = state('')
 const earningsLoaded = state(false)
 const hasMore = state(false)
 const page = state(1)
@@ -346,6 +352,49 @@ async function addSponsor() {
   }
 }
 
+function askReverse(id: number) {
+  confirmReverseId.set(id)
+  reverseError.set('')
+}
+
+function cancelReverse() {
+  confirmReverseId.set(0)
+  reverseError.set('')
+}
+
+async function reverseEarning(id: number) {
+  if (reversingId())
+    return
+  reversingId.set(id)
+  reverseError.set('')
+  try {
+    const response = await fetch(earningReverseUrl(id), {
+      method: 'POST',
+      credentials: 'same-origin',
+      headers: writeHeaders(),
+      body: '{}',
+    })
+    if (response.ok) {
+      confirmReverseId.set(0)
+      await loadEarnings()
+      return
+    }
+    /* The error text says whether a 403 was the role check or a stale page. */
+    const error = await response.json().then(body => String(body?.error || ''), () => '')
+    reverseError.set(reverseErrorMessage(response.status, error))
+    if (response.status === 404 || response.status === 409) {
+      confirmReverseId.set(0)
+      await loadEarnings()
+    }
+  }
+  catch {
+    reverseError.set('The entry could not be reversed. Check your connection and try again.')
+  }
+  finally {
+    reversingId.set(0)
+  }
+}
+
 onMount(() => {
   refresh()
 })
@@ -460,7 +509,7 @@ onMount(() => {
             <p :if="payNoticeId() === sponsor.id" class="m-0 pb-5 px-5 font-bold text-sm" role="status">{{ payNotice() }}</p>
             <section :if="payId() === sponsor.id" class="pb-5 px-5" aria-label="Record a payment">
               <h4 class="font-bold text-sm">Record a payment from {{ payName() }}</h4>
-              <p class="mt-1 text-fg-muted text-xs">In US dollars. The earnings ledger cannot be edited afterwards, so check the figures before you save.</p>
+              <p class="mt-1 text-fg-muted text-xs">In US dollars. Entries are never edited: a wrong one is reversed from Recent earnings and recorded again.</p>
               <div class="grid gap-3 sm:grid-cols-3 mt-4">
                 <label class="block font-bold text-xs">
                   Amount received
@@ -509,6 +558,7 @@ onMount(() => {
         <h2 id="earnings-title" class="font-bold">Recent earnings</h2>
       </div>
       <p :if="earningsError()" class="p-5 font-bold text-danger text-sm" role="alert">{{ earningsError() }}</p>
+      <p :if="reverseError()" class="p-5 font-bold text-danger text-sm" role="alert">{{ reverseError() }}</p>
       <div :if="showNoEarnings()" class="p-8 text-center">
         <span aria-hidden="true" class="inline-block h-7 w-7 text-fg-muted i-hugeicons-coins-dollar"></span>
         <p class="mt-3 font-bold">No earnings have been recorded.</p>
@@ -516,13 +566,24 @@ onMount(() => {
       </div>
       <div :if="showEarnings()" class="divide-line divide-y">
         <template :for="earning in earnings()">
-          <article class="flex gap-3 items-center justify-between p-5">
-            <div class="min-w-0">
-              <h3 class="font-bold text-sm">{{ earning.sourceLabel }}</h3>
-              <p class="mt-0.5 text-fg-muted text-xs">{{ earning.whenLabel }}. {{ earning.detail }}.</p>
-            </div>
-            <p class="shrink-0 m-0 font-bold text-sm">{{ earning.netLabel }}</p>
-          </article>
+          <div>
+            <article class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between p-5">
+              <div class="min-w-0">
+                <h3 class="font-bold text-sm">{{ earning.sourceLabel }}</h3>
+                <p class="mt-0.5 text-fg-muted text-xs">{{ earning.whenLabel }}. {{ earning.detail }}.</p>
+              </div>
+              <div class="flex flex-wrap gap-2 items-center shrink-0">
+                <p class="m-0 font-bold text-sm" :class="earning.reversed ? 'line-through text-fg-muted' : ''">{{ earning.netLabel }}</p>
+                <button :if="earning.canReverse && confirmReverseId() !== earning.id" type="button" @click="askReverse(earning.id)" class="px-4 min-h-11 font-bold text-fg text-sm bg-panel hover:bg-surface-hover border border-line rounded-pill focus-visible:outline focus-visible:outline-[var(--coral)] focus-visible:outline-2">Reverse</button>
+                <button :if="confirmReverseId() === earning.id" type="button" @click="reverseEarning(earning.id)" :disabled="reversingId() !== 0" :aria-busy="reversingId() === earning.id" class="px-4 min-h-11 font-bold text-[var(--coral-ink)] text-sm bg-accent rounded-pill focus-visible:outline focus-visible:outline-[var(--coral)] focus-visible:outline-2 focus-visible:outline-offset-2 disabled:opacity-60">
+                  <span :show="reversingId() !== earning.id">Cancel this entry</span>
+                  <span :show="reversingId() === earning.id" style="display:none">Reversing...</span>
+                </button>
+                <button :if="confirmReverseId() === earning.id" type="button" @click="cancelReverse()" class="px-4 min-h-11 font-bold text-fg text-sm bg-panel hover:bg-surface-hover border border-line rounded-pill focus-visible:outline focus-visible:outline-[var(--coral)] focus-visible:outline-2">Keep it</button>
+              </div>
+            </article>
+            <p :if="confirmReverseId() === earning.id" class="m-0 pb-5 px-5 text-fg-muted text-xs">A reversal with the opposite amount is added beside it, and both stay on record. Record the right figure as a new payment afterwards.</p>
+          </div>
         </template>
       </div>
     </section>

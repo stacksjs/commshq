@@ -7,8 +7,8 @@
  * than a second one.
  */
 import { describe, expect, test } from 'bun:test'
-import { canRecordEarnings, EARNING_CURRENCY, MAX_PAYMENT_MINOR, readSponsorPayment, sponsorPaymentSource } from '../../app/Support/earnings'
-import { MAX_PAYMENT_MINOR as PAGE_MAX } from '../../resources/data/monetization-query'
+import { canRecordEarnings, EARNING_CURRENCY, MAX_PAYMENT_MINOR, readSponsorPayment, reversalAmounts, reversalSource, reversedIdOf, sponsorPaymentSource } from '../../app/Support/earnings'
+import { MAX_PAYMENT_MINOR as PAGE_MAX, reversedIdOf as pageReversedIdOf } from '../../resources/data/monetization-query'
 
 const today = '2026-11-23'
 const key = '8b1f0c2e-1d3a-4c5b-9e6f-0a1b2c3d4e5f'
@@ -87,5 +87,42 @@ describe('the ledger entry', () => {
     expect(action).toContain('canRecordEarnings(membership?.role)')
     expect(action).toMatch(/selectFrom\('sponsors'[\s\S]*?\.where\('team_id' as any, '=', teamId\)/)
     expect(action).toContain(`source_type: 'sponsorship'`)
+  })
+})
+
+describe('correcting an entry', () => {
+  test('a reversal negates every amount, so the two sum to nothing', () => {
+    const entry = { gross_amount: 125050, fee_amount: 3625, net_amount: 121425 }
+    const reversal = reversalAmounts(entry)
+    expect(reversal).toEqual({ gross_amount: -125050, fee_amount: -3625, net_amount: -121425 })
+    expect(entry.net_amount + reversal.net_amount).toBe(0)
+    expect(Object.is(reversalAmounts({ gross_amount: 500, fee_amount: 0, net_amount: 500 }).fee_amount, 0)).toBe(true)
+  })
+
+  test('its source names the entry it cancels, once', () => {
+    expect(reversalSource(12)).toBe('reversal:12')
+    expect(reversedIdOf('reversal:12')).toBe(12)
+    for (const value of [`sponsor:7:${key}`, 'reversal:', 'reversal:12:x', '', null, undefined])
+      expect(reversedIdOf(value)).toBe(0)
+  })
+
+  test('the page reads reversals the way the server writes them', () => {
+    for (const value of ['reversal:12', 'reversal:1', `sponsor:7:${key}`, 'reversal:x'])
+      expect(pageReversedIdOf(value)).toBe(reversedIdOf(value))
+  })
+
+  test('the model allows the negative amounts a reversal carries', async () => {
+    const model = await Bun.file(new URL('../../app/Models/Earning.ts', import.meta.url)).text()
+    expect(model).not.toMatch(/(?:gross|fee|net)Amount:[^\n]*min\(0\)/)
+  })
+
+  test('the route is behind auth and team; the action checks the role, the workspace and that it is not a reversal', async () => {
+    const routes = await Bun.file(new URL('../../routes/api.ts', import.meta.url)).text()
+    expect(routes).toMatch(/route\.post\('\/v1\/earnings\/\{id\}\/reverse', 'Actions\/Api\/V1\/Monetization\/ReverseEarningAction'\)\.middleware\('auth'\)\.middleware\('team'\)/)
+    const action = await Bun.file(new URL('../../app/Actions/Api/V1/Monetization/ReverseEarningAction.ts', import.meta.url)).text()
+    expect(action).toContain('canRecordEarnings(membership?.role)')
+    expect(action).toMatch(/selectFrom\('earnings'[\s\S]*?\.where\('team_id' as any, '=', teamId\)/)
+    expect(action).toContain('if (reversedIdOf(entry.source_id))')
+    expect(action).not.toMatch(/updateTable|deleteFrom/)
   })
 })

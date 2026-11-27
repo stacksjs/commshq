@@ -10,6 +10,7 @@
 import { describe, expect, test } from 'bun:test'
 import {
   draftError,
+  earningReverseUrl,
   EARNINGS_ENDPOINT,
   earningsUrl,
   formatAmount,
@@ -20,6 +21,7 @@ import {
   paymentDraftError,
   paymentErrorMessage,
   paymentPayload,
+  reverseErrorMessage,
   safeWebsite,
   saveErrorMessage,
   sourceLabel,
@@ -64,7 +66,11 @@ describe('the requests', () => {
     expect(sponsorPaymentUrl(4)).toBe('/api/v1/sponsors/4/payments')
   })
 
-  test('the sponsor payment action is the only thing that writes the ledger', async () => {
+  test('an entry is reversed under its own id', () => {
+    expect(earningReverseUrl(12)).toBe('/api/v1/earnings/12/reverse')
+  })
+
+  test('recording a payment and reversing one are the only things that write the ledger', async () => {
     // When this fails, something else writes earnings: the empty-state copy,
     // the ledger's append-only promise and the summary's single-currency sum
     // should all be looked at again.
@@ -79,7 +85,10 @@ describe('the requests', () => {
       if (/Earning\.(?:create|forceCreate|update|delete)\(|(?:insertInto|updateTable|deleteFrom)\('earnings'/.test(text))
         writers.push(file)
     }
-    expect(writers).toEqual(['app/Actions/Api/V1/Monetization/RecordSponsorPaymentAction.ts'])
+    expect(writers.sort()).toEqual([
+      'app/Actions/Api/V1/Monetization/RecordSponsorPaymentAction.ts',
+      'app/Actions/Api/V1/Monetization/ReverseEarningAction.ts',
+    ])
   })
 })
 
@@ -135,7 +144,28 @@ describe('the ledger', () => {
       netLabel: '$4,320',
       detail: '$4,800 received, $480 in fees',
       whenLabel: 'Nov 1, 2026',
+      reversal: false,
+      reversed: false,
+      canReverse: true,
     })
+  })
+
+  test('a reversal and the entry it cancels find each other', () => {
+    const names = { 7: 'Studio Supply Co.' }
+    const original = { id: 2, source_type: 'sponsorship', source_id: 'sponsor:7:8b1f0c2e-1d3a-4c5b-9e6f-0a1b2c3d4e5f', gross_amount: 125050, fee_amount: 3625, net_amount: 121425, currency: 'USD', occurred_at: '2026-11-20T12:00:00.000Z' }
+    const reversal = { id: 3, source_type: 'sponsorship', source_id: 'reversal:2', gross_amount: -125050, fee_amount: -3625, net_amount: -121425, currency: 'USD', occurred_at: '2026-11-21T09:00:00.000Z' }
+    const [first, second] = toEarningViews({ data: [reversal, original] }, 'en-US', names)
+    expect(first).toMatchObject({ sourceLabel: 'Reversal of a payment from Studio Supply Co.', netLabel: '-$1,214.25', detail: 'Cancels the $1,214.25 entry from Nov 20, 2026', reversal: true, canReverse: false })
+    expect(second).toMatchObject({ sourceLabel: 'Sponsorship from Studio Supply Co.', reversed: true, canReverse: false, detail: '$1,250.50 received, $36.25 in fees. Reversed' })
+    expect(toEarningViews({ data: [original] }, 'en-US', names)[0]).toMatchObject({ reversed: false, canReverse: true })
+    expect(toEarningViews({ data: [reversal] }, 'en-US', names)[0]).toMatchObject({ sourceLabel: 'Reversal', detail: 'Cancels an earlier entry' })
+  })
+
+  test('a failed reversal says why', () => {
+    expect(reverseErrorMessage(403, 'Reversing earnings requires an admin or owner role')).toBe('Only an owner or admin can reverse earnings.')
+    expect(reverseErrorMessage(403, 'CSRF token mismatch')).toContain('Reload the page')
+    expect(reverseErrorMessage(409)).toContain('cannot be reversed')
+    expect(reverseErrorMessage(404)).toContain('not in this workspace')
   })
 
   test('cents are shown when there are cents, and only then', () => {
