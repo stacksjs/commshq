@@ -75,10 +75,10 @@
     "serve:validate": "bun scripts/validate-serve.ts"
   },
   "dependencies": {
-    "@stacksjs/components": "0.2.925",
-    "@stacksjs/stx": "0.2.925",
+    "@stacksjs/components": "0.2.957",
+    "@stacksjs/stx": "0.2.957",
     "@stacksjs/ts-cloud": "^0.16.136",
-    "bun-plugin-stx": "0.2.925",
+    "bun-plugin-stx": "0.2.957",
     "stacks": "^0.75.652"
   },
   "workspaces": [
@@ -98,7 +98,7 @@
     "better-dx": "^0.2.25"
   },
   "overrides": {
-    "@stacksjs/stx": "0.2.925",
-    "bun-plugin-stx": "0.2.925"
+    "@stacksjs/stx": "0.2.957",
+    "bun-plugin-stx": "0.2.957"
   }
 }
